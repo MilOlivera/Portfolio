@@ -1,0 +1,184 @@
+{
+  "header": {
+    "home": "Home",
+    "about": "About",
+    "skills": "Skills",
+    "qualifications": "Resume",
+    "portfolio": "Portfolio",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Milton Olivera",
+    "subtitle": "Full-Stack Developer",
+    "tagline": "Merchant Marine Officer & BSc in Logistics",
+    "description": "I build end-to-end web and mobile applications with modern stack. My background in maritime logistics gave me a unique perspective to solve complex problems.",
+    "cta": "Get in touch!",
+    "scroll": "Scroll"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "My introduction",
+    "stats": {
+      "experience": "Years of experience",
+      "completed": "Completed projects",
+      "marine": "Years as Marine"
+    },
+    "description": "Full-Stack Developer with 5 years building web and mobile applications. I work with React, Next.js, Expo, Prisma and PostgreSQL. My background as Merchant Marine Officer and BSc in Logistics gave me discipline, analytical skills and a systemic approach to building robust software.",
+    "downloadCV": "Download CV"
+  },
+  "skills": {
+    "title": "Skills",
+    "subtitle": "My technical stack",
+    "frontend": {
+      "title": "Frontend Developer"
+    },
+    "backend": {
+      "title": "Backend Developer"
+    },
+    "levels": {
+      "basic": "Basic",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    }
+  },
+  "qualification": {
+    "title": "Education & Experience",
+    "subtitle": "My journey",
+    "tabs": {
+      "tech": "Tech",
+      "professional": "Professional",
+      "general": "General"
+    },
+    "tech": [
+      {
+        "title": "Programming Technical Degree",
+        "place": "TECLAB",
+        "date": "Jun 2022 - Present"
+      },
+      {
+        "title": "React Course",
+        "place": "CoderHouse",
+        "date": "Aug 2023"
+      },
+      {
+        "title": "Manual QA Testing",
+        "place": "CoderHouse",
+        "date": "Oct 2022"
+      },
+      {
+        "title": "Full Stack Developer",
+        "place": "Digital House",
+        "date": "Jan 2022 - Sep 2022"
+      },
+      {
+        "title": "WordPress",
+        "place": "CoderHouse",
+        "date": "Jan 2022"
+      },
+      {
+        "title": "JavaScript",
+        "place": "CoderHouse",
+        "date": "Nov 2021 - Jan 2022"
+      }
+    ],
+    "professional": [
+      {
+        "title": "Full-Stack Developer (Freelance)",
+        "place": "Evolvere Training Lab · Marpla",
+        "date": "2024 - Present"
+      },
+      {
+        "title": "Current role",
+        "place": "Current company",
+        "date": "Year - Present"
+      },
+      {
+        "title": "Fluvial Officer",
+        "place": "Merchant Marine",
+        "date": "2017 - Present"
+      }
+    ],
+    "general": [
+      {
+        "title": "BSc in Transport & Operational Logistics",
+        "place": "Merchant Marine University",
+        "date": "Aug 2017 - Dec 2022"
+      },
+      {
+        "title": "Merchant Marine - Fluvial Officer",
+        "place": "National Fluvial School",
+        "date": "Mar 2014 - Jan 2017"
+      }
+    ]
+  },
+  "projects": {
+    "title": "Portfolio",
+    "subtitle": "Recent projects",
+    "viewDemo": "View demo",
+    "privateProject": "Private project",
+    "filters": {
+      "all": "All",
+      "web": "Web",
+      "mobile": "Mobile",
+      "data": "Data"
+    },
+    "items": {
+      "evolverePlatform": {
+        "title": "Training Center Platform",
+        "description": "End-to-end management platform with role-based access, group scheduling, coach scoring and nutrition module."
+      },
+      "evolvereApp": {
+        "title": "Habits Mobile App",
+        "description": "Companion mobile app with habit tracking, scoring system, scheduling and geolocation."
+      },
+      "marplaDashboard": {
+        "title": "Sales Prediction Dashboard",
+        "description": "Analytical dashboard with sales prediction by day, weather cross-analysis and pattern detection."
+      },
+      "marplaStock": {
+        "title": "SME Inventory System",
+        "description": "Stock management with restock alerts, waste control and automated reporting."
+      },
+      "corporateDashboard": {
+        "title": "Corporate Commercial Dashboard",
+        "description": "KPI visualization system for a healthcare sector organization."
+      },
+      "fullStackProject": {
+        "title": "Full-Stack Academic Project",
+        "description": "Full-stack web application built as final degree project with backend and database integration."
+      }
+    }
+  },
+  "contact": {
+    "title": "Let's stay in touch",
+    "subtitle": "Let's talk",
+    "directContact": "Direct contact",
+    "formTitle": "Write me a message",
+    "write": "Write",
+    "email": "Email",
+    "linkedin": "LinkedIn",
+    "github": "GitHub",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "message": "Message",
+      "messagePlaceholder": "Tell me how I can help",
+      "submit": "Send message",
+      "sending": "Sending...",
+      "sent": "Message sent!",
+      "error": "Error sending"
+    }
+  },
+  "footer": {
+    "name": "Milton H. Olivera",
+    "rights": "All rights reserved",
+    "links": {
+      "about": "About",
+      "skills": "Skills",
+      "portfolio": "Portfolio",
+      "contact": "Contact"
+    }
+  }
+}

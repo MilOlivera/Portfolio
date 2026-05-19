@@ -1,171 +1,137 @@
-import { useState } from 'react';
-import './qualification.css'
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import "./qualification.css";
 
 const Qualification = () => {
+  const { t } = useTranslation();
+  const [toggleState, setToggleState] = useState(1);
 
-    const [toggleState, setToggleState] = useState(1)
+  const toggleTab = (index) => setToggleState(index);
 
-    const toggleTab = (index) => {
-        
-        setToggleState(index);
+  // Datos desde i18n (arrays)
+  const techItems = t("qualification.tech", { returnObjects: true }) || [];
+  const profItems = t("qualification.professional", { returnObjects: true }) || [];
+  const generalItems = t("qualification.general", { returnObjects: true }) || [];
 
-    }
-
-    return(
-        <>
-            <section className="qualification section" id="qualifications">
-                <h2 className="section__title">Estudios</h2>
-                <span className="section__subtitle">Mi recorrido!</span>
-
-                <div className="qualification__container container">
-                    <div className="qualification__tabs">
-                        <div className={toggleState === 1 ? "qualification__button qualification__active button--flex"
-                         : "qualification__button button--flex"} onClick={ () => toggleTab(1)}>
-                            <i className="uil uil-graduation-cap qualification__icon"></i>Tech
-                        </div>
-                        
-                        <div className={toggleState === 2 ? "qualification__button qualification__active button--flex" 
-                        : "qualification__button button--flex"} onClick={ () => toggleTab(2)}>
-                            <i className="bx bx-book qualification__icon"></i>General
-                        </div>
-                    </div>
-
-                    <div className="qualification__sections">
-                        <div className={toggleState === 1 ? "qualification__content qualification__content-active" 
-                        : "qualification__content"}>
-                            <div className="qualification__data">
-                                <div>
-                                    <h3 className="qualification__title">Tenicatura Superior en Programación</h3>
-                                    <span className="qualification__subtitle">TECLAB</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i> Jun 2022 - Actualidad
-                                    </div> 
-                                </div>
-                                
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                            </div>
-                            <div className="qualification__data">
-                                <div></div>
-
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                                
-                                <div>
-                                    <h3 className="qualification__title">React - Curso</h3>
-                                    <span className="qualification__subtitle">CoderHouse</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i> Ago 2023 - Ago 2023
-                                    </div> 
-                                </div>
-                               
-                            </div>
-                            <div className="qualification__data">
-                                <div>
-                                    <h3 className="qualification__title">Testing QA Manual - Curso</h3>
-                                    <span className="qualification__subtitle">CoderHouse</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i> Oct 2022 - Oct 2022
-                                    </div> 
-                                </div>
-                                
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                            </div>
-                            <div className="qualification__data">
-                                <div></div>
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                                <div>
-                                    <h3 className="qualification__title">Full Stack Developer - Curso</h3>
-                                    <span className="qualification__subtitle">Digital House</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i> Ene 2022 - Sep 2022
-                                    </div> 
-                                </div>
-                                
-                                
-                            </div>
-                            <div className="qualification__data">
-                                <div>
-                                    <h3 className="qualification__title">Wordpress - Curso</h3>
-                                    <span className="qualification__subtitle">CoderHouse</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i> Ene 2022 - Ene 2022
-                                    </div> 
-                                </div>
-                                
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                            </div>
-                            <div className="qualification__data">
-                                <div></div>
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                                <div>
-                                    <h3 className="qualification__title">JavaScript - Curso</h3>
-                                    <span className="qualification__subtitle">CoderHouse</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i> Nov 2021 - Ene 2022
-                                    </div> 
-                                </div>
-                                
-                                
-                            </div>
-                            
-                        </div>
-
-                        <div className={toggleState === 2 ? "qualification__content qualification__content-active" : "qualification__content"}>
-                            <div className="qualification__data">
-                                <div>
-                                    <h3 className="qualification__title">Licenciatura en Transporte y Logistica Operativa</h3>
-                                    <span className="qualification__subtitle">Universidad de la Marina Mercante</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i>Ago 2017 - Dic 2022
-                                    </div> 
-                                </div>
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                            </div>
-                            <div className="qualification__data">
-                                
-                                <div></div>
-                                <div>
-                                    <span className="qualification__rounder"></span>
-                                    <span className="qualification__line"></span>
-                                </div>
-                                
-                                <div>
-                                    <h3 className="qualification__title">Marino Mercante - Oficial Fluvial</h3>
-                                    <span className="qualification__subtitle">Escuela Nacional Fluvial</span>
-                                    <div className="qualification__calendar">
-                                        <i className="uil uil-calendar-alt"></i>Mar 2014 - Ene 2017
-                                    </div>
-                                </div>
-                               
-                            </div>
-                            
-                            
-                        </div>
-                    </div>
+  // Renderiza un item alternando izquierda/derecha
+  const renderItems = (items) =>
+    items.map((item, i) => {
+      const isLeft = i % 2 === 0;
+      return (
+        <div className="qualification__data" key={i}>
+          {isLeft ? (
+            <>
+              <div>
+                <h3 className="qualification__title">{item.title}</h3>
+                <span className="qualification__subtitle">{item.place}</span>
+                <div className="qualification__calendar">
+                  <i className="uil uil-calendar-alt"></i> {item.date}
                 </div>
-            </section>
-        </>
-    )
-}
+              </div>
+              <div>
+                <span className="qualification__rounder"></span>
+                <span className="qualification__line"></span>
+              </div>
+              <div></div>
+            </>
+          ) : (
+            <>
+              <div></div>
+              <div>
+                <span className="qualification__rounder"></span>
+                <span className="qualification__line"></span>
+              </div>
+              <div>
+                <h3 className="qualification__title">{item.title}</h3>
+                <span className="qualification__subtitle">{item.place}</span>
+                <div className="qualification__calendar">
+                  <i className="uil uil-calendar-alt"></i> {item.date}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    });
+
+  return (
+    <section className="qualification section" id="qualifications">
+      <h2 className="section__title">{t("qualification.title")}</h2>
+      <span className="section__subtitle">{t("qualification.subtitle")}</span>
+
+      <div className="qualification__container container">
+        <div className="qualification__tabs">
+          <div
+            className={
+              toggleState === 1
+                ? "qualification__button qualification__active button--flex"
+                : "qualification__button button--flex"
+            }
+            onClick={() => toggleTab(1)}
+          >
+            <i className="uil uil-graduation-cap qualification__icon"></i>
+            {t("qualification.tabs.tech")}
+          </div>
+
+          <div
+            className={
+              toggleState === 2
+                ? "qualification__button qualification__active button--flex"
+                : "qualification__button button--flex"
+            }
+            onClick={() => toggleTab(2)}
+          >
+            <i className="uil uil-briefcase-alt qualification__icon"></i>
+            {t("qualification.tabs.professional")}
+          </div>
+
+          <div
+            className={
+              toggleState === 3
+                ? "qualification__button qualification__active button--flex"
+                : "qualification__button button--flex"
+            }
+            onClick={() => toggleTab(3)}
+          >
+            <i className="bx bx-book qualification__icon"></i>
+            {t("qualification.tabs.general")}
+          </div>
+        </div>
+
+        <div className="qualification__sections">
+          <div
+            className={
+              toggleState === 1
+                ? "qualification__content qualification__content-active"
+                : "qualification__content"
+            }
+          >
+            {renderItems(techItems)}
+          </div>
+
+          <div
+            className={
+              toggleState === 2
+                ? "qualification__content qualification__content-active"
+                : "qualification__content"
+            }
+          >
+            {renderItems(profItems)}
+          </div>
+
+          <div
+            className={
+              toggleState === 3
+                ? "qualification__content qualification__content-active"
+                : "qualification__content"
+            }
+          >
+            {renderItems(generalItems)}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export default Qualification;

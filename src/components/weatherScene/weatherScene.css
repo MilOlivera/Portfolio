@@ -1,0 +1,261 @@
+/*=============== WEATHER SCENE CONTAINER ===============*/
+.ws__container {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/*=============== SKY (capa de cielo según clima) ===============*/
+.ws__sky {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 2s ease;
+}
+
+.ws__sky--sunny {
+    background: linear-gradient(180deg, rgba(135, 206, 235, 0.18) 0%, rgba(255, 255, 255, 0) 60%);
+    opacity: 1;
+}
+
+.ws__sky--partly_cloudy {
+    background: linear-gradient(180deg, rgba(176, 196, 220, 0.22) 0%, rgba(255, 255, 255, 0) 65%);
+    opacity: 1;
+}
+
+.ws__sky--cloudy {
+    background: linear-gradient(180deg, rgba(150, 160, 175, 0.3) 0%, rgba(220, 220, 225, 0.15) 100%);
+    opacity: 1;
+}
+
+.ws__sky--rainy {
+    background: linear-gradient(180deg, rgba(85, 100, 120, 0.35) 0%, rgba(115, 125, 140, 0.25) 100%);
+    opacity: 1;
+}
+
+.ws__sky--stormy {
+    background: linear-gradient(180deg, rgba(40, 45, 60, 0.55) 0%, rgba(60, 65, 80, 0.4) 100%);
+    opacity: 1;
+}
+
+.ws__sky--night {
+    background: linear-gradient(180deg, rgba(15, 20, 40, 0.7) 0%, rgba(30, 35, 60, 0.5) 100%);
+    opacity: 1;
+}
+
+/*=============== SOL ===============*/
+.ws__sun {
+    position: absolute;
+    top: 8vh;
+    right: 8vw;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(255, 220, 120, 0.85) 0%, rgba(255, 220, 120, 0.3) 50%, rgba(255, 220, 120, 0) 75%);
+    border-radius: 50%;
+    animation: ws-sun-glow 4s ease-in-out infinite;
+}
+
+@keyframes ws-sun-glow {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.08); opacity: 1; }
+}
+
+/*=============== LUNA ===============*/
+.ws__moon {
+    position: absolute;
+    top: 8vh;
+    right: 10vw;
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(240, 240, 250, 0.9) 0%, rgba(240, 240, 250, 0.4) 60%, rgba(240, 240, 250, 0) 100%);
+    border-radius: 50%;
+}
+
+/*=============== ESTRELLAS ===============*/
+.ws__stars {
+    position: absolute;
+    inset: 0;
+}
+
+.ws__star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: ws-twinkle 2.5s ease-in-out infinite;
+}
+
+@keyframes ws-twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/*=============== NUBES ===============*/
+.ws__clouds {
+    position: absolute;
+    inset: 0;
+}
+
+.ws__cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    filter: blur(2px);
+}
+
+.ws__cloud::before,
+.ws__cloud::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+}
+
+.ws__cloud--1 {
+    width: 100px;
+    height: 35px;
+    top: 12vh;
+    left: 10vw;
+    animation: ws-cloud-drift 60s linear infinite;
+}
+
+.ws__cloud--1::before {
+    width: 50px;
+    height: 50px;
+    top: -22px;
+    left: 18px;
+}
+
+.ws__cloud--1::after {
+    width: 35px;
+    height: 35px;
+    top: -15px;
+    left: 55px;
+}
+
+.ws__cloud--2 {
+    width: 140px;
+    height: 40px;
+    top: 18vh;
+    left: 45vw;
+    animation: ws-cloud-drift 80s linear infinite;
+    animation-delay: -20s;
+}
+
+.ws__cloud--2::before {
+    width: 60px;
+    height: 60px;
+    top: -28px;
+    left: 25px;
+}
+
+.ws__cloud--2::after {
+    width: 40px;
+    height: 40px;
+    top: -18px;
+    left: 75px;
+}
+
+.ws__cloud--3 {
+    width: 90px;
+    height: 30px;
+    top: 25vh;
+    left: 75vw;
+    animation: ws-cloud-drift 70s linear infinite;
+    animation-delay: -40s;
+}
+
+.ws__cloud--3::before {
+    width: 45px;
+    height: 45px;
+    top: -20px;
+    left: 15px;
+}
+
+@keyframes ws-cloud-drift {
+    from { transform: translateX(-30vw); }
+    to { transform: translateX(120vw); }
+}
+
+/*=============== LLUVIA ===============*/
+.ws__rain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.ws__raindrop {
+    position: absolute;
+    top: -20px;
+    width: 1.5px;
+    background: linear-gradient(180deg, rgba(150, 180, 210, 0) 0%, rgba(150, 180, 210, 0.7) 100%);
+    animation: ws-rainfall linear infinite;
+}
+
+@keyframes ws-rainfall {
+    from {
+        transform: translateY(0);
+        opacity: 0;
+    }
+    10% { opacity: 0.8; }
+    to {
+        transform: translateY(110vh);
+        opacity: 0;
+    }
+}
+
+/*=============== TORMENTA ===============*/
+.ws__storm-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top, rgba(20, 25, 40, 0.15) 0%, rgba(20, 25, 40, 0) 70%);
+    pointer-events: none;
+}
+
+.ws__lightning {
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ws__lightning--flash {
+    animation: ws-flash 0.5s ease-out;
+}
+
+@keyframes ws-flash {
+    0% { opacity: 0; }
+    15% { opacity: 0.7; }
+    30% { opacity: 0; }
+    45% { opacity: 0.5; }
+    60% { opacity: 0; }
+    100% { opacity: 0; }
+}
+
+/*=============== MEDIA QUERIES ===============*/
+@media (prefers-reduced-motion: reduce) {
+    .ws__sun,
+    .ws__star,
+    .ws__cloud,
+    .ws__raindrop,
+    .ws__lightning--flash {
+        animation: none !important;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .ws__sun {
+        width: 60px;
+        height: 60px;
+    }
+    .ws__cloud--1 { transform: scale(0.7); }
+    .ws__cloud--2 { transform: scale(0.7); }
+    .ws__cloud--3 { transform: scale(0.7); }
+}
