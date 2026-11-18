@@ -1,8 +1,12 @@
+import CTA from "@/components/CTA";
+import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import Nav from "@/components/Nav";
 import ProjectsSection from "@/components/ProjectsSection";
+import StackSection from "@/components/StackSection";
 import StatsBar from "@/components/StatsBar";
 import TerminalSection from "@/components/TerminalSection";
+import TimelineSection from "@/components/TimelineSection";
 
 export default function Home() {
   return (
@@ -13,7 +17,11 @@ export default function Home() {
         <StatsBar />
         <TerminalSection />
         <ProjectsSection />
+        <StackSection />
+        <TimelineSection />
+        <CTA />
       </main>
+      <Footer />
     </>
   );
 }

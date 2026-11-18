@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import CornerBrackets from "./CornerBrackets";
+import FilterTabs from "./FilterTabs";
+import SectionHeader from "./SectionHeader";
 import {
   CATEGORY_LABELS,
   PROJECTS,
@@ -92,41 +93,23 @@ export default function ProjectsSection() {
 
   return (
     <section id="projects" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 pb-20 sm:px-6">
-      {/* Header */}
-      <div className="relative mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 px-4 py-4">
-        <CornerBrackets />
-        <h2 className="font-mono text-lg font-bold text-text sm:text-xl">
-          <span className="text-green">./projects</span>
-          <span className="text-text-mute"> — {PROJECTS.length} productos en producción</span>
-        </h2>
-        <p role="status" className="font-mono text-[11px] tracking-widest text-text-mute">
-          SHOWING <span className="text-green">{visible.length}</span>/{PROJECTS.length}
-        </p>
-      </div>
+      <SectionHeader
+        path="./projects"
+        subtitle={`${PROJECTS.length} productos en producción`}
+        badgeLive
+        badge={
+          <>
+            SHOWING <span className="text-green">{visible.length}</span>/{PROJECTS.length}
+          </>
+        }
+      />
 
-      {/* Filters: horizontal scroll stays inside this bar */}
-      <div className="scrollbar-hide -mx-4 mb-6 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        <div role="group" aria-label="Filtrar proyectos por categoría" className="flex w-max gap-2">
-          {FILTERS.map((f) => {
-            const active = f === filter;
-            return (
-              <button
-                key={f}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setFilter(f)}
-                className={`rounded-sm border px-3 py-1.5 font-mono text-xs whitespace-nowrap transition-colors ${
-                  active
-                    ? "border-green bg-green/10 text-green"
-                    : "border-border-strong bg-bg-elev text-text-mute hover:border-green hover:text-text"
-                }`}
-              >
-                {f === "all" ? "all" : CATEGORY_LABELS[f]}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <FilterTabs
+        options={FILTERS}
+        value={filter}
+        onChange={setFilter}
+        label="Filtrar proyectos por categoría"
+      />
 
       {/* Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
