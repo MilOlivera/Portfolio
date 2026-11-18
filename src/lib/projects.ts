@@ -97,7 +97,7 @@ export const PROJECTS: Project[] = [
     shortName: "evolvere-mobile",
     title: "Evolvere — App móvil",
     blurb:
-      "App companion para alumnos y coaches. Tracking de hábitos, scoring, agenda, Face ID persistente, Komodo. En producción en App Store e iOS/Google Play. Expo + React Native, EAS OTA, canal UE habilitado.",
+      "App companion para alumnos y coaches. Tracking de hábitos, scoring, agenda, Face ID persistente, Kommodo. En producción en App Store (iOS) y Google Play. Expo + React Native, EAS OTA, canal UE habilitado.",
     category: "mobile",
     tags: ["Expo", "React Native", "EAS"],
     visibility: "confidential",
@@ -141,7 +141,7 @@ export const PROJECTS: Project[] = [
     shortName: "marpla-dashboards",
     title: "Marpla — Dashboards (PyME)",
     blurb:
-      "Dashboards para panadería Marpla y 3 locales de Bruno (Adrogué, Banfield, Palermo). Predicción de ventas (lunes, cruce con clima), control de stock con IVA, pestañas Ingresos/Gastos/Operación/ROI, módulo congeladas separado. Next.js + Firebase.",
+      "Dos dashboards sobre la misma base: uno para Marpla y otro para un cliente con 3 locales (zona sur + Palermo). Predicción de ventas (lunes, cruce con clima), control de stock con IVA, pestañas Ingresos/Gastos/Operación/ROI, módulo congeladas separado. Next.js + Firebase.",
     category: "dashboard",
     tags: ["Next.js", "Firebase", "Prediction"],
     visibility: "confidential",
