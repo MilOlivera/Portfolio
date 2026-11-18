@@ -144,6 +144,12 @@ body::after {
   opacity: 0.5;
 }
 
+/* Terminal body: thin accent scrollbar */
+.terminal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--green) transparent;
+}
+
 /* Amber CRT: soft phosphor bloom on text */
 [data-theme="amber"] body {
   text-shadow: 0 0 6px rgba(255, 176, 32, 0.18);
