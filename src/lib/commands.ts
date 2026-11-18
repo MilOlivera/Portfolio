@@ -1,3 +1,5 @@
+import { PROJECTS, findProject, requestDemoMailto, type Project } from "./projects";
+import { EMAIL, GITHUB, LINKEDIN } from "./site";
 import type { Theme } from "./theme";
 
 /* ─────────────────────────────────────────────────────────────
@@ -27,10 +29,6 @@ const p = (text: string): Segment => ({ text, style: "p" });
 const t = (text: string): Segment => ({ text });
 const a = (text: string, href: string): Segment => ({ text, style: "k", href });
 
-const EMAIL = "mil.oliveera@gmail.com";
-const LINKEDIN = "linkedin.com/in/milton-olivera";
-const GITHUB = "github.com/MilOlivera";
-
 /** Plain lines; a line starting with "//" is rendered as a comment. */
 function text(...rows: string[]): Line[] {
   return rows.map((r) => [r.startsWith("//") ? d(r) : t(r)]);
@@ -49,6 +47,7 @@ const HELP: [string, string][] = [
   ["cat recruiters", "pitch for recruiters"],
   ["cat clients", "pitch for freelance clients"],
   ["cat cv.txt", "short cv dump"],
+  ["cat <project>", "project details (names from ls)"],
   ["stack", "technical stack"],
   ["socials", "contact links"],
   ["contact", "alias de socials"],
@@ -58,21 +57,6 @@ const HELP: [string, string][] = [
   ["clear", "clear terminal"],
   ["history", "show command history"],
   ["sudo hire-me", "the fun one"],
-];
-
-const PROJECTS: [string, string][] = [
-  ["evolvere-platform/", "[FLAGSHIP · PRIVADO]"],
-  ["evolvere-mobile-app/", "[FLAGSHIP · PRIVADO]"],
-  ["evolvere-campus/", "[FLAGSHIP · WIP · PRIVADO]"],
-  ["evolvere-dashboard/", "[PRIVADO]"],
-  ["evolvere-landing/", "[PUBLIC]"],
-  ["ospatrones-bi-dashboard/", "[PRIVADO]"],
-  ["ospatrones-landing/", "[PUBLIC]"],
-  ["marpla-dashboards/", "[PRIVADO]"],
-  ["monitor-musacchio/", "[CLIENT · PRIVADO]"],
-  ["landing-ottix/", "[CLIENT · WIP]"],
-  ["dashboard-finanzas/", "[PERSONAL · WIP]"],
-  ["relojes-ecommerce/", "[SHOWCASE · WIP]"],
 ];
 
 const STACK: [string, string][] = [
@@ -89,14 +73,54 @@ const socials = (): Line[] => [
   [k("location: "), t("Adrogué, Buenos Aires, AR")],
 ];
 
-const projects = (): Line[] => [
-  [t("total 12")],
-  ...PROJECTS.map(([name, tag]): Line => [
-    d("drwxr-xr-x  "),
-    p(name.padEnd(26)),
-    tag.includes("PUBLIC") ? k(tag) : tag.includes("FLAGSHIP") ? w(tag) : d(tag),
-  ]),
-];
+const NAME_WIDTH = Math.max(...PROJECTS.map((pr) => pr.shortName.length)) + 3;
+
+function projectRow(pr: Project): Line {
+  const isPublic = pr.visibility === "public";
+  return [
+    d(isPublic ? "drwxr-xr-x  " : "drwx------  "),
+    p(`${pr.shortName}/`.padEnd(NAME_WIDTH)),
+    isPublic ? k("[PUB]") : d("[CONF]"),
+    ...(pr.status === "rebuilding" ? [w(" [REBUILDING]")] : []),
+  ];
+}
+
+const projects = (): Line[] => {
+  const pub = PROJECTS.filter((pr) => pr.visibility === "public");
+  const conf = PROJECTS.filter((pr) => pr.visibility === "confidential");
+  return [
+    [t(`total ${PROJECTS.length}`)],
+    [d(`// public (${pub.length})`)],
+    ...pub.map(projectRow),
+    [d(`// confidential (${conf.length})`)],
+    ...conf.map(projectRow),
+    [t("")],
+    [d("// tip: cat <nombre> para ver el detalle — ej. "), k("cat ospatrones-bi")],
+  ];
+};
+
+function catProject(pr: Project): Line[] {
+  const lines: Line[] = [
+    [d(`// ${pr.shortName} / README.md`)],
+    [k(pr.title)],
+    [t("")],
+    [t(pr.blurb)],
+    [t("")],
+    [k("tags:       "), t(pr.tags.join(" · "))],
+    [k("category:   "), p(pr.category)],
+    [k("visibility: "), pr.visibility === "public" ? k("PUBLIC") : d("CONFIDENTIAL")],
+  ];
+  if (pr.status === "rebuilding") {
+    lines.push([
+      w("⚠ STATUS: REBUILDING — primer proyecto full-stack, en reactivación con Mercado Pago sandbox."),
+    ]);
+  } else if (pr.visibility === "public" && pr.url) {
+    lines.push([k("link:       "), a(pr.url.replace(/^https?:\/\//, ""), pr.url)]);
+  } else {
+    lines.push([w("REQUEST DEMO: "), a(`mailto:${EMAIL}`, requestDemoMailto(pr))]);
+  }
+  return lines;
+}
 
 /* ─── Registry ─────────────────────────────────────────────── */
 
@@ -228,6 +252,18 @@ export function runCommand(input: string, ctx: CommandContext): CommandResult {
   const cmd = normalize(input);
   // Own-property check so "constructor", "tostring"... don't hit Object.prototype
   if (Object.hasOwn(COMMANDS, cmd)) return COMMANDS[cmd](ctx);
+
+  // cat <project-id | shortName>
+  if (cmd.startsWith("cat ")) {
+    const name = cmd.slice(4);
+    const project = findProject(name);
+    if (project) return out(catProject(project));
+    return out([
+      [w(`cat: ${name}: No such file or directory`)],
+      [d("// try 'ls' to see available projects")],
+    ]);
+  }
+
   return out([
     [w("command not found: "), t(input.trim())],
     [d("// type 'help' to see available commands")],

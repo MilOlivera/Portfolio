@@ -1,5 +1,6 @@
 import Hero from "@/components/Hero";
 import Nav from "@/components/Nav";
+import ProjectsSection from "@/components/ProjectsSection";
 import StatsBar from "@/components/StatsBar";
 import TerminalSection from "@/components/TerminalSection";
 
@@ -11,6 +12,7 @@ export default function Home() {
         <Hero />
         <StatsBar />
         <TerminalSection />
+        <ProjectsSection />
       </main>
     </>
   );

@@ -13,6 +13,7 @@
   --border: #1a1d20;
   --border-strong: #2a2f33;
   --text: #e8ecef;
+  --text-mid: #a3acb1;
   --text-mute: #6b7378;
   --text-dim: #3f4549;
   --green: #25db79;
@@ -36,6 +37,7 @@
   --border: #2a1c0e;
   --border-strong: #3d2914;
   --text: #f5e6d3;
+  --text-mid: #cdb595;
   --text-mute: #a08566;
   --text-dim: #5c4630;
   --green: #ffb020;
@@ -55,6 +57,7 @@
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);
+  --color-text-mid: var(--text-mid);
   --color-text-mute: var(--text-mute);
   --color-text-dim: var(--text-dim);
   --color-green: var(--green);
@@ -166,6 +169,13 @@ body::after {
   box-shadow:
     0 0 0 1px var(--green-soft),
     0 0 24px -4px var(--green-glow);
+}
+
+@utility scrollbar-hide {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes pulse-dot {
