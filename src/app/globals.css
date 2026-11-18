@@ -1,26 +1,203 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+   Theme values
+   Raw values live here so [data-theme="amber"] can swap them at
+   runtime. @theme inline below maps them to Tailwind utilities
+   (bg-bg, text-green, border-border, font-mono, ...).
+   ───────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #050607;
+  --bg-elev: #0a0b0d;
+  --surface: #0f1113;
+  --border: #1a1d20;
+  --border-strong: #2a2f33;
+  --text: #e8ecef;
+  --text-mute: #6b7378;
+  --text-dim: #3f4549;
+  --green: #25db79;
+  --green-soft: rgba(37, 219, 121, 0.1);
+  --green-glow: rgba(37, 219, 121, 0.5);
+  --phosphor: #00ff88;
+  --warn: #ffb020;
+
+  /* Overlay intensities */
+  --scanline-alpha: 0.035;
+  --grid-alpha: 0.045;
+
+  color-scheme: dark;
+}
+
+/* Amber CRT easter egg — enabled via `theme amber` in the terminal */
+[data-theme="amber"] {
+  --bg: #0a0603;
+  --bg-elev: #110a05;
+  --surface: #160e07;
+  --border: #2a1c0e;
+  --border-strong: #3d2914;
+  --text: #f5e6d3;
+  --text-mute: #a08566;
+  --text-dim: #5c4630;
+  --green: #ffb020;
+  --green-soft: rgba(255, 176, 32, 0.1);
+  --green-glow: rgba(255, 176, 32, 0.5);
+  --phosphor: #ffc857;
+  --warn: #ff6b35;
+
+  --scanline-alpha: 0.06;
+  --grid-alpha: 0.05;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-elev: var(--bg-elev);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-text-mute: var(--text-mute);
+  --color-text-dim: var(--text-dim);
+  --color-green: var(--green);
+  --color-green-soft: var(--green-soft);
+  --color-green-glow: var(--green-glow);
+  --color-phosphor: var(--phosphor);
+  --color-warn: var(--warn);
+
+  /* --font-jetbrains / --font-inter come from next/font in layout.tsx */
+  --font-mono: var(--font-jetbrains), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+
+  --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
+  --animate-blink: blink 1s steps(1) infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ─────────────────────────────────────────────────────────────
+   Base
+   Background sits on <html> (not <body>) so the fixed grid layer
+   (body::before, z-index -1) paints above it.
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease;
+  }
+
+  body {
+    font-family: var(--font-mono);
+    font-feature-settings: "calt" 1, "liga" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--green);
+    color: var(--bg);
+  }
+
+  :focus-visible {
+    outline: 1px solid var(--green);
+    outline-offset: 2px;
+  }
+
+  /* Thin terminal-style scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ─────────────────────────────────────────────────────────────
+   Background grid with radial mask (behind content)
+   ───────────────────────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgb(from var(--green) r g b / var(--grid-alpha)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(from var(--green) r g b / var(--grid-alpha)) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 30%, transparent 100%);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Scanlines (over content, non-interactive)
+   ───────────────────────────────────────────────────────────── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgb(0 0 0 / 0) 0px,
+    rgb(0 0 0 / 0) 2px,
+    rgb(0 0 0 / calc(var(--scanline-alpha) * 6)) 3px
+  );
+  opacity: 0.5;
+}
+
+/* Amber CRT: soft phosphor bloom on text */
+[data-theme="amber"] body {
+  text-shadow: 0 0 6px rgba(255, 176, 32, 0.18);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Utilities
+   ───────────────────────────────────────────────────────────── */
+@utility glow-text {
+  text-shadow: 0 0 12px var(--green-glow);
+}
+
+@utility glow-box {
+  box-shadow:
+    0 0 0 1px var(--green-soft),
+    0 0 24px -4px var(--green-glow);
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--green-glow);
+  }
+  50% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Boot sequence: hidden before paint when already seen this
+   session (html[data-booted] is set by the inline script).
+   ───────────────────────────────────────────────────────────── */
+html[data-booted] .boot-overlay {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
