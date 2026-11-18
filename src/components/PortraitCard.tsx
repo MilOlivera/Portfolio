@@ -8,15 +8,15 @@ const ROWS = [
 
 export default function PortraitCard() {
   return (
-    <div className="relative isolate mx-auto w-[240px]">
+    <div className="relative isolate mx-auto w-[200px]">
       {/* Breathing aura behind the card */}
       <div
         aria-hidden
-        className="absolute -inset-8 -z-10 rounded-full bg-green-glow blur-3xl animate-breathe"
+        className="absolute -inset-6 -z-10 rounded-full bg-green-glow blur-2xl animate-breathe"
       />
 
       <figure className="relative border border-border-strong bg-bg-elev p-2">
-        <CornerBrackets size="size-4" />
+        <CornerBrackets size="size-3" />
 
         {/* Top strip */}
         <div className="mb-2 flex items-center justify-between px-1 text-[10px] uppercase tracking-widest">
@@ -28,7 +28,7 @@ export default function PortraitCard() {
         </div>
 
         {/* Photo placeholder (real photo arrives in Phase 6) */}
-        <div className="flex aspect-[340/700] w-full items-center justify-center border border-border bg-surface text-xs tracking-[0.4em] text-text-dim">
+        <div className="flex aspect-[3/4] w-full items-center justify-center border border-border bg-surface text-xs tracking-[0.4em] text-text-dim">
           PHOTO
         </div>
 

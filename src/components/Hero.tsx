@@ -24,19 +24,25 @@ export default function Hero() {
 
       <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1.6fr_0.8fr]">
         <div>
-          <h1 className="font-mono text-4xl leading-tight font-bold text-text sm:text-5xl lg:text-6xl">
-            <span className="text-text-mute">&gt;</span> milton_olivera
-            <br />
-            <span className="text-green glow-text">full_stack</span>
-            .dev
-            <span aria-hidden className="ml-1 inline-block text-green animate-blink">
-              █
+          <h1 className="font-mono text-4xl leading-[1.1] font-bold text-text sm:text-5xl lg:text-6xl">
+            <span className="block">
+              <span className="text-text-mute">&gt;</span> milton_olivera
+            </span>
+            <span className="block">
+              <span className="text-green glow-text">full_stack</span>
+              <span>
+                .dev
+                <span
+                  aria-hidden
+                  className="ml-[0.1em] inline-block h-[1em] w-[0.5em] translate-y-[0.12em] bg-green animate-blink"
+                />
+              </span>
             </span>
           </h1>
 
           <p className="mt-8 max-w-2xl font-sans text-base leading-relaxed text-text-mute sm:text-lg">
             9 años navegando ríos como Oficial Fluvial. 5 años construyendo software con React,
-            Next.js, TypeScript y PostgreSQL. 15+ productos en producción, 3 negocios propios, y una
+            Next.js, TypeScript y PostgreSQL. 12 productos en producción, 3 negocios propios, y una
             tesis pendiente de defender en Teclab.{" "}
             <span className="text-text">Entrego productos, no promesas.</span>
           </p>
