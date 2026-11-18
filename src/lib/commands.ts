@@ -1,6 +1,8 @@
 import { PROJECTS, findProject, requestDemoMailto, type Project } from "./projects";
 import { EMAIL, GITHUB, LINKEDIN } from "./site";
+import { CATEGORY_ORDER, STACK } from "./stack";
 import type { Theme } from "./theme";
+import { TIMELINE, TRACK_LABEL, TRACK_ORDER } from "./timeline";
 
 /* ─────────────────────────────────────────────────────────────
    Output model
@@ -59,12 +61,43 @@ const HELP: [string, string][] = [
   ["sudo hire-me", "the fun one"],
 ];
 
-const STACK: [string, string][] = [
-  ["frontend:", "React · Next.js 16 · TypeScript · Tailwind · Expo · R3F"],
-  ["backend: ", "Node · Prisma · PostgreSQL · Python · FastAPI"],
-  ["ai/data: ", "Claude API · OpenAI · LangChain · pgvector · Pandas"],
-  ["infra:   ", "Vercel · Render · Neon · Supabase · GitHub Actions"],
-];
+const DATE_WIDTH = 10;
+
+// CV built from TIMELINE: tracks in TRACK_ORDER, entries by `order` desc
+function cv(): Line[] {
+  const lines: Line[] = [
+    [k("MILTON OLIVERA")],
+    [k("Full-stack Developer · Marino Mercante")],
+    [d("Adrogué, Buenos Aires · AR")],
+  ];
+  for (const track of TRACK_ORDER) {
+    lines.push([t("")], [w(`═══ ${TRACK_LABEL[track]} ═══`)]);
+    TIMELINE.filter((e) => e.track === track)
+      .sort((x, y) => y.order - x.order)
+      .forEach((e) => {
+        lines.push([d(e.date.padEnd(DATE_WIDTH)), t(e.role)], [t(" ".repeat(DATE_WIDTH)), d(e.where)]);
+      });
+  }
+  return lines;
+}
+
+// Stack built from STACK: primary items in green with "*"
+function stack(): Line[] {
+  const lines: Line[] = [];
+  CATEGORY_ORDER.forEach((cat, i) => {
+    if (i > 0) lines.push([t("")]);
+    lines.push([p(`./${cat}`)]);
+    lines.push([
+      t("  "),
+      ...STACK[cat].flatMap((item, j): Segment[] => [
+        ...(j > 0 ? [t("  ")] : []),
+        item.primary ? k(`${item.name}*`) : t(item.name),
+      ]),
+    ]);
+  });
+  lines.push([t("")], [d("// * = primary")]);
+  return lines;
+}
 
 const socials = (): Line[] => [
   [k("email:    "), a(EMAIL, `mailto:${EMAIL}`)],
@@ -187,28 +220,12 @@ const COMMANDS: Record<string, (ctx: CommandContext) => CommandResult> = {
       ),
     ),
 
-  "cat cv.txt": () =>
-    out([
-      [k("NAME:     "), t("Milton Olivera")],
-      [k("ROLE:     "), t("Full-Stack Developer")],
-      [k("LOC:      "), t("Adrogué, Buenos Aires, AR")],
-      [k("EMAIL:    "), a(EMAIL, `mailto:${EMAIL}`)],
-      [t("")],
-      [w("EXPERIENCE (recent):")],
-      ...text(
-        "- 2024–now  Co-founder & Dev @ Evolvere Training Lab · Marpla",
-        "- 2022–now  Equipo Directivo + Dev @ OSPatrones",
-        "- 2022–2024 Coord. Desarrollo @ GCBA · Bienestar Integral",
-        "- 2021      Primer Oficial @ Svitzer",
-        "- 2020–2021 2° Oficial @ Naviera Cruz del Sur",
-        "- 2017–2020 Oficial Fluvial @ Bahía Grande · National Shipping",
-      ),
-    ]),
+  "cat cv.txt": () => out(cv()),
 
   projects: () => out(projects()),
   ls: () => out(projects()),
 
-  stack: () => out(STACK.map(([label, items]): Line => [k(label + " "), t(items)])),
+  stack: () => out(stack()),
 
   socials: () => out(socials()),
   contact: () => out(socials()),
