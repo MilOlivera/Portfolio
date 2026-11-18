@@ -69,6 +69,7 @@
 
   --animate-pulse-dot: pulse-dot 2s ease-in-out infinite;
   --animate-blink: blink 1s steps(1) infinite;
+  --animate-breathe: breathe 4s ease-in-out infinite;
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -170,6 +171,18 @@ body::after {
   50% {
     opacity: 0.6;
     box-shadow: 0 0 0 6px transparent;
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
   }
 }
 
