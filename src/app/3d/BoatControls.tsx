@@ -3,8 +3,8 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
-import { useBoatTelemetry } from "./BoatTelemetry";
-import { LAND, SHORE_MARGIN, type LandRect } from "./environment";
+import { START, useBoatTelemetry } from "./BoatTelemetry";
+import { LAND, SHORE_MARGIN, WORLD_BOUNDS, type LandRect } from "./environment";
 import { BOAT_RADIUS, WAYPOINTS } from "./waypoints-data";
 
 export const MAX_SPEED = 8; // units/s
@@ -14,8 +14,11 @@ const DRAG = 0.8; // natural deceleration, units/s²
 const BRAKE_MULT = 5; // Space: drag × this
 const TURN_SPEED = 0.8; // rad/s at MAX_SPEED
 const BOOST_MULT = 1.5;
-const BOUND = 120; // square sailing area; water follows the boat, so it never runs out
-const SOFT_ZONE = 6; // start slowing this far from the limit
+const SOFT_ZONE = 6; // start slowing this far from the world limit
+// Maneuvering (bow thruster / tug): below this speed A/D still turn the boat,
+// e.g. swinging it around at the berth. Fades out as the rudder takes over.
+const MANEUVER_SPEED = 0.5; // units/s
+const MANEUVER_RATE = 0.5; // rad/s at a standstill
 const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
 
 // Only blocking waypoints, resolved once (no per-frame allocation)
@@ -78,7 +81,7 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
 
   useEffect(() => {
     const t = telemetry.current;
-    Object.assign(t, { velocity: 0, heading: 0, x: 0, z: 0 }); // fresh voyage on every visit
+    Object.assign(t, START); // fresh voyage on every visit: moored at AXION
 
     const set = (e: KeyboardEvent, down: boolean) => {
       const k = KEY_MAP[e.code];
@@ -122,24 +125,27 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
     if (v < -MAX_REVERSE) v = -MAX_REVERSE;
     if (v > maxFwd) v = Math.max(maxFwd, v - DRAG * 2 * dt);
 
-    // Rudder: turn rate scales with speed (no turning while stopped), flips astern
+    // Rudder: turn rate scales with speed and flips astern; plus maneuvering
+    // turn near a standstill so the boat can be swung around at the berth
     const rudder = (k.left ? 1 : 0) - (k.right ? 1 : 0);
-    t.heading += rudder * TURN_SPEED * (v / MAX_SPEED) * dt;
+    const maneuver = MANEUVER_RATE * Math.max(0, 1 - Math.abs(v) / MANEUVER_SPEED);
+    t.heading += rudder * (TURN_SPEED * (v / MAX_SPEED) + maneuver) * dt;
 
     // Bow is local +X → world forward = (cos h, 0, -sin h), matching rotation.y = h
     const dirX = Math.cos(t.heading);
     const dirZ = -Math.sin(t.heading);
 
-    // Soft boundary: damp speed when heading outward near the limit
-    const outward = (p: number, d: number) => Math.abs(p) > BOUND - SOFT_ZONE && Math.sign(p) === Math.sign(d * v);
-    if (outward(t.x, dirX) || outward(t.z, dirZ)) {
-      const edge = Math.max(Math.abs(t.x), Math.abs(t.z));
-      const closeness = Math.min(1, (edge - (BOUND - SOFT_ZONE)) / SOFT_ZONE); // 0..1
-      v *= Math.exp(-6 * closeness * dt);
-    }
+    // Soft world limit: damp speed when moving toward a nearby edge
+    const vx = dirX * v;
+    const vz = dirZ * v;
+    const gap = Math.min(
+      vx > 0 ? WORLD_BOUNDS.maxX - t.x : vx < 0 ? t.x - WORLD_BOUNDS.minX : Infinity,
+      vz > 0 ? WORLD_BOUNDS.maxZ - t.z : vz < 0 ? t.z - WORLD_BOUNDS.minZ : Infinity,
+    );
+    if (gap < SOFT_ZONE) v *= Math.exp(-6 * (1 - gap / SOFT_ZONE) * dt);
 
-    const nx = Math.max(-BOUND, Math.min(BOUND, t.x + dirX * v * dt));
-    const nz = Math.max(-BOUND, Math.min(BOUND, t.z + dirZ * v * dt));
+    const nx = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, t.x + dirX * v * dt));
+    const nz = Math.max(WORLD_BOUNDS.minZ, Math.min(WORLD_BOUNDS.maxZ, t.z + dirZ * v * dt));
     if (blocked(t.x, t.z, nx, nz)) {
       v *= BOUNCE_DAMPING; // damped bounce: stop hard, keep position
     } else {

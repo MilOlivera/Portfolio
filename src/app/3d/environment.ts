@@ -14,21 +14,22 @@ export const WATER_SIZE = 300;
 export const WATER_SEGMENTS = 128;
 
 // ---------------------------------------------------------------- land ----
-// Axis-aligned land rectangles (world X/Z). Shoreline.tsx draws them and
-// BoatControls blocks the boat SHORE_MARGIN before their edge.
-// The channel runs along X between the banks (z ∈ -50..50). East of x=60 the
-// north bank opens into the Zona Común anchorage (Rada La Plata) so the client
-// ships there are reachable; a strip of land closes it far to the north.
+// Axis-aligned land rectangles (world X/Z, 1 km = 2 units, -Z = north).
+// Shoreline.tsx draws them and BoatControls blocks the boat SHORE_MARGIN
+// before their edge. Straight banks approximate the real (winding) river.
 export type LandRect = { minX: number; maxX: number; minZ: number; maxZ: number };
 
 export const LAND: LandRect[] = [
-  { minX: -140, maxX: 60, minZ: 50, maxZ: 130 }, // north bank (Campana → Buenos Aires)
-  { minX: 60, maxX: 140, minZ: 105, maxZ: 130 }, // backland behind the anchorage
-  { minX: -140, maxX: 140, minZ: -130, maxZ: -50 }, // south bank
+  { minX: -30, maxX: 250, minZ: -70, maxZ: -20 }, // north bank
+  { minX: -12, maxX: 12, minZ: -20, maxZ: -5.5 }, // Campana quay (AXION / Tenaris)
+  { minX: -30, maxX: 250, minZ: 170, maxZ: 240 }, // south bank
 ];
+
+/** Sailing area (covers the whole real route with margin). */
+export const WORLD_BOUNDS = { minX: -20, maxX: 240, minZ: -20, maxZ: 180 };
 
 /** Land surface sits just above the tallest wave crest (~0.25). */
 export const BANK_Y = 0.3;
 
-/** Boat center stops this far from a land edge (z > 48 on a bank at z=50). */
+/** Boat center stops this far from a land edge. */
 export const SHORE_MARGIN = 2;

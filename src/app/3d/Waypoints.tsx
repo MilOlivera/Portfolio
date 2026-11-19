@@ -33,9 +33,18 @@ function Label({
 }
 
 // ------------------------------------------------------------- landmark ----
-// Low block sized to its collision circle (square side ≈ 1.4 r fits inside it).
+// Low block inside its collision circle (side = r, so neighbours don't merge).
+// Landmarks with a `site` are only a label there (their buildings live on the
+// Campana quay in Shoreline.tsx).
 function Landmark({ w }: { w: Waypoint }) {
-  const side = w.collisionRadius * 1.4;
+  if (w.site) {
+    return (
+      <group position={w.site}>
+        <Label y={5.5} w={w} className="bg-black/60 px-2 py-1 text-xs font-bold text-text" />
+      </group>
+    );
+  }
+  const side = w.collisionRadius;
   const height = 1.5 + w.collisionRadius * 0.15;
   return (
     <group position={w.pos}>

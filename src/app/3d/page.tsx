@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BoatTelemetryProvider } from "./BoatTelemetry";
 import Hud from "./Hud";
 import Scene from "./Scene";
+import TutorialOverlay from "./TutorialOverlay";
 
 export const metadata: Metadata = {
   title: "Render 3D · Milton Olivera",
@@ -15,6 +16,7 @@ export default function Page3D() {
       <BoatTelemetryProvider>
         <Scene />
         <Hud />
+        <TutorialOverlay />
       </BoatTelemetryProvider>
     </div>
   );
