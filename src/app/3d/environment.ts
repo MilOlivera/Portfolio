@@ -27,4 +27,4 @@ export const BANK_Y = 0.3;
 export const SHORE_MARGIN = 1;
 
 /** Terrain extent (covers the whole world plus a fogged rim). */
-export const TERRAIN = { minX: -40, maxX: 260, minZ: -80, maxZ: 200, cell: 1.5 };
+export const TERRAIN = { minX: -40, maxX: 260, minZ: -130, maxZ: 200, cell: 1.5 };

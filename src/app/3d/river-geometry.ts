@@ -40,21 +40,25 @@ const main = RIVER_CURVE.getSpacedPoints(SAMPLES);
 const MAIN_X = Float64Array.from(main, (p) => p.x);
 const MAIN_Z = Float64Array.from(main, (p) => p.z);
 
-// Paraná upstream of Campana (under the Zárate–Brazo Largo bridge). Not part
-// of the route, but real water you can sail up to the bridge.
-const UP_X = Float64Array.of(0, -1, -4);
-const UP_Z = Float64Array.of(-2, -25, -70);
+// Paraná upstream of Campana, up to and past the Zárate–Brazo Largo bridge
+// (Km 100, z=-80). Not part of the route — the world bound stops you at z=-70,
+// so the bridge stays a far silhouette.
+const UP_X = Float64Array.of(0, -1, -4, -30, -30, -30);
+const UP_Z = Float64Array.of(-2, -25, -50, -70, -90, -120);
 
 // --------------------------------------------------------------- zones ----
 // Turning basin off the Campana berth: the boat's turning radius (~10 u) is
 // wider than half the channel, so the "caída" needs room. Verified by
 // simulation: undock → caída a estribor → full route clears every bank.
 const BASIN = { x: 8, z: 4, r: 18 };
+// East berths across the basin (STENA IMAGE, CALETA ROSARIO), clear of the
+// caída's turning circle.
+const BERTHS_EAST = { x: 32, z: 0, r: 14 };
 // Zona Común anchorage (open water around the destination ships).
 const ANCHORAGE = { x: 205, z: 135, r: 26 };
-// Campana quay, alongside the boat's port (west) side. Land, carved out of
-// any water above.
-export const QUAY = { minX: -16, maxX: -2.5, minZ: -20, maxZ: 6 };
+// Campana quay, alongside the boat's port (west) side, running north past
+// the KHAN / DELTAMAR berths. Land, carved out of any water above.
+export const QUAY = { minX: -16, maxX: -2.5, minZ: -45, maxZ: 6 };
 // Delta del Paraná side channels: visible water behind a land strip, not
 // navigable (islands live here — DeltaIslands.tsx).
 const DELTA = { minX: 2, maxX: 50, minZ: 62, maxZ: 108 };
@@ -102,7 +106,10 @@ export function centerlineDistance(x: number, z: number) {
  */
 export function navigableSd(x: number, z: number) {
   const channel = centerlineDistance(x, z) - HALF_WIDTH;
-  const basin = Math.hypot(x - BASIN.x, z - BASIN.z) - BASIN.r;
+  const basin = Math.min(
+    Math.hypot(x - BASIN.x, z - BASIN.z) - BASIN.r,
+    Math.hypot(x - BERTHS_EAST.x, z - BERTHS_EAST.z) - BERTHS_EAST.r,
+  );
   const anchorage = Math.hypot(x - ANCHORAGE.x, z - ANCHORAGE.z) - ANCHORAGE.r;
   return Math.max(Math.min(channel, basin, anchorage), -rectSd(x, z, QUAY));
 }

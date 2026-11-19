@@ -3,13 +3,13 @@
 import { useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute } from "three";
 
-// Puente Zárate–Brazo Largo (Km ~100), crossing the Paraná upstream of the
-// Campana berth — straight ahead of the bow when moored. Spans E–W across the
-// upstream reach (river-geometry.ts → centerline x≈-1 at z=-25, banks at ±8),
-// towers on land at both ends; the deck at y=10 clears the B/T NANY's mast.
-const Z = -25;
-const TOWER_X = [-12, 10];
-const TOWER_H = 30;
+// Puente Zárate–Brazo Largo (Km 100), upstream (north) of the Campana berth
+// (Km 96.5): ~84 units away, a silhouette on the northern horizon that fades
+// into the fog once you sail south. Spans E–W across the upstream reach
+// (river-geometry.ts → centerline x=-30 at z=-80, banks at ±8), towers on land.
+const Z = -80;
+const TOWER_X = [-44, -16];
+const TOWER_H = 40;
 const DECK_Y = 10;
 const DECK_W = 6;
 const WHITE = "#f2f2f2";

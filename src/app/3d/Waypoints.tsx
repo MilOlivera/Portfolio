@@ -87,28 +87,95 @@ function VueltaSign({ w }: { w: Waypoint }) {
 }
 
 // ----------------------------------------------------------------- buoy ----
+// IALA buoyage. Light characters, simulated on emissive intensity (0..1):
+//  special      — slow yellow pulse
+//  cardinal-E   — Q(3): three quick white flashes, then dark
+const IALA_YELLOW = "#F7D417";
+const BLACK = "#111111";
+
+function lightLevel(type: Waypoint["buoyType"], t: number) {
+  if (type === "cardinal-east") {
+    const c = t % 4; // 4 s cycle
+    return c < 1.5 && c % 0.5 < 0.22 ? 1 : 0.05;
+  }
+  return (Math.sin(t * 2.5) + 1) / 2;
+}
+
 function Buoy({ w }: { w: Waypoint }) {
-  const mat = useRef<MeshStandardMaterial>(null);
-  const base = w.dim ? 0.3 : 0.8;
-  const color = w.color ?? "#FFB020";
+  const light = useRef<MeshStandardMaterial>(null);
+  const cardinal = w.buoyType === "cardinal-east";
+  const lightColor = cardinal ? "#FFFFFF" : IALA_YELLOW;
+  const peak = w.dim ? 1.2 : 2.5;
 
   useFrame(({ clock }) => {
-    if (!w.pulse || !mat.current) return;
-    const t = (Math.sin(clock.elapsedTime * 2.5 + w.pos[0]) + 1) / 2; // de-synced per buoy
-    mat.current.emissiveIntensity = base * (0.4 + 0.9 * t);
+    if (!w.pulse || !light.current) return;
+    light.current.emissiveIntensity = peak * lightLevel(w.buoyType, clock.elapsedTime + w.pos[0]);
   });
 
   return (
     <group position={w.pos}>
-      <mesh position={[0, 0.5, 0]} castShadow>
-        <cylinderGeometry args={[0.6, 0.8, 1.5, 12]} />
-        <meshStandardMaterial color="#444444" />
+      {cardinal ? (
+        // East cardinal body: black–yellow–black bands, bottom to top
+        <>
+          <mesh position={[0, 0, 0]} castShadow>
+            <cylinderGeometry args={[0.73, 0.8, 0.5, 12]} />
+            <meshStandardMaterial color={BLACK} />
+          </mesh>
+          <mesh position={[0, 0.5, 0]} castShadow>
+            <cylinderGeometry args={[0.67, 0.73, 0.5, 12]} />
+            <meshStandardMaterial color={IALA_YELLOW} />
+          </mesh>
+          <mesh position={[0, 1, 0]} castShadow>
+            <cylinderGeometry args={[0.6, 0.67, 0.5, 12]} />
+            <meshStandardMaterial color={BLACK} />
+          </mesh>
+        </>
+      ) : (
+        <mesh position={[0, 0.5, 0]} castShadow>
+          <cylinderGeometry args={[0.6, 0.8, 1.5, 12]} />
+          <meshStandardMaterial color={IALA_YELLOW} />
+        </mesh>
+      )}
+
+      {/* Topmark mast */}
+      <mesh position={[0, 1.45, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.4, 6]} />
+        <meshStandardMaterial color={BLACK} />
       </mesh>
-      <mesh position={[0, 1.7, 0]}>
-        <sphereGeometry args={[0.4, 16, 16]} />
-        <meshStandardMaterial ref={mat} color={color} emissive={color} emissiveIntensity={base} />
+
+      {cardinal ? (
+        // East topmark: two black cones BASE TO BASE (◆). (Points together ⧗ would be West.)
+        <>
+          <mesh position={[0, 1.8, 0]} rotation={[Math.PI, 0, 0]}>
+            <coneGeometry args={[0.15, 0.3, 8]} />
+            <meshStandardMaterial color={BLACK} />
+          </mesh>
+          <mesh position={[0, 2.1, 0]}>
+            <coneGeometry args={[0.15, 0.3, 8]} />
+            <meshStandardMaterial color={BLACK} />
+          </mesh>
+        </>
+      ) : (
+        // Special mark topmark: yellow X
+        <>
+          <mesh position={[0, 1.8, 0]} rotation={[0, 0, Math.PI / 4]}>
+            <boxGeometry args={[0.6, 0.08, 0.08]} />
+            <meshStandardMaterial color={IALA_YELLOW} />
+          </mesh>
+          <mesh position={[0, 1.8, 0]} rotation={[0, 0, -Math.PI / 4]}>
+            <boxGeometry args={[0.6, 0.08, 0.08]} />
+            <meshStandardMaterial color={IALA_YELLOW} />
+          </mesh>
+        </>
+      )}
+
+      {/* Light */}
+      <mesh position={[0, cardinal ? 2.45 : 2.25, 0]}>
+        <sphereGeometry args={[0.12, 12, 12]} />
+        <meshStandardMaterial ref={light} color={lightColor} emissive={lightColor} emissiveIntensity={peak} />
       </mesh>
-      <Label y={3} w={w} className={`text-xs text-warn ${w.dim ? "opacity-60" : ""}`} />
+
+      <Label y={3.4} w={w} className={`text-xs text-warn ${w.dim ? "opacity-60" : ""}`} />
     </group>
   );
 }
@@ -151,6 +218,30 @@ function ClientShip({ w }: { w: Waypoint }) {
         w={w}
         className="border border-phosphor bg-black/70 px-2 py-1 text-sm font-bold text-phosphor"
       />
+    </Rotated>
+  );
+}
+
+// Ship moored at Campana: plain tanker, bow north, discreet label.
+function MooredShip({ w }: { w: Waypoint }) {
+  const scale = w.size === "large" ? 1.5 : 1;
+  return (
+    <Rotated w={w}>
+      <group scale={scale}>
+        <mesh position={[0, 0.5, 0]} castShadow>
+          <boxGeometry args={[6, 1, 1.2]} />
+          <meshStandardMaterial color={w.size === "large" ? "#6a2a2a" : "#2f3f4c"} />
+        </mesh>
+        <mesh position={[-2.2, 1.5, 0]} castShadow>
+          <boxGeometry args={[1.3, 1, 1]} />
+          <meshStandardMaterial color="#FFFFFF" />
+        </mesh>
+        <mesh position={[-2.2, 2.05, 0]}>
+          <boxGeometry args={[1.4, 0.1, 1.1]} />
+          <meshStandardMaterial color="#AA2222" />
+        </mesh>
+      </group>
+      <Label y={2.6 * scale + 0.6} w={w} className="bg-black/50 px-1.5 py-0.5 text-[11px] text-text-mid" />
     </Rotated>
   );
 }
@@ -233,6 +324,8 @@ export default function Waypoints() {
             return <EggShip key={w.id} w={w} />;
           case "vuelta":
             return <VueltaSign key={w.id} w={w} />;
+          case "moored-ship":
+            return <MooredShip key={w.id} w={w} />;
         }
       })}
     </>

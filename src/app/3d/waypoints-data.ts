@@ -7,7 +7,10 @@
 // landmarks sit on the bank so their collision circle only touches the
 // channel edge, buoys sit on the centerline.
 
-export type WaypointKind = "landmark" | "buoy" | "ship" | "mega" | "egg" | "vuelta";
+export type WaypointKind = "landmark" | "buoy" | "ship" | "mega" | "egg" | "vuelta" | "moored-ship";
+
+/** IALA buoyage: special mark (yellow, X topmark) or east cardinal. */
+export type BuoyType = "special" | "cardinal-east";
 
 export type Waypoint = {
   id: string;
@@ -28,6 +31,8 @@ export type Waypoint = {
   struck?: boolean; // label crossed out ("not the destination")
   collisionRadius: number; // 0 = doesn't block (light buoys)
   alertRadius?: number; // vueltas: HUD warning range
+  buoyType?: BuoyType; // buoys
+  size?: "medium" | "large"; // moored ships (large = 1.5×)
   clickable?: boolean; // for 3D-4b (modals)
 };
 
@@ -51,9 +56,19 @@ export const WAYPOINTS: Waypoint[] = [
   { id: "vuelta-hinojo", kind: "vuelta", title: "VUELTA DEL HINOJO", subtitle: "Km ~75 · velocidad mínima · no adelantar", pos: [32, 0, 52], collisionRadius: 0, alertRadius: 25 },
   { id: "vuelta-tordillo", kind: "vuelta", title: "VUELTA DEL TORDILLO", subtitle: "Km ~70 · velocidad mínima · no adelantar", pos: [45, 0, 58], collisionRadius: 0, alertRadius: 25 },
 
-  // PUBLIC-PROJECT BUOYS (on the centerline) — sail right through
-  { id: "finanzas", kind: "buoy", title: "Finanzas Personales", pos: [55, 0, 59.5], color: "#FFB020", pulse: true, collisionRadius: 0, clickable: true },
-  { id: "relojes", kind: "buoy", title: "E-commerce Relojes", subtitle: "WIP", pos: [70, 0, 72], color: "#FFB020", pulse: true, dim: true, collisionRadius: 0, clickable: true },
+  // PUBLIC-PROJECT BUOYS — only in the Canal Mitre (dredged, buoyed channel).
+  // The Paraná de las Palmas has none: you follow the natural course.
+  { id: "finanzas", kind: "buoy", buoyType: "special", title: "Finanzas Personales", subtitle: "Boya especial amarilla · Km 38 Canal Mitre", pos: [77, 0, 82], color: "#F7D417", pulse: true, collisionRadius: 0, clickable: true },
+  { id: "relojes", kind: "buoy", buoyType: "cardinal-east", title: "E-commerce Relojes", subtitle: "Boya cardinal · Km 12 Canal Mitre (bifurcación)", pos: [85, 0, 89], color: "#000000", pulse: true, dim: true, collisionRadius: 0, clickable: true },
+
+  // MOORED AT CAMPANA (bow north, like the B/T NANY). KHAN / DELTAMAR along
+  // the same quay, north of our berth; STENA / CALETA at the east berths.
+  // The spec'd spots fell on the quay land or across the caída's turning
+  // circle (they'd trap the boat on undocking) — these clear both.
+  { id: "khan", kind: "moored-ship", title: "KHAN LW2501", subtitle: "tanker fluvial", pos: [0, 0, -22], rotation: Math.PI / 2, size: "medium", collisionRadius: 5 },
+  { id: "deltamar", kind: "moored-ship", title: "DELTAMAR IV", subtitle: "tanker fluvial", pos: [0, 0, -34], rotation: Math.PI / 2, size: "medium", collisionRadius: 5 },
+  { id: "stena-image", kind: "moored-ship", title: "STENA IMAGE", subtitle: "Hellerup · bulk carrier", pos: [34, 0, -8], rotation: Math.PI / 2, size: "large", collisionRadius: 8 },
+  { id: "caleta-rosario", kind: "moored-ship", title: "CALETA ROSARIO", subtitle: "tanker", pos: [36, 0, 8], rotation: Math.PI / 2, size: "medium", collisionRadius: 5 },
 
   // CLIENT SHIPS — Zona Común (centered on 203, 133)
   { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [198, 0, 128], rotation: -0.3, color: "#00FF88", collisionRadius: 6, clickable: true },
