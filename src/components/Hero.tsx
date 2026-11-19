@@ -7,23 +7,23 @@ const STATUS = ["SESSION: 0x8af2", "LOC: -34.80°S -58.26°W", "PING: 12ms"];
 export default function Hero() {
   return (
     <section id="top" className="mx-auto w-full max-w-6xl scroll-mt-20 px-4 pt-10 pb-16 sm:px-6 sm:pt-14">
-      {/* Status bar */}
-      <p className="mb-10 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-text-mute">
-        <span className="flex items-center gap-1.5 text-green">
-          <span aria-hidden>●</span> SYSTEM ONLINE
-        </span>
-        {STATUS.map((s) => (
-          <span key={s} className="flex items-center gap-2">
-            <span className="text-text-dim" aria-hidden>
-              ·
-            </span>
-            {s}
-          </span>
-        ))}
-      </p>
-
       <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1.6fr_0.8fr]">
         <div>
+          {/* Status bar — inside the left column so its top aligns with the PortraitCard */}
+          <p className="mb-10 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[11px] uppercase tracking-wider text-text-mute">
+            <span className="flex items-center gap-1.5 text-green">
+              <span aria-hidden>●</span> SYSTEM ONLINE
+            </span>
+            {STATUS.map((s) => (
+              <span key={s} className="flex items-center gap-2">
+                <span className="text-text-dim" aria-hidden>
+                  ·
+                </span>
+                {s}
+              </span>
+            ))}
+          </p>
+
           <h1 className="font-mono text-4xl leading-[1.1] font-bold text-text sm:text-5xl lg:text-6xl">
             <span className="block">
               <span className="text-text-mute">&gt;</span> milton_olivera
