@@ -7,10 +7,10 @@ import { PerspectiveCamera, Vector3, type Group } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 const UP = new Vector3(0, 1, 0);
-const BRIDGE_OFFSET = new Vector3(-3, 2.5, 0); // above the bridge roof
-const LOOK_OFFSET = new Vector3(10, 1, 0); // ahead of the bow
+const BRIDGE_OFFSET = new Vector3(-2.5, 3.5, 0); // 1.2 above the red roof, at its forward edge
+const LOOK_OFFSET = new Vector3(15, 0, 0); // far ahead at water level: deck below, horizon above
 const ORBIT_START_OFFSET = new Vector3(-14, 7, 6); // aft-quarter view
-const FOV = 70;
+const FOV = 80;
 
 // Scratch vectors reused every frame (no per-frame allocation)
 const tmp = new Vector3();
