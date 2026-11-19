@@ -28,15 +28,15 @@ export default function PortraitCard() {
           <span className="text-text-mute">ID.0x8af2</span>
         </div>
 
-        {/* Aspect matches public/milton.jpg so object-cover never crops the face */}
-        <div className="relative aspect-[340/700] w-full overflow-hidden border border-border bg-surface">
+        {/* Shorter than the 340×700 source: crops the dark sky above the head, keeps face + bow tie */}
+        <div className="relative aspect-[340/580] w-full overflow-hidden border border-border bg-surface">
           <Image
             src="/milton.jpg"
             alt="Milton Olivera"
             fill
             priority
             sizes="240px"
-            className="object-cover"
+            className="object-cover object-[50%_85%]"
           />
         </div>
 
