@@ -1,5 +1,5 @@
+import Link from "next/link";
 import CornerBrackets from "./CornerBrackets";
-import Mode3DButton from "./Mode3DButton";
 import PortraitCard from "./PortraitCard";
 
 const STATUS = ["SESSION: 0x8af2", "LOC: -34.80°S -58.26°W", "PING: 12ms"];
@@ -59,9 +59,9 @@ export default function Hero() {
             >
               ./contact.sh
             </a>
-            <Mode3DButton className="relative px-5 py-3 text-text-mute transition-colors hover:text-green">
+            <Link href="/3d" className="relative px-5 py-3 text-text-mute transition-colors hover:text-green">
               <CornerBrackets size="size-2" glow={false} />[ render 3D mode ]
-            </Mode3DButton>
+            </Link>
           </div>
         </div>
 

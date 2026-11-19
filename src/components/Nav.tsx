@@ -1,4 +1,4 @@
-import Mode3DButton from "./Mode3DButton";
+import Link from "next/link";
 
 const LINKS = [
   { href: "#terminal", label: "terminal" },
@@ -41,12 +41,13 @@ export default function Nav() {
           >
             CV
           </span>
-          <Mode3DButton
-            ariaLabel="Modo 3D (próximamente)"
-            className="cursor-not-allowed px-3 py-1.5 text-text-dim transition-colors hover:text-text-mute"
+          <Link
+            href="/3d"
+            aria-label="Modo 3D"
+            className="px-3 py-1.5 text-text-mute transition-colors hover:text-green"
           >
             3D
-          </Mode3DButton>
+          </Link>
         </div>
       </nav>
     </header>
