@@ -29,14 +29,14 @@ export default function PortraitCard() {
         </div>
 
         {/* Shorter than the 340×700 source: crops the dark sky above the head, keeps face + bow tie */}
-        <div className="relative aspect-[340/580] w-full overflow-hidden border border-border bg-surface">
+        <div className="relative aspect-[340/520] w-full overflow-hidden border border-border bg-surface">
           <Image
             src="/milton.jpg"
             alt="Milton Olivera"
             fill
             priority
             sizes="240px"
-            className="object-cover object-[50%_85%]"
+            className="object-cover object-[50%_90%]"
           />
         </div>
 
