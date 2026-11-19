@@ -3,6 +3,7 @@ import { BoatTelemetryProvider } from "./BoatTelemetry";
 import Hud from "./Hud";
 import Scene from "./Scene";
 import TutorialOverlay from "./TutorialOverlay";
+import VueltaAlert from "./VueltaAlert";
 
 export const metadata: Metadata = {
   title: "Render 3D · Milton Olivera",
@@ -17,6 +18,7 @@ export default function Page3D() {
         <Scene />
         <Hud />
         <TutorialOverlay />
+        <VueltaAlert />
       </BoatTelemetryProvider>
     </div>
   );

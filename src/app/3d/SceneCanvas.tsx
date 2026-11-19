@@ -7,11 +7,13 @@ import type { Group } from "three";
 import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
+import DeltaIslands from "./DeltaIslands";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
 import Shoreline from "./Shoreline";
 import SunLight from "./SunLight";
 import Water from "./Water";
 import Waypoints from "./Waypoints";
+import ZarateBridge from "./ZarateBridge";
 
 // Three.js materials can't read Tailwind tokens, so scene colors are hex.
 export default function SceneCanvas() {
@@ -40,6 +42,8 @@ export default function SceneCanvas() {
 
       <Water />
       <Shoreline />
+      <DeltaIslands />
+      <ZarateBridge />
       <Waypoints />
       <Boat ref={boatRef} />
 

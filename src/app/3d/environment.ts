@@ -14,25 +14,17 @@ export const WATER_SIZE = 300;
 export const WATER_SEGMENTS = 128;
 
 // ---------------------------------------------------------------- land ----
-// Axis-aligned land rectangles (world X/Z, 1 km = 2 units, -Z = north).
-// Shoreline.tsx draws them and BoatControls blocks the boat SHORE_MARGIN
-// before their edge. Straight banks approximate the real (winding) river.
-export type LandRect = { minX: number; maxX: number; minZ: number; maxZ: number };
+// The river shape (channel, basin, anchorage, quay, Delta) lives in
+// river-geometry.ts; terrain and collision both read it.
 
-export const LAND: LandRect[] = [
-  { minX: -30, maxX: 250, minZ: -70, maxZ: -20 }, // north bank
-  // Campana quay, alongside the boat's port (west) side: moored bow north at
-  // x=0, hull side at x=-0.7, quay face at x=-2.5. Leaves the water ahead and
-  // to starboard free for the "caída" (turning radius ≈ 10 units).
-  { minX: -16, maxX: -2.5, minZ: -20, maxZ: 6 },
-  { minX: -30, maxX: 250, minZ: 170, maxZ: 240 }, // south bank
-];
-
-/** Sailing area (covers the whole real route with margin). */
-export const WORLD_BOUNDS = { minX: -20, maxX: 240, minZ: -20, maxZ: 180 };
+/** Sailing area: whole route + the upstream reach under the Zárate bridge. */
+export const WORLD_BOUNDS = { minX: -20, maxX: 240, minZ: -70, maxZ: 180 };
 
 /** Land surface sits just above the tallest wave crest (~0.25). */
 export const BANK_Y = 0.3;
 
-/** Boat center stops this far from a land edge. */
-export const SHORE_MARGIN = 2;
+/** Boat center stops this far inside the waterline (hull half-beam 0.7). */
+export const SHORE_MARGIN = 1;
+
+/** Terrain extent (covers the whole world plus a fogged rim). */
+export const TERRAIN = { minX: -40, maxX: 260, minZ: -80, maxZ: 200, cell: 1.5 };

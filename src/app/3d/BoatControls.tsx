@@ -4,7 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
 import { START, UNMOOR_EVENT, useBoatTelemetry } from "./BoatTelemetry";
-import { LAND, SHORE_MARGIN, WORLD_BOUNDS, type LandRect } from "./environment";
+import { SHORE_MARGIN, WORLD_BOUNDS } from "./environment";
+import { navigableSd } from "./river-geometry";
 import { BOAT_RADIUS, WAYPOINTS } from "./waypoints-data";
 
 export const MAX_SPEED = 8; // units/s
@@ -21,7 +22,7 @@ const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
 const OBSTACLES = WAYPOINTS.filter((w) => w.collisionRadius > 0);
 
 /**
- * True if moving (x,z) → (nx,nz) runs into an obstacle or land. A move that
+ * True if moving (x,z) → (nx,nz) runs into an obstacle or a river bank. A move that
  * gets AWAY from something you're already touching is always allowed, so the
  * boat can never get stuck (reverse out after a bump).
  */
@@ -37,10 +38,9 @@ function blocked(x: number, z: number, nx: number, nz: number) {
       if (nextSq < cx * cx + cz * cz) return true; // getting closer
     }
   }
-  for (const r of LAND) {
-    if (onLand(r, nx, nz) && !onLand(r, x, z)) return true;
-  }
-  return false;
+  // River banks: block a move that ends near/over land AND gets closer to it
+  const next = navigableSd(nx, nz);
+  return next > -SHORE_MARGIN && next > navigableSd(x, z);
 }
 
 function syncBoat(boat: Group | null, x: number, z: number, heading: number) {
@@ -49,9 +49,6 @@ function syncBoat(boat: Group | null, x: number, z: number, heading: number) {
   boat.rotation.y = heading;
 }
 
-function onLand(r: LandRect, px: number, pz: number) {
-  return px > r.minX - SHORE_MARGIN && px < r.maxX + SHORE_MARGIN && pz > r.minZ - SHORE_MARGIN && pz < r.maxZ + SHORE_MARGIN;
-}
 
 type Keys = { fwd: boolean; back: boolean; left: boolean; right: boolean; boost: boolean; brake: boolean };
 

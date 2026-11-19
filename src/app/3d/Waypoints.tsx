@@ -4,6 +4,7 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
 import type { MeshStandardMaterial } from "three";
+import { RIVER_WIDTH, bankPoint } from "./river-geometry";
 import { WAYPOINTS, type Waypoint } from "./waypoints-data";
 
 // Labels are DOM, so they use the theme tokens. They never take pointer
@@ -57,6 +58,30 @@ function Landmark({ w }: { w: Waypoint }) {
         w={w}
         className={`bg-black/60 px-2 py-1 text-xs font-bold ${w.struck ? "text-warn" : "text-text"}`}
       />
+    </group>
+  );
+}
+
+// --------------------------------------------------------------- vuelta ----
+// Nautical warning sign on the bank beside the bend (pos is on the centerline).
+function VueltaSign({ w }: { w: Waypoint }) {
+  const [x, z] = bankPoint(w.pos[0], w.pos[2], RIVER_WIDTH / 2 + 2.5);
+  return (
+    <group position={[x, 0.3, z]}>
+      <mesh position={[0, 1.2, 0]}>
+        <cylinderGeometry args={[0.08, 0.08, 2.4, 6]} />
+        <meshStandardMaterial color="#dddddd" />
+      </mesh>
+      <mesh position={[0, 2.6, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[1.4, 0.9, 0.08]} />
+        <meshStandardMaterial color="#FFB020" emissive="#FFB020" emissiveIntensity={0.25} />
+      </mesh>
+      <Html position={[0, 4, 0]} distanceFactor={18} {...LABEL_PROPS}>
+        <div className="rounded border border-warn/80 bg-bg/80 px-2 py-1 text-center font-mono whitespace-nowrap text-warn">
+          <div className="text-xs font-bold">⚠ {w.title}</div>
+          {w.subtitle && <div className="text-[10px] opacity-80">{w.subtitle}</div>}
+        </div>
+      </Html>
     </group>
   );
 }
@@ -206,6 +231,8 @@ export default function Waypoints() {
             return <MegaShip key={w.id} w={w} />;
           case "egg":
             return <EggShip key={w.id} w={w} />;
+          case "vuelta":
+            return <VueltaSign key={w.id} w={w} />;
         }
       })}
     </>

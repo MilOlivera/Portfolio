@@ -13,10 +13,11 @@ export type Telemetry = {
 };
 
 /**
- * Moored at Terminal AXION (world origin), bow to the north (-Z), upstream.
- * Bow is local +X → world forward = (cos h, 0, -sin h), so north is h = +π/2.
+ * Moored at Terminal AXION, on the river centerline origin (0, -2), bow to
+ * the north (-Z), upstream. Bow is local +X → world forward = (cos h, 0, -sin h),
+ * so north is h = +π/2.
  */
-export const START: Telemetry = { velocity: 0, heading: Math.PI / 2, x: 0, z: 0 };
+export const START: Telemetry = { velocity: 0, heading: Math.PI / 2, x: 0, z: -2 };
 
 /** Window event fired by the tutorial's "DESAMARRAR BUQUE" button. */
 export const UNMOOR_EVENT = "unmoor";
