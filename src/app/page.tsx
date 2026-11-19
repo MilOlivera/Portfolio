@@ -7,6 +7,7 @@ import StackSection from "@/components/StackSection";
 import StatsBar from "@/components/StatsBar";
 import TerminalSection from "@/components/TerminalSection";
 import TimelineSection from "@/components/TimelineSection";
+import WorkflowSection from "@/components/WorkflowSection";
 
 export default function Home() {
   return (
@@ -19,6 +20,7 @@ export default function Home() {
         <ProjectsSection />
         <StackSection />
         <TimelineSection />
+        <WorkflowSection />
         <CTA />
       </main>
       <Footer />
