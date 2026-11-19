@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { BOOT_STORAGE_KEY } from "@/lib/theme";
 
 type Phase = "boot" | "exit" | "done";
 
@@ -19,9 +18,7 @@ const LINES: { text: string; status?: "ok" | "warn" }[] = [
 ];
 
 export default function BootSequence() {
-  // Always "boot" on the server and on the first client render so hydration
-  // matches. If the boot was already seen this session, the inline script has
-  // set html[data-booted] and CSS keeps the overlay hidden until we unmount.
+  // Always "boot" on the server and on the first client render so hydration matches.
   const [phase, setPhase] = useState<Phase>("boot");
   const [visibleLines, setVisibleLines] = useState(0);
   const timers = useRef<number[]>([]);
@@ -38,25 +35,9 @@ export default function BootSequence() {
     timers.current.push(window.setTimeout(() => setPhase("done"), EXIT_MS));
   }, []);
 
-  // Read once per mount: StrictMode re-runs effects in dev, and by then
-  // we've already written the key.
-  const alreadySeen = useRef<boolean | null>(null);
-
+  // Runs on every mount (= every hard refresh). StrictMode's dev re-run is
+  // harmless: cleanup clears the timers and this schedules them again.
   useLayoutEffect(() => {
-    if (alreadySeen.current === null) {
-      try {
-        alreadySeen.current = sessionStorage.getItem(BOOT_STORAGE_KEY) !== null;
-        sessionStorage.setItem(BOOT_STORAGE_KEY, "1");
-      } catch {
-        // No storage: show the boot every load, it's skippable anyway.
-        alreadySeen.current = false;
-      }
-    }
-    if (alreadySeen.current) {
-      setPhase("done");
-      return;
-    }
-
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
       setVisibleLines(LINES.length);

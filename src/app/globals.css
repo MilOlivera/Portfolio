@@ -213,14 +213,6 @@ body::after {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Boot sequence: hidden before paint when already seen this
-   session (html[data-booted] is set by the inline script).
-   ───────────────────────────────────────────────────────────── */
-html[data-booted] .boot-overlay {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -40,11 +40,10 @@ export default function Hero() {
             </span>
           </h1>
 
-          <p className="mt-8 max-w-2xl font-sans text-base leading-relaxed text-text-mute sm:text-lg">
+          <p className="mt-8 max-w-[60ch] font-sans text-base leading-relaxed text-text-mid md:text-lg">
             9 años navegando ríos como Oficial Fluvial. 5 años construyendo software con React,
-            Next.js, TypeScript y PostgreSQL. 12 productos en producción, 3 negocios propios, y una
-            tesis pendiente de defender en Teclab.{" "}
-            <span className="text-text">Entrego productos, no promesas.</span>
+            Next.js, TypeScript y PostgreSQL — formado en Digital House, CoderHouse y Teclab. 12
+            productos en producción, 3 negocios propios.
           </p>
 
           <div className="mt-10 flex flex-wrap gap-3 font-mono text-sm">

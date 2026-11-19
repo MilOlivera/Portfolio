@@ -1,3 +1,4 @@
+import Image from "next/image";
 import CornerBrackets from "./CornerBrackets";
 
 const ROWS = [
@@ -8,7 +9,7 @@ const ROWS = [
 
 export default function PortraitCard() {
   return (
-    <div className="relative isolate mx-auto w-[200px]">
+    <div className="relative isolate mx-auto w-[240px]">
       {/* Breathing aura behind the card */}
       <div
         aria-hidden
@@ -27,9 +28,16 @@ export default function PortraitCard() {
           <span className="text-text-mute">ID.0x8af2</span>
         </div>
 
-        {/* Photo placeholder (real photo arrives in Phase 6) */}
-        <div className="flex aspect-[3/4] w-full items-center justify-center border border-border bg-surface text-xs tracking-[0.4em] text-text-dim">
-          PHOTO
+        {/* Aspect matches public/milton.jpg so object-cover never crops the face */}
+        <div className="relative aspect-[340/700] w-full overflow-hidden border border-border bg-surface">
+          <Image
+            src="/milton.jpg"
+            alt="Milton Olivera"
+            fill
+            priority
+            sizes="240px"
+            className="object-cover"
+          />
         </div>
 
         {/* Footer rows */}

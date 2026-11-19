@@ -17,10 +17,8 @@ const inter = Inter({
   display: "swap",
 });
 
-const SITE_URL = "https://miltonolivera.netlify.app";
-const TITLE = "Milton Olivera — Full-Stack Developer & Marino Mercante";
-const DESCRIPTION =
-  "Full-stack developer (Next.js, React, TypeScript, Python, IA) y Oficial de la Marina Mercante. 12 proyectos en producción: plataformas, apps móviles, dashboards de BI y agentes de IA.";
+const SITE_URL = "https://miltonolivera.vercel.app";
+const TITLE = "Milton Olivera · Full Stack Developer";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -28,35 +26,26 @@ export const metadata: Metadata = {
     default: TITLE,
     template: "%s · Milton Olivera",
   },
-  description: DESCRIPTION,
-  applicationName: "Milton Olivera Portfolio",
-  authors: [{ name: "Milton Olivera", url: SITE_URL }],
+  description:
+    "9 años navegando ríos como Oficial Fluvial, 5 construyendo software. Full-stack con React, Next.js, TypeScript y PostgreSQL. 12 productos en producción.",
+  keywords: ["full stack developer", "next.js", "react", "typescript", "buenos aires", "freelance"],
+  authors: [{ name: "Milton Olivera", url: "https://linkedin.com/in/milton-olivera" }],
   creator: "Milton Olivera",
-  keywords: [
-    "Milton Olivera",
-    "Full-Stack Developer",
-    "Next.js",
-    "React",
-    "TypeScript",
-    "Python",
-    "Claude API",
-    "Marina Mercante",
-    "Buenos Aires",
-    "Portfolio",
-  ],
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "es_AR",
-    url: "/",
-    siteName: "Milton Olivera",
+    url: SITE_URL,
     title: TITLE,
-    description: DESCRIPTION,
+    description: "9 años navegando ríos, 5 construyendo software. 12 productos en producción. Freelance.",
+    siteName: "Milton Olivera",
+    images: [{ url: "/milton.jpg", width: 340, height: 700, alt: "Milton Olivera" }],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
-    description: DESCRIPTION,
+    description: "9 años navegando ríos, 5 construyendo software. Freelance.",
+    images: ["/milton.jpg"],
   },
   robots: { index: true, follow: true },
 };
@@ -74,7 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <head>
-        {/* Applies saved theme + boot-seen flag before first paint */}
+        {/* Applies saved theme before first paint */}
         <script dangerouslySetInnerHTML={{ __html: preHydrationScript }} />
         <noscript>
           <style>{`.boot-overlay{display:none!important}`}</style>
