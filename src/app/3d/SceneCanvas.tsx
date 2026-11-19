@@ -1,41 +1,47 @@
 "use client";
 
+import { Sky } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useRef } from "react";
 import type { Group } from "three";
 import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
+import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
+import SunLight from "./SunLight";
+import Water from "./Water";
 
-// Three.js materials can't read Tailwind tokens, so scene colors are hex
-// (same exception as the ImageResponse icons). #25DB79 = --green.
+// Three.js materials can't read Tailwind tokens, so scene colors are hex.
 export default function SceneCanvas() {
   const boatRef = useRef<Group>(null);
 
   return (
     <Canvas
+      shadows
       camera={{ position: [-2.5, 3.5, 0], fov: 80 }}
       dpr={[1, 2]}
       style={{ width: "100vw", height: "100vh" }}
     >
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
+      {/* Hazy Río de la Plata day: loaded atmosphere, low warm side sun */}
+      <Sky
+        distance={450000}
+        sunPosition={SUN_POSITION}
+        mieCoefficient={0.015}
+        mieDirectionalG={0.8}
+        rayleigh={2.5}
+        turbidity={6}
+      />
+      <fog attach="fog" args={[HORIZON_HEX, FOG_NEAR, FOG_FAR]} />
 
-      <gridHelper args={[100, 100, "#25DB79", "#1a1f1c"]} />
+      <ambientLight intensity={0.6} color="#fff5e0" />
+      <SunLight />
 
-      {/* River placeholder */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[100, 100]} />
-        <meshStandardMaterial color="#3a2515" />
-      </mesh>
-
+      <Water />
       <Boat ref={boatRef} />
 
       {/* Order matters: controls move the boat before the camera reads it each frame */}
       <BoatControls boatRef={boatRef} />
       <CameraRig boatRef={boatRef} />
-
-      <axesHelper args={[5]} />
     </Canvas>
   );
 }

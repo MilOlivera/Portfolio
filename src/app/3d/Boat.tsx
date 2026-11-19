@@ -1,7 +1,7 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, type Ref } from "react";
+import { useLayoutEffect, useMemo, useRef, type Ref } from "react";
 import { Shape, type Group, type MeshStandardMaterial } from "three";
 
 // B/T NANY low-poly river tanker (83 × 13.8 m, ~6:1). Bow points to +X,
@@ -35,6 +35,15 @@ type Props = {
 
 export default function Boat({ ref, position, rotation }: Props) {
   const lightMat = useRef<MeshStandardMaterial>(null);
+  const parts = useRef<Group>(null);
+
+  // Every part casts and receives shadows (cabin/vents shade the deck)
+  useLayoutEffect(() => {
+    parts.current?.traverse((o) => {
+      o.castShadow = true;
+      o.receiveShadow = true;
+    });
+  }, []);
 
   // Top-down tanker outline: square stern at -X, pointed bow at +X, beam ±0.7
   const hullShape = useMemo(() => {
@@ -61,6 +70,7 @@ export default function Boat({ ref, position, rotation }: Props) {
 
   return (
     <group ref={ref} position={position} rotation={rotation}>
+      <group ref={parts}>
       {/* Hull: outline extruded along Z, rotated so it rises from y=0 to y=1 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <extrudeGeometry args={[hullShape, HULL_EXTRUDE]} />
@@ -130,6 +140,7 @@ export default function Boat({ ref, position, rotation }: Props) {
           <meshStandardMaterial color={WHITE} />
         </mesh>
       ))}
+      </group>
     </group>
   );
 }

@@ -12,7 +12,7 @@ const DRAG = 0.8; // natural deceleration, units/s²
 const BRAKE_MULT = 5; // Space: drag × this
 const TURN_SPEED = 0.8; // rad/s at MAX_SPEED
 const BOOST_MULT = 1.5;
-const BOUND = 50; // temporary square limit until the real river (3D-3)
+const BOUND = 120; // square sailing area; water follows the boat, so it never runs out
 const SOFT_ZONE = 6; // start slowing this far from the limit
 
 type Keys = { fwd: boolean; back: boolean; left: boolean; right: boolean; boost: boolean; brake: boolean };
