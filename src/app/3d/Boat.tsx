@@ -14,8 +14,8 @@ const STEEL = "#777777";
 const PIPE = "#444444";
 
 const DECK_Y = 1;
-// Deck gear runs from the bridge front (x=-2.25) to just aft of the bow
-// ventilators (x=2.2), so pipes and walkways don't clip through them.
+// Deck gear runs from the bridge front (x=-2.25) to x=2.1, leaving the
+// foredeck clear around the mast (a tanker's bow carries only mast + light).
 const RUN_START = -2.25;
 const RUN_END = 2.1;
 const RUN_LEN = RUN_END - RUN_START;
@@ -133,13 +133,6 @@ export default function Boat({ ref, position, rotation }: Props) {
         <meshStandardMaterial ref={lightMat} color={AMBER} emissive={AMBER} transparent />
       </mesh>
 
-      {/* Bow ventilators, port + starboard */}
-      {SIDES.map((side) => (
-        <mesh key={side} position={[2.5, 1, 0.5 * side]}>
-          <cylinderGeometry args={[0.25, 0.3, 0.8, 12]} />
-          <meshStandardMaterial color={WHITE} />
-        </mesh>
-      ))}
       </group>
     </group>
   );
