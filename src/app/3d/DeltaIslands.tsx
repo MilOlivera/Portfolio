@@ -1,8 +1,9 @@
 "use client";
 
-// Delta del Paraná: small islands in the side channels south of the route.
-// They sit in non-navigable water behind a land strip (river-geometry.ts →
-// DELTA), so they're scenery only. Positions verified to clear the zone edges.
+// Delta del Paraná: small islands in the side channels south of the route and
+// starboard (east) of the Campana berth. They sit in non-navigable water
+// behind a land strip (river-geometry.ts → DELTA_*), so they're scenery only.
+// Positions verified to clear the zone edges.
 const ISLAND_COLOR = "#2a4a2a";
 const LEAF = "#2f5a2f";
 const TRUNK = "#5a4030";
@@ -22,6 +23,16 @@ const ISLANDS: Island[] = [
   { pos: [8, 102], size: 6, squash: 0.6, rot: 1.3, trees: [[-1.2, 0], [0.3, 0.5], [1.5, -0.3]] },
   { pos: [28, 104], size: 5, squash: 0.75, rot: 2.2, trees: [[0, 0], [1, 0.4], [-1, -0.4]] },
   { pos: [20, 68], size: 3, squash: 0.8, rot: 0.8, trees: [[0, 0], [0.7, 0.3]] },
+
+  // Starboard of the Campana berth (east): Delta, no buildings
+  { pos: [42, -22], size: 5, squash: 0.7, rot: 0.5, trees: [[-0.8, 0.2], [0.9, -0.3]] },
+  { pos: [50, -8], size: 6, squash: 0.65, rot: 1.4, trees: [[0, 0.5], [1.3, -0.4], [-1.2, -0.2]] },
+  { pos: [58, -30], size: 5, squash: 0.8, rot: 2.3, trees: [[-0.6, 0], [0.8, 0.4]] },
+  { pos: [64, -14], size: 7, squash: 0.6, rot: 0.2, trees: [[-1.9, 0], [0.2, 0.5], [1.8, -0.3]] },
+  { pos: [46, 4], size: 4, squash: 0.75, rot: 1.0, trees: [[0, 0], [0.8, -0.3]] },
+  { pos: [72, -36], size: 5, squash: 0.7, rot: 2.8, trees: [[-0.7, 0.2], [0.8, -0.2]] },
+  { pos: [70, 0], size: 6, squash: 0.6, rot: 0.7, trees: [[-1.2, 0], [0.3, 0.4], [1.4, -0.3]] },
+  { pos: [56, -46], size: 4, squash: 0.8, rot: 1.9, trees: [[0, 0], [-0.8, 0.3]] },
 ];
 
 export default function DeltaIslands() {

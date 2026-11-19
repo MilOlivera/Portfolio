@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
-import BootSequence from "@/components/BootSequence";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { preHydrationScript } from "@/lib/theme";
 import "./globals.css";
@@ -70,10 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </noscript>
       </head>
       <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          <BootSequence />
-          {children}
-        </ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

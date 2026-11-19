@@ -8,6 +8,7 @@ import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
 import DeltaIslands from "./DeltaIslands";
+import NavBuoys from "./NavBuoys";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
 import Shoreline from "./Shoreline";
 import SunLight from "./SunLight";
@@ -45,6 +46,7 @@ export default function SceneCanvas() {
       <DeltaIslands />
       <ZarateBridge />
       <Waypoints />
+      <NavBuoys />
       <Boat ref={boatRef} />
 
       {/* Order matters: controls move the boat before the camera reads it each frame */}

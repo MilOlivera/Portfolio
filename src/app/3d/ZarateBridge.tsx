@@ -4,11 +4,12 @@ import { useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute } from "three";
 
 // Puente Zárate–Brazo Largo (Km 100), upstream (north) of the Campana berth
-// (Km 96.5): ~84 units away, a silhouette on the northern horizon that fades
-// into the fog once you sail south. Spans E–W across the upstream reach
-// (river-geometry.ts → centerline x=-30 at z=-80, banks at ±8), towers on land.
-const Z = -80;
-const TOWER_X = [-44, -16];
+// (Km 96.5): ~74 units away, a silhouette on the northern horizon that fades
+// into the fog once you sail south. Spans E–W across the main river's
+// upstream reach (river-geometry.ts → centerline x≈28 at z=-70, banks ±8),
+// towers on land.
+const Z = -70;
+const TOWER_X = [15, 41];
 const TOWER_H = 40;
 const DECK_Y = 10;
 const DECK_W = 6;

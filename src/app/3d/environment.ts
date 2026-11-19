@@ -17,8 +17,8 @@ export const WATER_SEGMENTS = 128;
 // The river shape (channel, basin, anchorage, quay, Delta) lives in
 // river-geometry.ts; terrain and collision both read it.
 
-/** Sailing area: whole route + the upstream reach under the Zárate bridge. */
-export const WORLD_BOUNDS = { minX: -20, maxX: 240, minZ: -70, maxZ: 180 };
+/** Sailing area: the route + a bit of the upstream reach (bridge stays far). */
+export const WORLD_BOUNDS = { minX: -20, maxX: 240, minZ: -45, maxZ: 180 };
 
 /** Land surface sits just above the tallest wave crest (~0.25). */
 export const BANK_Y = 0.3;
@@ -27,4 +27,4 @@ export const BANK_Y = 0.3;
 export const SHORE_MARGIN = 1;
 
 /** Terrain extent (covers the whole world plus a fogged rim). */
-export const TERRAIN = { minX: -40, maxX: 260, minZ: -130, maxZ: 200, cell: 1.5 };
+export const TERRAIN = { minX: -80, maxX: 260, minZ: -130, maxZ: 200, cell: 1.5 };

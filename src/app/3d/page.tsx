@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AlTravesDetector from "./AlTravesDetector";
 import { BoatTelemetryProvider } from "./BoatTelemetry";
 import Hud from "./Hud";
 import Scene from "./Scene";
@@ -19,6 +20,7 @@ export default function Page3D() {
         <Hud />
         <TutorialOverlay />
         <VueltaAlert />
+        <AlTravesDetector />
       </BoatTelemetryProvider>
     </div>
   );

@@ -39,14 +39,16 @@ function buildTerrain() {
 type Building = { pos: [number, number, number]; size: [number, number, number]; color: string };
 
 const BUILDINGS: Building[] = [
-  // Campana quay (west of the berth): Tenaris Siderca mill + AXION/PAE tanks
-  { pos: [-11, 1.5, -9], size: [5, 3, 3], color: "#8a8a8a" }, // Tenaris mill
-  { pos: [-12, 2, -4], size: [2, 4, 2], color: "#777777" }, // Tenaris stack
-  { pos: [-6, 1, -5], size: [3, 2, 3], color: "#c9c2b0" }, // AXION tank
-  { pos: [-6, 1.2, 0], size: [3, 2.4, 3], color: "#c9c2b0" }, // AXION tank
+  // Campana industrial bank — PORT side (west), around the mooring row
+  { pos: [-12, 1, 12], size: [3, 2, 3], color: "#c9c2b0" }, // AXION tank
+  { pos: [-18, 1.2, 13], size: [3, 2.4, 3], color: "#c9c2b0" }, // AXION tank
+  { pos: [-28, 1.5, 12], size: [6, 3, 4], color: "#8a8a8a" }, // warehouse
+  { pos: [-42, 1, 13], size: [5, 2, 4], color: "#777777" },
+  { pos: [-20, 1.5, -18], size: [6, 3, 4], color: "#8a8a8a" }, // Tenaris mill
+  { pos: [-30, 2, -20], size: [2, 4, 2], color: "#777777" }, // Tenaris stack
+  { pos: [-40, 1.2, -17], size: [5, 2.4, 3], color: "#8a8a8a" }, // Tenaris mill
 
-  // North, scattered industry
-  { pos: [40, 0.8, -26], size: [4, 1.6, 3], color: "#666666" },
+  // North, scattered industry (east of the berth is Delta: nothing there)
   { pos: [95, 1, -28], size: [5, 2, 4], color: "#8a8a8a" },
   { pos: [150, 0.6, -25], size: [3, 1.2, 2], color: "#555555" },
   { pos: [210, 0.8, -27], size: [4, 1.6, 3], color: "#777777" },
