@@ -4,6 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
 import { useBoatTelemetry } from "./BoatTelemetry";
+import { LAND, SHORE_MARGIN, type LandRect } from "./environment";
+import { BOAT_RADIUS, WAYPOINTS } from "./waypoints-data";
 
 export const MAX_SPEED = 8; // units/s
 const MAX_REVERSE = 3;
@@ -14,6 +16,37 @@ const TURN_SPEED = 0.8; // rad/s at MAX_SPEED
 const BOOST_MULT = 1.5;
 const BOUND = 120; // square sailing area; water follows the boat, so it never runs out
 const SOFT_ZONE = 6; // start slowing this far from the limit
+const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
+
+// Only blocking waypoints, resolved once (no per-frame allocation)
+const OBSTACLES = WAYPOINTS.filter((w) => w.collisionRadius > 0);
+
+/**
+ * True if moving (x,z) → (nx,nz) runs into an obstacle or land. A move that
+ * gets AWAY from something you're already touching is always allowed, so the
+ * boat can never get stuck (reverse out after a bump).
+ */
+function blocked(x: number, z: number, nx: number, nz: number) {
+  for (const w of OBSTACLES) {
+    const min = BOAT_RADIUS + w.collisionRadius;
+    const dx = nx - w.pos[0];
+    const dz = nz - w.pos[2];
+    const nextSq = dx * dx + dz * dz;
+    if (nextSq < min * min) {
+      const cx = x - w.pos[0];
+      const cz = z - w.pos[2];
+      if (nextSq < cx * cx + cz * cz) return true; // getting closer
+    }
+  }
+  for (const r of LAND) {
+    if (onLand(r, nx, nz) && !onLand(r, x, z)) return true;
+  }
+  return false;
+}
+
+function onLand(r: LandRect, px: number, pz: number) {
+  return px > r.minX - SHORE_MARGIN && px < r.maxX + SHORE_MARGIN && pz > r.minZ - SHORE_MARGIN && pz < r.maxZ + SHORE_MARGIN;
+}
 
 type Keys = { fwd: boolean; back: boolean; left: boolean; right: boolean; boost: boolean; brake: boolean };
 
@@ -105,8 +138,14 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
       v *= Math.exp(-6 * closeness * dt);
     }
 
-    t.x = Math.max(-BOUND, Math.min(BOUND, t.x + dirX * v * dt));
-    t.z = Math.max(-BOUND, Math.min(BOUND, t.z + dirZ * v * dt));
+    const nx = Math.max(-BOUND, Math.min(BOUND, t.x + dirX * v * dt));
+    const nz = Math.max(-BOUND, Math.min(BOUND, t.z + dirZ * v * dt));
+    if (blocked(t.x, t.z, nx, nz)) {
+      v *= BOUNCE_DAMPING; // damped bounce: stop hard, keep position
+    } else {
+      t.x = nx;
+      t.z = nz;
+    }
     t.velocity = v;
 
     const boat = boatRef.current;
