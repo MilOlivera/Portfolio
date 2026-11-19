@@ -6,7 +6,7 @@ import { Color, Vector3, type Mesh, type ShaderMaterial } from "three";
 import { useBoatTelemetry } from "./BoatTelemetry";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION, WATER_SEGMENTS, WATER_SIZE } from "./environment";
 
-// Río de la Plata: brown, calm water. Three Gerstner waves are evaluated in
+// Río de la Plata: murky blue-green-grey, calm water. Three Gerstner waves are evaluated in
 // WORLD space, so the plane can follow the boat (snapped to its own vertex
 // grid) without the wave pattern sliding along with it — the water stays put
 // while you sail over it, and the plane's edge never comes into view.
@@ -70,9 +70,8 @@ const fragmentShader = /* glsl */ `
   varying float vHeight;
   varying vec2 vUv;
 
-  const vec3 BASE    = vec3(0.545, 0.400, 0.251); // #8B6640
-  const vec3 TROUGH  = vec3(0.400, 0.300, 0.180);
-  const vec3 GRAZING = vec3(0.700, 0.550, 0.400);
+  const vec3 BASE   = vec3(0.33, 0.42, 0.40); // #547069 murky blue-green-grey
+  const vec3 TROUGH = vec3(0.20, 0.27, 0.26); // #344541 deep murky shade
 
   void main() {
     vec3 n = normalize(vNormal);
@@ -88,9 +87,9 @@ const fragmentShader = /* glsl */ `
     vec3 h = normalize(uSunDirection + viewDir);
     color += vec3(1.0, 0.9, 0.75) * pow(max(dot(n, h), 0.0), 64.0) * 0.15;
 
-    // Fresnel: lighter, silty sheen at grazing angles
+    // Fresnel: at grazing angles the water reflects the hazy sky
     float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 4.0);
-    color = mix(color, GRAZING, fresnel * 0.6);
+    color = mix(color, uHorizonColor, fresnel * 0.6);
 
     // Melt into the hazy horizon (same range as the scene fog)
     float d = length(vWorldPosition.xz - cameraPosition.xz);

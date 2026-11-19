@@ -8,8 +8,10 @@ import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
+import Shoreline from "./Shoreline";
 import SunLight from "./SunLight";
 import Water from "./Water";
+import Waypoints from "./Waypoints";
 
 // Three.js materials can't read Tailwind tokens, so scene colors are hex.
 export default function SceneCanvas() {
@@ -37,6 +39,8 @@ export default function SceneCanvas() {
       <SunLight />
 
       <Water />
+      <Shoreline />
+      <Waypoints />
       <Boat ref={boatRef} />
 
       {/* Order matters: controls move the boat before the camera reads it each frame */}

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import CornerBrackets from "@/components/CornerBrackets";
 import { KNOTS_PER_UNIT, headingToDegrees, useBoatTelemetry } from "./BoatTelemetry";
+import { NEAR_DISTANCE, nearestWaypoint } from "./waypoints-data";
 
 const MOBILE_MAX_WIDTH = 1024;
 const REDIRECT_DELAY_MS = 2000;
@@ -21,14 +22,24 @@ const noopSubscribe = () => () => {};
 /** Polls the telemetry ref and re-renders only when the formatted values change. */
 function useReadout() {
   const telemetry = useBoatTelemetry();
-  const [readout, setReadout] = useState({ speed: "0.0", heading: "000" });
+  const [readout, setReadout] = useState({ speed: "0.0", heading: "000", next: "—", dist: "—", near: false });
 
   useEffect(() => {
     const id = window.setInterval(() => {
       const t = telemetry.current;
-      const speed = (t.velocity * KNOTS_PER_UNIT).toFixed(1);
-      const heading = String(headingToDegrees(t.heading)).padStart(3, "0");
-      setReadout((r) => (r.speed === speed && r.heading === heading ? r : { speed, heading }));
+      const { waypoint, distance } = nearestWaypoint(t.x, t.z);
+      const next = {
+        speed: (t.velocity * KNOTS_PER_UNIT).toFixed(1),
+        heading: String(headingToDegrees(t.heading)).padStart(3, "0"),
+        next: waypoint.title,
+        dist: distance.toFixed(1),
+        near: distance < NEAR_DISTANCE,
+      };
+      setReadout((r) =>
+        r.speed === next.speed && r.heading === next.heading && r.next === next.next && r.dist === next.dist
+          ? r
+          : next,
+      );
     }, READOUT_INTERVAL_MS);
     return () => window.clearInterval(id);
   }, [telemetry]);
@@ -40,7 +51,7 @@ export default function Hud() {
   const router = useRouter();
   // Read once on the client; server snapshot is "desktop" (no redirect).
   const mobile = useSyncExternalStore(noopSubscribe, isTouchMobile, () => false);
-  const { speed, heading } = useReadout();
+  const { speed, heading, next, dist, near } = useReadout();
   const [helpVisible, setHelpVisible] = useState(true);
 
   useEffect(() => {
@@ -87,6 +98,10 @@ export default function Hud() {
           <dd className="text-green tabular-nums">{speed} kn</dd>
           <dt className="text-text-mute">HEADING:</dt>
           <dd className="text-green tabular-nums">{heading}°</dd>
+          <dt className="text-text-mute">NEXT:</dt>
+          <dd className={near ? "font-bold text-phosphor glow-text" : "text-text"}>{next}</dd>
+          <dt className="text-text-mute">DIST:</dt>
+          <dd className={`tabular-nums ${near ? "font-bold text-phosphor glow-text" : "text-green"}`}>{dist} u</dd>
         </dl>
       </div>
 
