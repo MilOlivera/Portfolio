@@ -1,67 +1,104 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { headingToDegrees, useBoatTelemetry } from "./BoatTelemetry";
+import { UNMOOR_EVENT, headingToDegrees, useBoatTelemetry } from "./BoatTelemetry";
 
-type Phase = "MOORED" | "TURNING" | "ALIGNED" | "SAILING";
+// AMARRADO (button) → CAIDA (engine ahead + rudder to fall off downstream)
+// → NAVEGANDO (overlay gone for good).
+type Phase = "AMARRADO" | "CAIDA" | "NAVEGANDO";
 
 const POLL_MS = 100;
-const SAILING_SPEED = 0.5; // units/s forward → tutorial done
-const NORTH_TOLERANCE = 30; // ° either side of 000 still counts as "moored heading"
-const DOWNSTREAM_MIN = 150; // ° — downstream (south) window
-const DOWNSTREAM_MAX = 210;
+const TARGET_HEADING = 210; // °, south-west: downstream
+const WINDOW_MIN = 180;
+const WINDOW_MAX = 240;
+const UNDERWAY_SPEED = 3; // units/s
 
-function phaseFor(velocity: number, heading: number): Phase {
-  if (velocity > SAILING_SPEED) return "SAILING";
-  const deg = headingToDegrees(heading);
-  if (deg >= DOWNSTREAM_MIN && deg <= DOWNSTREAM_MAX) return "ALIGNED";
-  if (deg <= NORTH_TOLERANCE || deg >= 360 - NORTH_TOLERANCE) return "MOORED";
-  return "TURNING";
-}
-
-const STEP: Record<Exclude<Phase, "SAILING">, { title: string; body: string }> = {
-  MOORED: { title: "▸ Volteá el barco aguas abajo", body: "Proa al norte, contra la corriente. Girá hasta rumbo 180° (sur)." },
-  TURNING: { title: "▸ Girando... seguí", body: "Llevá la proa hasta rumbo 150°–210°, aguas abajo." },
-  ALIGNED: { title: "▸ Rumbo correcto, presioná W", body: "Proa aguas abajo. Avante para zarpar." },
-};
-
-/** Guided undocking at Terminal AXION. Disappears for good once under way. */
 export default function TutorialOverlay() {
   const telemetry = useBoatTelemetry();
-  const [phase, setPhase] = useState<Phase>("MOORED");
-  const done = phase === "SAILING";
+  const [phase, setPhase] = useState<Phase>("AMARRADO");
+  const [heading, setHeading] = useState(0);
 
+  // During the caída: track heading and finish once under way on course
   useEffect(() => {
-    if (done) return; // latched: never comes back after sailing off
+    if (phase !== "CAIDA") return;
     const id = window.setInterval(() => {
       const t = telemetry.current;
-      setPhase(phaseFor(t.velocity, t.heading));
+      const deg = headingToDegrees(t.heading);
+      setHeading(deg);
+      if (t.velocity > UNDERWAY_SPEED && deg >= WINDOW_MIN && deg <= WINDOW_MAX) setPhase("NAVEGANDO");
     }, POLL_MS);
     return () => window.clearInterval(id);
-  }, [telemetry, done]);
+  }, [phase, telemetry]);
 
-  const step = done ? null : STEP[phase as Exclude<Phase, "SAILING">];
+  const unmoor = () => {
+    window.dispatchEvent(new CustomEvent(UNMOOR_EVENT));
+    setHeading(headingToDegrees(telemetry.current.heading));
+    setPhase("CAIDA");
+  };
+
+  if (phase === "AMARRADO") {
+    return (
+      <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center px-4">
+        <div className="pointer-events-auto w-full max-w-md border border-green bg-bg/70 p-6 text-center font-mono backdrop-blur">
+          <p className="text-sm font-bold tracking-wider text-green">◉ B/T NANY · AMARRADO</p>
+          <p className="mt-1 text-xs tracking-wider text-text-mid">TERMINAL AXION PAE · KM 96.5 CAMPANA</p>
+          <p className="mt-1 text-xs tracking-wider text-text-mid">▲ CARGA IFO 380 COMPLETADA ✓</p>
+          <button
+            type="button"
+            autoFocus
+            onClick={unmoor}
+            className="mt-6 cursor-pointer rounded border-2 border-green bg-bg/90 px-8 py-4 font-mono text-lg font-bold text-green transition-colors hover:bg-green hover:text-bg"
+          >
+            DESAMARRAR BUQUE ◉
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const done = phase === "NAVEGANDO";
+  const pct = (deg: number) => `${(deg / 360) * 100}%`;
+  const onCourse = heading >= WINDOW_MIN && heading <= WINDOW_MAX;
 
   return (
     <div
       aria-hidden={done}
-      className={`pointer-events-none fixed inset-0 z-20 flex items-center justify-center px-4 transition-opacity duration-500 ${
+      className={`pointer-events-none fixed inset-x-0 bottom-6 z-20 flex justify-center px-4 transition-opacity duration-500 ${
         done ? "opacity-0" : "opacity-100"
       }`}
     >
-      <div className="w-full max-w-md border border-green bg-bg/70 p-6 font-mono backdrop-blur">
-        <p className="text-sm font-bold tracking-wider text-green">◉ B/T NANY · AMARRADO</p>
-        <p className="mt-1 text-xs tracking-wider text-text-mid">TERMINAL AXION PAE · KM 96.5 CAMPANA</p>
-        <p className="mt-1 text-xs tracking-wider text-text-mid">▲ CARGA IFO 380 COMPLETADA ✓</p>
+      <div className="w-full max-w-lg border border-green bg-bg/70 p-4 font-mono backdrop-blur">
+        <p className="text-sm font-bold tracking-wider text-green">◉ MANIOBRA DE CAÍDA</p>
+        <p className="mt-1 font-sans text-sm text-text-mid">
+          Dale máquina avante [W] y usá el timón [A]/[D] para caer al sur-oeste
+        </p>
+        <p className="mt-1 text-xs text-warn">▸ El muelle está a babor: caé a estribor [D]</p>
+        <p role="status" className="mt-2 text-xs tracking-wider text-text-mute">
+          Rumbo objetivo: <span className="text-green">{TARGET_HEADING}°</span> · Rumbo actual:{" "}
+          <span className={`tabular-nums ${onCourse ? "text-phosphor" : "text-text"}`}>
+            {String(heading).padStart(3, "0")}°
+          </span>
+        </p>
 
-        {step && (
-          <div role="status" className="mt-5 border-t border-dashed border-border-strong pt-4">
-            <p className="text-sm text-green">{step.title}</p>
-            <p className="mt-1 font-sans text-sm text-text-mid">{step.body}</p>
-          </div>
-        )}
-
-        <p className="mt-5 text-[11px] tracking-wider text-text-mute">[A]/[D] girar · [W] avanzar</p>
+        {/* Compass strip 000–360: target window + current heading marker */}
+        <div aria-hidden className="relative mt-3 h-3 border border-border-strong">
+          <div
+            className="absolute inset-y-0 bg-green-soft"
+            style={{ left: pct(WINDOW_MIN), width: pct(WINDOW_MAX - WINDOW_MIN) }}
+          />
+          <div className="absolute inset-y-0 w-px bg-green" style={{ left: pct(TARGET_HEADING) }} />
+          <div
+            className={`absolute -inset-y-1 w-0.5 ${onCourse ? "bg-phosphor" : "bg-text"}`}
+            style={{ left: pct(heading) }}
+          />
+        </div>
+        <div aria-hidden className="mt-1 flex justify-between text-[10px] text-text-dim">
+          <span>N</span>
+          <span>E</span>
+          <span>S</span>
+          <span>W</span>
+          <span>N</span>
+        </div>
       </div>
     </div>
   );

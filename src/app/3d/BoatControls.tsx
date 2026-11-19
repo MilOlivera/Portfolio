@@ -3,7 +3,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
-import { START, useBoatTelemetry } from "./BoatTelemetry";
+import { START, UNMOOR_EVENT, useBoatTelemetry } from "./BoatTelemetry";
 import { LAND, SHORE_MARGIN, WORLD_BOUNDS, type LandRect } from "./environment";
 import { BOAT_RADIUS, WAYPOINTS } from "./waypoints-data";
 
@@ -15,10 +15,6 @@ const BRAKE_MULT = 5; // Space: drag × this
 const TURN_SPEED = 0.8; // rad/s at MAX_SPEED
 const BOOST_MULT = 1.5;
 const SOFT_ZONE = 6; // start slowing this far from the world limit
-// Maneuvering (bow thruster / tug): below this speed A/D still turn the boat,
-// e.g. swinging it around at the berth. Fades out as the rudder takes over.
-const MANEUVER_SPEED = 0.5; // units/s
-const MANEUVER_RATE = 0.5; // rad/s at a standstill
 const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
 
 // Only blocking waypoints, resolved once (no per-frame allocation)
@@ -45,6 +41,12 @@ function blocked(x: number, z: number, nx: number, nz: number) {
     if (onLand(r, nx, nz) && !onLand(r, x, z)) return true;
   }
   return false;
+}
+
+function syncBoat(boat: Group | null, x: number, z: number, heading: number) {
+  if (!boat) return;
+  boat.position.set(x, 0, z);
+  boat.rotation.y = heading;
 }
 
 function onLand(r: LandRect, px: number, pz: number) {
@@ -78,6 +80,16 @@ function decay(v: number, amount: number) {
 export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | null> }) {
   const telemetry = useBoatTelemetry();
   const keys = useRef<Keys>({ fwd: false, back: false, left: false, right: false, boost: false, brake: false });
+  // Moored at AXION until the tutorial's "DESAMARRAR BUQUE" fires `unmoor`
+  const moored = useRef(true);
+
+  useEffect(() => {
+    const onUnmoor = () => {
+      moored.current = false;
+    };
+    window.addEventListener(UNMOOR_EVENT, onUnmoor);
+    return () => window.removeEventListener(UNMOOR_EVENT, onUnmoor);
+  }, []);
 
   useEffect(() => {
     const t = telemetry.current;
@@ -110,6 +122,14 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
     const dt = Math.min(rawDelta, 0.1); // avoid jumps after a tab switch
     const k = keys.current;
     const t = telemetry.current;
+
+    // Moored: lines fast — every movement key is ignored, boat stays put
+    if (moored.current) {
+      t.velocity = 0;
+      syncBoat(boatRef.current, t.x, t.z, t.heading);
+      return;
+    }
+
     const boostMult = k.boost ? BOOST_MULT : 1;
     const maxFwd = MAX_SPEED * boostMult;
     let v = t.velocity;
@@ -125,11 +145,10 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
     if (v < -MAX_REVERSE) v = -MAX_REVERSE;
     if (v > maxFwd) v = Math.max(maxFwd, v - DRAG * 2 * dt);
 
-    // Rudder: turn rate scales with speed and flips astern; plus maneuvering
-    // turn near a standstill so the boat can be swung around at the berth
+    // Rudder: turn rate is proportional to speed (no way on = no steering)
+    // and flips astern, like a real ship
     const rudder = (k.left ? 1 : 0) - (k.right ? 1 : 0);
-    const maneuver = MANEUVER_RATE * Math.max(0, 1 - Math.abs(v) / MANEUVER_SPEED);
-    t.heading += rudder * (TURN_SPEED * (v / MAX_SPEED) + maneuver) * dt;
+    t.heading += rudder * TURN_SPEED * (v / MAX_SPEED) * dt;
 
     // Bow is local +X → world forward = (cos h, 0, -sin h), matching rotation.y = h
     const dirX = Math.cos(t.heading);
@@ -153,12 +172,7 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
       t.z = nz;
     }
     t.velocity = v;
-
-    const boat = boatRef.current;
-    if (boat) {
-      boat.position.set(t.x, 0, t.z);
-      boat.rotation.y = t.heading;
-    }
+    syncBoat(boatRef.current, t.x, t.z, t.heading);
   });
 
   return null;

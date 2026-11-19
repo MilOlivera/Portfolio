@@ -29,8 +29,10 @@ export type Waypoint = {
 
 export const WAYPOINTS: Waypoint[] = [
   // GEOGRAPHIC LANDMARKS
-  { id: "axion", kind: "landmark", title: "TERMINAL AXION", subtitle: "Km 96.5 · CARGA IFO 380 ✓", pos: [0, 0, 0], site: [3, 0, -8], collisionRadius: 10 },
-  { id: "tenaris", kind: "landmark", title: "TENARIS SIDERCA", subtitle: "Km 98.5", pos: [-3, 0, -1], site: [-7, 0, -8], collisionRadius: 12 },
+  // AXION / TENARIS are the berth the boat starts in: no collision circle
+  // (it would trap the boat); their buildings block via the quay (LAND).
+  { id: "axion", kind: "landmark", title: "TERMINAL AXION", subtitle: "Km 96.5 · CARGA IFO 380 ✓", pos: [0, 0, 0], site: [-6, 0, -3], collisionRadius: 0 },
+  { id: "tenaris", kind: "landmark", title: "TENARIS SIDERCA", subtitle: "Km 98.5", pos: [-3, 0, -1], site: [-11, 0, -9], collisionRadius: 0 },
   { id: "escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "Km ~70", pos: [26, 0, 44], collisionRadius: 8 },
   { id: "km12-ba", kind: "landmark", title: "Km 12 — Puerto BA", subtitle: "NO ES EL DESTINO", pos: [85, 0, 89], collisionRadius: 18, color: "#aa2222", struck: true },
   { id: "puerto-ba", kind: "landmark", title: "PUERTO BUENOS AIRES", subtitle: "landmark referencial", pos: [104, 0, 100], collisionRadius: 20 },

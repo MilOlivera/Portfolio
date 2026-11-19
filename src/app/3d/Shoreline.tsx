@@ -8,11 +8,11 @@ const BANK_COLOR = "#3d5a3d";
 type Building = { pos: [number, number, number]; size: [number, number, number]; color: string };
 
 const BUILDINGS: Building[] = [
-  // Campana quay (x -10..10, z -10..-6): Tenaris Siderca mill + AXION/PAE tanks
-  { pos: [-7, 1.5, -8], size: [5, 3, 3], color: "#8a8a8a" }, // Tenaris mill
-  { pos: [-2, 2, -8.5], size: [2, 4, 2], color: "#777777" }, // Tenaris stack
-  { pos: [3, 1, -8], size: [3, 2, 3], color: "#c9c2b0" }, // AXION tank
-  { pos: [7.5, 1.2, -8], size: [3, 2.4, 3], color: "#c9c2b0" }, // AXION tank
+  // Campana quay (west of the berth): Tenaris Siderca mill + AXION/PAE tanks
+  { pos: [-11, 1.5, -9], size: [5, 3, 3], color: "#8a8a8a" }, // Tenaris mill
+  { pos: [-12, 2, -4], size: [2, 4, 2], color: "#777777" }, // Tenaris stack
+  { pos: [-6, 1, -5], size: [3, 2, 3], color: "#c9c2b0" }, // AXION tank
+  { pos: [-6, 1.2, 0], size: [3, 2.4, 3], color: "#c9c2b0" }, // AXION tank
 
   // North bank, scattered industry (z -70..-20)
   { pos: [40, 0.8, -26], size: [4, 1.6, 3], color: "#666666" },

@@ -21,7 +21,10 @@ export type LandRect = { minX: number; maxX: number; minZ: number; maxZ: number 
 
 export const LAND: LandRect[] = [
   { minX: -30, maxX: 250, minZ: -70, maxZ: -20 }, // north bank
-  { minX: -12, maxX: 12, minZ: -20, maxZ: -5.5 }, // Campana quay (AXION / Tenaris)
+  // Campana quay, alongside the boat's port (west) side: moored bow north at
+  // x=0, hull side at x=-0.7, quay face at x=-2.5. Leaves the water ahead and
+  // to starboard free for the "caída" (turning radius ≈ 10 units).
+  { minX: -16, maxX: -2.5, minZ: -20, maxZ: 6 },
   { minX: -30, maxX: 250, minZ: 170, maxZ: 240 }, // south bank
 ];
 
