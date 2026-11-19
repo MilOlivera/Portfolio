@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { BoatTelemetryProvider } from "./BoatTelemetry";
 import Hud from "./Hud";
 import Scene from "./Scene";
 
@@ -11,8 +12,10 @@ export const metadata: Metadata = {
 export default function Page3D() {
   return (
     <div className="fixed inset-0 bg-bg">
-      <Scene />
-      <Hud />
+      <BoatTelemetryProvider>
+        <Scene />
+        <Hud />
+      </BoatTelemetryProvider>
     </div>
   );
 }
