@@ -17,13 +17,11 @@ export const KT_TO_UPS = (0.5144 / METERS_PER_UNIT) * HANDLING_COMPRESSION;
 
 /**
  * Clock multiplier for the whole ship simulation (movement, acceleration,
- * rudder, current). Calibrated by simulation on the compressed route
- * (~430 u): flat out with an autopilot the voyage takes ~3.8 min, so a
- * player — careful turns, stopping to read the modals — lands at ~4–5 min.
- * (>1 would make it shorter: at 6 the whole trip lasts ~20 s.) Turning radii
+ * rudder, current). On the compressed route (~430 u) at ×2: ~1 min flat out
+ * with an autopilot (simulated), ~2–2.5 min playing normally. Turning radii
  * don't change with it, and the HUD keeps reading the true knots.
  */
-export const TIME_SCALE = 0.5;
+export const TIME_SCALE = 2;
 
 // Official kilometre posts (Paraná de las Palmas / Canal Mitre) ↔ world Z.
 // Distances are COMPRESSED (~12×) so the voyage fits in a few minutes: each
