@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import { Color, Vector3, type Mesh, type ShaderMaterial } from "three";
 import { useBoatTelemetry } from "./BoatTelemetry";
-import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION, WATER_SEGMENTS, WATER_SIZE } from "./environment";
+import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION, WATER_SEGMENTS, WATER_SIZE, WAVE_HEIGHT } from "./environment";
 
 // Río de la Plata: murky blue-green-grey, calm water. Three Gerstner waves are evaluated in
 // WORLD space, so the plane can follow the boat (snapped to its own vertex
@@ -23,7 +23,8 @@ const vertexShader = /* glsl */ `
   // dir, frequency (wave number), amplitude, speed
   const int WAVES = 3;
   const vec2  DIR[3]   = vec2[3](vec2(1.0, 0.0), vec2(0.7071, 0.7071), vec2(-0.4061, 0.9138) /* normalize(-0.4, 0.9) */);
-  const float FREQ[3]  = float[3](0.3, 0.5, 0.9);
+  // 1 unit = 20 m: wavelengths ~7 / 4 / 2.3 u (140 / 84 / 47 m) of river chop
+  const float FREQ[3]  = float[3](0.9, 1.5, 2.7);
   const float AMP[3]   = float[3](0.12, 0.08, 0.05);
   const float SPEED[3] = float[3](0.8, 1.2, 1.5);
   const float STEEPNESS = 0.6; // Gerstner Q: sharper crests, flatter troughs
@@ -101,7 +102,7 @@ const fragmentShader = /* glsl */ `
 
 const CELL = WATER_SIZE / WATER_SEGMENTS;
 
-export default function Water({ waveHeight = 0.1 }: { waveHeight?: number }) {
+export default function Water({ waveHeight = WAVE_HEIGHT }: { waveHeight?: number }) {
   const telemetry = useBoatTelemetry();
   const mesh = useRef<Mesh>(null);
   const material = useRef<ShaderMaterial>(null);

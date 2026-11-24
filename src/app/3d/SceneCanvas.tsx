@@ -4,17 +4,26 @@ import { Sky } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useRef } from "react";
 import type { Group } from "three";
+import Aeroparque from "./Aeroparque";
 import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
+import DeltaCanals from "./DeltaCanals";
+import DeltaHouses from "./DeltaHouses";
 import DeltaIslands from "./DeltaIslands";
 import NavBuoys from "./NavBuoys";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
+import GNLEscobar from "./GNLEscobar";
+import GrainTerminal from "./GrainTerminal";
+import LaPlataSkyline from "./LaPlataSkyline";
+import PNALima from "./PNALima";
+import RefineryPAE from "./RefineryPAE";
 import Shoreline from "./Shoreline";
 import SunLight from "./SunLight";
 import Water from "./Water";
 import Waypoints from "./Waypoints";
 import ZarateBridge from "./ZarateBridge";
+import ZoneBands from "./ZoneBands";
 
 // Three.js materials can't read Tailwind tokens, so scene colors are hex.
 export default function SceneCanvas() {
@@ -23,7 +32,7 @@ export default function SceneCanvas() {
   return (
     <Canvas
       shadows
-      camera={{ position: [-2.5, 3.5, 0], fov: 80 }}
+      camera={{ position: [0, 1.6, 1.2], fov: 80, far: 600 }} // far: the km 106 bridge (~450 u) stays visible; farther decor is culled
       dpr={[1, 2]}
       style={{ width: "100vw", height: "100vh" }}
     >
@@ -43,8 +52,20 @@ export default function SceneCanvas() {
 
       <Water />
       <Shoreline />
-      <DeltaIslands />
+      <ZoneBands />
+
+      {/* Route, upstream → downstream (scenery far from the boat is fogged out) */}
       <ZarateBridge />
+      <RefineryPAE />
+      <DeltaIslands />
+      <DeltaHouses />
+      <DeltaCanals />
+      <GNLEscobar />
+      <GrainTerminal />
+      <PNALima />
+      <Aeroparque />
+      <LaPlataSkyline />
+
       <Waypoints />
       <NavBuoys />
       <Boat ref={boatRef} />

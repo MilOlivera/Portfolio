@@ -6,7 +6,7 @@ import type { DirectionalLight } from "three";
 import { useBoatTelemetry } from "./BoatTelemetry";
 import { SUN_POSITION } from "./environment";
 
-const SHADOW_EXTENT = 8; // half-size of the shadow box around the boat
+const SHADOW_EXTENT = 6; // half-size of the shadow box around the boat
 
 // Warm side sun. It keeps the same direction as the <Sky /> sun but travels
 // with the boat, so the small shadow camera always covers the vessel.

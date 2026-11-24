@@ -6,20 +6,24 @@ import { createContext, useContext, useRef, type ReactNode, type RefObject } fro
 // DOM HUD (polls it). A ref, not state, so the 3D loop never triggers renders.
 // R3F's <Canvas> bridges parent context, so both trees see the same ref.
 export type Telemetry = {
-  velocity: number; // units/s, negative = astern
+  velocity: number; // units/s along the heading, negative = astern
   heading: number; // radians, same as the boat group's rotation.y
   x: number;
   z: number;
+  /** Short HUD banner set by the physics (speed limit, shallows…). */
+  notice: string;
+  /** performance.now() until which `notice` is shown. */
+  noticeUntil: number;
 };
 
 /**
- * Moored at Terminal AXION, on the river centerline origin (0, -2), bow to
- * the north (-Z), upstream. Bow is local +X → world forward = (cos h, 0, -sin h),
- * so north is h = +π/2.
+ * Moored at Terminal AXION, km 97 (world origin), alongside the jetty on the
+ * port side, bow to the north (-Z), upstream. Bow is local +X → world forward
+ * = (cos h, 0, -sin h), so north is h = +π/2.
  */
-export const START: Telemetry = { velocity: 0, heading: Math.PI / 2, x: 0, z: -2 };
+export const START: Telemetry = { velocity: 0, heading: Math.PI / 2, x: 0, z: 0, notice: "", noticeUntil: 0 };
 
-/** Window event fired by the tutorial's "DESAMARRAR BUQUE" button. */
+/** Window event fired by the tutorial's "DESAMARRAR" button. */
 export const UNMOOR_EVENT = "unmoor";
 
 const TelemetryContext = createContext<RefObject<Telemetry> | null>(null);
@@ -34,10 +38,6 @@ export function useBoatTelemetry() {
   if (!ctx) throw new Error("useBoatTelemetry must be used inside <BoatTelemetryProvider>");
   return ctx;
 }
-
-// Display conversions. Scale: hull 8 units ≈ 83 m, but true-scale speed would
-// read ~160 kn, so knots are mapped for realism: MAX_SPEED 8 u/s → 12 kn.
-export const KNOTS_PER_UNIT = 1.5;
 
 /** rotation.y → nautical degrees: 000 = N (-Z), 090 = E (+X), 180 = S, 270 = W. */
 export function headingToDegrees(heading: number) {

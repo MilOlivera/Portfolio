@@ -1,19 +1,28 @@
 "use client";
 
 import { useMemo } from "react";
-import { PlaneGeometry } from "three";
-import { BANK_Y, TERRAIN } from "./environment";
-import { waterSd } from "./river-geometry";
+import { BufferAttribute, BufferGeometry } from "three";
+import { BANK_Y } from "./environment";
+import { JETTY, RIVER_CURVE, waterSdKnown } from "./river-geometry";
 
-// Winding river banks. Rather than offsetting strips along the curve (which
-// self-intersect on tight bends like the Tordillo), the land is one terrain
-// grid whose height follows the river's signed distance: flat land at BANK_Y,
-// a short sloped bank, and a bed below the water wherever there's river.
-// Same function family as the collision, so banks look where they block.
-const BANK_COLOR = "#3d5a3d";
-const BED_Y = -1.2;
-const SLOPE_IN = -1.5; // sd where the bed starts rising
-const SLOPE_OUT = 1; // sd where flat land begins
+// River banks for a 5.5 km route. A world-sized grid would need millions of
+// vertices, so the land is a RIBBON that follows the centerline: rows every
+// 2 u along the river, columns at fixed offsets (dense near the banks, sparse
+// far out, ±220 u — past the fog). Each vertex's height comes from the same
+// signed-distance functions as the collision: flat land at BANK_Y, a short
+// sloped bank, and a bed below the water wherever there's river, basin,
+// estuary, canal or Delta channel. Past the ribbon the open water plane shows
+// (beyond the fog, or the open estuary past the Zona Común).
+const LAND_COLOR = "#3d5a3d";
+const BED_Y = -0.6;
+const SLOPE_IN = -1; // sd where the bed starts rising
+const SLOPE_OUT = 0.6; // sd where flat land begins
+const ROW_SPACING = 2;
+const HALF_OFFSETS = [
+  0, 1, 2, 3, 3.75, 4.5, 5.5, 7, 9, 11, 13.5, 16, 19, 22, 26, 30, 35, 40, 46, 52, 59, 66, 72, 80, 90, 100, 112,
+  126, 142, 160, 185, 220,
+];
+const OFFSETS = [...HALF_OFFSETS.slice(1).reverse().map((o) => -o), ...HALF_OFFSETS]; // west (+) … east (−)
 
 function bankHeight(sd: number) {
   if (sd <= SLOPE_IN) return BED_Y;
@@ -22,58 +31,73 @@ function bankHeight(sd: number) {
   return BED_Y + (BANK_Y - BED_Y) * t * t * (3 - 2 * t); // smoothstep
 }
 
-function buildTerrain() {
-  const w = TERRAIN.maxX - TERRAIN.minX;
-  const d = TERRAIN.maxZ - TERRAIN.minZ;
-  const geo = new PlaneGeometry(w, d, Math.round(w / TERRAIN.cell), Math.round(d / TERRAIN.cell));
-  geo.rotateX(-Math.PI / 2); // XY plane → XZ ground
-  geo.translate(TERRAIN.minX + w / 2, 0, TERRAIN.minZ + d / 2);
-  const pos = geo.attributes.position;
-  for (let i = 0; i < pos.count; i++) {
-    pos.setY(i, bankHeight(waterSd(pos.getX(i), pos.getZ(i))));
+function buildRibbon() {
+  const rows = Math.ceil(RIVER_CURVE.getLength() / ROW_SPACING) + 1;
+  const pts = RIVER_CURVE.getSpacedPoints(rows - 1);
+  const cols = OFFSETS.length;
+  const pos = new Float32Array(rows * cols * 3);
+
+  for (let r = 0; r < rows; r++) {
+    const a = pts[Math.max(0, r - 1)];
+    const b = pts[Math.min(rows - 1, r + 1)];
+    const len = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+    const wx = -(b.z - a.z) / len; // west normal = tangent rotated
+    const wz = (b.x - a.x) / len;
+    for (let c = 0; c < cols; c++) {
+      const off = OFFSETS[c];
+      const x = pts[r].x + wx * off;
+      const z = pts[r].z + wz * off;
+      const i = (r * cols + c) * 3;
+      pos[i] = x;
+      pos[i + 1] = bankHeight(waterSdKnown(x, z, Math.abs(off)));
+      pos[i + 2] = z;
+    }
   }
+
+  const index = new Uint32Array((rows - 1) * (cols - 1) * 6);
+  let k = 0;
+  for (let r = 0; r < rows - 1; r++) {
+    for (let c = 0; c < cols - 1; c++) {
+      const a = r * cols + c;
+      const b = a + cols;
+      index.set([a, a + 1, b, a + 1, b + 1, b], k); // CCW from above → normals up
+      k += 6;
+    }
+  }
+
+  const geo = new BufferGeometry();
+  geo.setAttribute("position", new BufferAttribute(pos, 3));
+  geo.setIndex(new BufferAttribute(index, 1));
   geo.computeVertexNormals();
+  geo.computeBoundingSphere();
   return geo;
 }
 
-type Building = { pos: [number, number, number]; size: [number, number, number]; color: string };
-
-const BUILDINGS: Building[] = [
-  // Campana industrial bank — PORT side (west), around the mooring row
-  { pos: [-12, 1, 12], size: [3, 2, 3], color: "#c9c2b0" }, // AXION tank
-  { pos: [-18, 1.2, 13], size: [3, 2.4, 3], color: "#c9c2b0" }, // AXION tank
-  { pos: [-28, 1.5, 12], size: [6, 3, 4], color: "#8a8a8a" }, // warehouse
-  { pos: [-42, 1, 13], size: [5, 2, 4], color: "#777777" },
-  { pos: [-20, 1.5, -18], size: [6, 3, 4], color: "#8a8a8a" }, // Tenaris mill
-  { pos: [-30, 2, -20], size: [2, 4, 2], color: "#777777" }, // Tenaris stack
-  { pos: [-40, 1.2, -17], size: [5, 2.4, 3], color: "#8a8a8a" }, // Tenaris mill
-
-  // North, scattered industry (east of the berth is Delta: nothing there)
-  { pos: [95, 1, -28], size: [5, 2, 4], color: "#8a8a8a" },
-  { pos: [150, 0.6, -25], size: [3, 1.2, 2], color: "#555555" },
-  { pos: [210, 0.8, -27], size: [4, 1.6, 3], color: "#777777" },
-
-  // South
-  { pos: [60, 0.6, 176], size: [3, 1.2, 2], color: "#555555" },
-  { pos: [120, 1, 178], size: [5, 2, 4], color: "#8a6a4a" },
-  { pos: [170, 0.8, 177], size: [4, 1.6, 3], color: "#999999" },
-  { pos: [230, 0.6, 176], size: [3, 1.2, 2], color: "#666666" },
-];
+const JETTY_TOP = BANK_Y + 0.25;
 
 export default function Shoreline() {
-  // ~37k vertices, built once per visit (a few tens of ms)
-  const terrain = useMemo(buildTerrain, []);
+  // ~110k vertices, built once per visit
+  const ribbon = useMemo(buildRibbon, []);
+  const jettyW = JETTY.maxX - JETTY.minX;
+  const jettyL = JETTY.maxZ - JETTY.minZ;
+  const jettyX = (JETTY.minX + JETTY.maxX) / 2;
+  const jettyZ = (JETTY.minZ + JETTY.maxZ) / 2;
 
   return (
     <>
-      <mesh geometry={terrain} receiveShadow>
-        <meshStandardMaterial color={BANK_COLOR} roughness={0.9} />
+      <mesh geometry={ribbon} receiveShadow>
+        <meshStandardMaterial color={LAND_COLOR} roughness={0.9} />
       </mesh>
 
-      {BUILDINGS.map((b) => (
-        <mesh key={b.pos.join(",")} position={[b.pos[0], b.pos[1] + BANK_Y, b.pos[2]]} castShadow>
-          <boxGeometry args={b.size} />
-          <meshStandardMaterial color={b.color} roughness={0.95} />
+      {/* Terminal AXION jetty: the B/T NANY lies alongside, port side */}
+      <mesh position={[jettyX, (JETTY_TOP - 0.6) / 2, jettyZ]} castShadow receiveShadow>
+        <boxGeometry args={[jettyW, JETTY_TOP + 0.6, jettyL]} />
+        <meshStandardMaterial color="#9a9a94" roughness={0.85} />
+      </mesh>
+      {[-6, -2, 2, 6].map((dz) => (
+        <mesh key={dz} position={[JETTY.maxX - 0.15, JETTY_TOP + 0.08, dz]}>
+          <cylinderGeometry args={[0.07, 0.09, 0.16, 8]} />
+          <meshStandardMaterial color="#2b2b2b" />
         </mesh>
       ))}
     </>

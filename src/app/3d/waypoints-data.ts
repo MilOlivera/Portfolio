@@ -1,15 +1,14 @@
 // Single source of truth for everything placed on the river. Pure data (no
 // three.js) so the DOM HUD and the physics can import it without the 3D bundle.
 //
-// REAL-WORLD SCALE: 1 km = 2 units. Origin = Terminal AXION (Campana).
-// Axes: -Z = north, +Z = south (downstream), +X = east.
-// Everything is placed against the river in river-geometry.ts: blocking
-// landmarks sit on the bank so their collision circle only touches the
-// channel edge, buoys sit on the centerline.
+// Scale 1 u = 20 m, origin = B/T NANY berth (km 97). +Z downstream (south),
+// +X east = Delta bank, −X west = mainland. Official km posts (Ordenanza 4-18
+// DPSN); positions on the banks were computed against river-geometry.ts so
+// landmarks sit beside the channel, not on it.
 
 export type WaypointKind = "landmark" | "buoy" | "ship" | "mega" | "egg" | "vuelta" | "moored-ship";
 
-/** IALA buoyage: special mark (yellow, X topmark) or east cardinal. */
+/** IALA buoyage for the project buoys: special mark (yellow, X) or east cardinal. */
 export type BuoyType = "special" | "cardinal-east";
 
 export type Waypoint = {
@@ -18,86 +17,84 @@ export type Waypoint = {
   title: string;
   subtitle?: string; // small text under the label
   pos: [number, number, number]; // collision + distance center
-  /**
-   * Where a landmark's label is drawn when it isn't `pos` — e.g. AXION and
-   * TENARIS, whose pos is the berth the boat starts in; their structures are
-   * the Campana buildings on the quay (Shoreline.tsx), so no block is drawn.
-   */
-  site?: [number, number, number];
-  rotation?: number; // yaw, radians (ships only)
+  site?: [number, number, number]; // where the label is drawn, if not at pos
+  labelY?: number; // label height (default per kind)
+  rotation?: number; // yaw, radians (ships)
   color?: string; // three.js material color (hex — CSS tokens don't reach WebGL)
   pulse?: boolean;
-  dim?: boolean; // WIP (e.g. relojes)
-  struck?: boolean; // label crossed out ("not the destination")
-  collisionRadius: number; // 0 = doesn't block (light buoys)
+  dim?: boolean; // WIP (relojes)
+  struck?: boolean; // label crossed out
+  collisionRadius: number; // 0 = doesn't block
   alertRadius?: number; // vueltas: HUD warning range
-  buoyType?: BuoyType; // buoys
+  buoyType?: BuoyType;
   size?: "medium" | "large"; // moored ships (large = 1.5×)
-  clickable?: boolean; // opens a project CTA
-  alTravesDetection?: boolean; // CTA appears when the buoy is abeam (AlTravesDetector)
-  projectId?: string; // id in src/lib/projects.ts shown by the CTA/modal
+  clickable?: boolean;
+  alTravesDetection?: boolean; // CTA when the buoy is abeam (AlTravesDetector)
+  projectId?: string; // id in src/lib/projects.ts
 };
 
+const N = Math.PI / 2; // rotation for bow north (bow = local +X)
+
 export const WAYPOINTS: Waypoint[] = [
-  // GEOGRAPHIC LANDMARKS
-  // AXION / TENARIS are the berth the boat starts in: no collision circle
-  // (it would trap the boat); their buildings block via the quay.
-  { id: "axion", kind: "landmark", title: "TERMINAL AXION", subtitle: "Km 96.5 · CARGA IFO 380 ✓", pos: [0, 0, 0], site: [-16, 0, 12], collisionRadius: 0 },
-  { id: "tenaris", kind: "landmark", title: "TENARIS SIDERCA", subtitle: "Km 98.5", pos: [-3, 0, -1], site: [-26, 0, -19], collisionRadius: 0 },
-  // Escobar / Km 12 / Puerto BA on the SW (mainland) bank — on the centerline
-  // their radii (8–20) would close the 16-wide channel.
-  { id: "escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "Km ~70", pos: [6.8, 0, 45.6], collisionRadius: 8 },
-  { id: "km12-ba", kind: "landmark", title: "Km 12 — Puerto BA", subtitle: "NO ES EL DESTINO", pos: [71.6, 0, 112.4], collisionRadius: 18, color: "#aa2222", struck: true },
-  { id: "puerto-ba", kind: "landmark", title: "PUERTO BUENOS AIRES", subtitle: "landmark referencial", pos: [95.1, 0, 127.6], collisionRadius: 20 },
-  // Recalada beside the Canal Brown (12 u off-center): at (180,130) it blocked the channel
-  { id: "recalada", kind: "landmark", title: "RECALADA", subtitle: "pilot station", pos: [177.7, 0, 135.9], collisionRadius: 4 },
-  { id: "puerto-lp", kind: "landmark", title: "PUERTO LA PLATA", subtitle: "10.36m · canal 2.5nm", pos: [194, 0, 160], collisionRadius: 15 },
+  // ------------------------------------------------ nautical landmarks ----
+  { id: "amarre", kind: "landmark", title: "TERMINAL AXION · KM 97", subtitle: "Campana · CARGA IFO 380 ✓", pos: [0, 0, 0], site: [-2, 0, -10], labelY: 2.2, collisionRadius: 0 },
+  { id: "puente-zarate", kind: "landmark", title: "PUENTE ZÁRATE–BRAZO LARGO", subtitle: "km 106", pos: [45, 0, -450], labelY: 46, collisionRadius: 0 },
+  { id: "gnl-escobar", kind: "landmark", title: "MUELLE GNL ESCOBAR", subtitle: "km 74.5 · zona de giro gaseros", pos: [31, 0, 1100], labelY: 4, collisionRadius: 0 },
+  { id: "transf-granos", kind: "landmark", title: "TRANSFERENCIA DE GRANOS", subtitle: "km 69", pos: [115.4, 0, 1501.6], labelY: 6, collisionRadius: 0 },
+  { id: "pna-lima", kind: "landmark", title: "PREFECTURA · PNA LIMA", subtitle: "km 50", pos: [211, 0, 2151], labelY: 5, collisionRadius: 0 },
+  { id: "mitre-start", kind: "landmark", title: "KM 48 · CANAL EMILIO MITRE", subtitle: "bifurcación · canal boyado", pos: [238.3, 0, 2400.9], labelY: 3, collisionRadius: 0 },
+  { id: "aeroparque", kind: "landmark", title: "AEROPARQUE J. NEWBERY", subtitle: "km 20", pos: [424.5, 0, 4135.8], labelY: 8, collisionRadius: 0 },
+  { id: "zona-comun", kind: "landmark", title: "ZONA COMÚN", subtitle: "km 2 · fondeadero", pos: [680, 0, 5000], labelY: 4, collisionRadius: 0 },
 
-  // THE THREE VUELTAS (on the centerline; sign on the bank, HUD alert in range).
-  // Campana's is upstream (north) of the berth — not on the route; its small
-  // alert radius keeps it quiet during the caída.
-  { id: "vuelta-campana", kind: "vuelta", title: "VUELTA DE CAMPANA", subtitle: "Km 95 · aguas arriba del amarre", pos: [15, 0, -30], collisionRadius: 0, alertRadius: 12 },
-  { id: "vuelta-hinojo", kind: "vuelta", title: "VUELTA DEL HINOJO", subtitle: "Km ~75 · velocidad mínima · no adelantar", pos: [32, 0, 52], collisionRadius: 0, alertRadius: 25 },
-  { id: "vuelta-tordillo", kind: "vuelta", title: "VUELTA DEL TORDILLO", subtitle: "Km ~70 · velocidad mínima · no adelantar", pos: [45, 0, 58], collisionRadius: 0, alertRadius: 25 },
+  // ------------------------------------------------------------ vueltas ----
+  // Vuelta del Este is upstream of the berth (not sailed): tiny alert radius.
+  { id: "vuelta-este", kind: "vuelta", title: "VUELTA DEL ESTE", subtitle: "km 100 · aguas arriba", pos: [25, 0, -175], collisionRadius: 0, alertRadius: 15 },
+  { id: "vuelta-campana", kind: "vuelta", title: "VUELTA DE CAMPANA", subtitle: "km 95", pos: [8, 0, 110], collisionRadius: 0, alertRadius: 25 },
+  { id: "vuelta-hinojo", kind: "vuelta", title: "VUELTA DEL HINOJO", subtitle: "km 90 · velocidad mínima · no adelantar", pos: [23, 0, 380], collisionRadius: 0, alertRadius: 25 },
+  // Provisional: informal pilots' name, not in the ordinance — confirm with Milton.
+  { id: "vuelta-tordillo", kind: "vuelta", title: "VUELTA DEL TORDILLO", subtitle: "km 80 · provisorio", pos: [45, 0, 800], collisionRadius: 0, alertRadius: 25 },
 
-  // PUBLIC-PROJECT BUOYS — only in the Canal Mitre (dredged, buoyed channel).
-  // The Paraná de las Palmas has none: you follow the natural course.
-  { id: "finanzas", kind: "buoy", buoyType: "special", title: "Finanzas Personales", subtitle: "Boya especial amarilla · Km 38 Canal Mitre", pos: [73, 0, 63], color: "#F7D417", pulse: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "finanzas" },
-  { id: "relojes", kind: "buoy", buoyType: "cardinal-east", title: "E-commerce Relojes", subtitle: "Boya cardinal · Km 12 Canal Mitre (bifurcación)", pos: [85, 0, 89], color: "#000000", pulse: true, dim: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "relojes" },
+  // ----------------------------------------------------- project buoys ----
+  // Outside the buoyed lane (east side of the Mitre, open shallows), abeam CTA.
+  { id: "finanzas", kind: "buoy", buoyType: "special", title: "Finanzas Personales", subtitle: "Boya especial amarilla · km 38 Canal Mitre", pos: [381.1, 0, 3190.9], color: "#F7D417", pulse: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "finanzas" },
+  { id: "relojes", kind: "buoy", buoyType: "cardinal-east", title: "E-commerce Relojes", subtitle: "Boya cardinal · km 12 · fin del Canal Mitre", pos: [605.6, 0, 4597.5], color: "#000000", pulse: true, dim: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "relojes" },
 
-  // MOORED AT CAMPANA — all to PORT (west, the industrial bank), bow north
-  // like the B/T NANY, in one row (river-geometry.ts → MOORING_ROW).
-  // STENA / CALETA moved here from starboard: there they sat on the caída's
-  // turning circle (would trap the boat) and starboard is Delta, not port.
-  { id: "khan", kind: "moored-ship", title: "KHAN LW2501", subtitle: "tanker fluvial", pos: [-12, 0, -3], rotation: Math.PI / 2, size: "medium", collisionRadius: 5 },
-  { id: "deltamar", kind: "moored-ship", title: "DELTAMAR IV", subtitle: "tanker fluvial", pos: [-25, 0, -3], rotation: Math.PI / 2, size: "medium", collisionRadius: 5 },
-  { id: "stena-image", kind: "moored-ship", title: "STENA IMAGE", subtitle: "Hellerup · bulk carrier", pos: [-52, 0, -1], rotation: Math.PI / 2, size: "large", collisionRadius: 8 },
-  { id: "caleta-rosario", kind: "moored-ship", title: "CALETA ROSARIO", subtitle: "tanker", pos: [-38, 0, -3], rotation: Math.PI / 2, size: "medium", collisionRadius: 5 },
+  // --------------------------------------- moored at Campana (dársena) ----
+  // All to PORT of the NANY (west, beyond the jetty), bow north like her.
+  { id: "khan", kind: "moored-ship", title: "KHAN LW2501", subtitle: "tanker fluvial", pos: [-5, 0, 5], rotation: N, size: "medium", collisionRadius: 3 },
+  { id: "deltamar", kind: "moored-ship", title: "DELTAMAR IV", subtitle: "tanker fluvial", pos: [-9, 0, 5], rotation: N, size: "medium", collisionRadius: 3 },
+  { id: "caleta-rosario", kind: "moored-ship", title: "CALETA ROSARIO", subtitle: "tanker", pos: [-13, 0, 5], rotation: N, size: "medium", collisionRadius: 3 },
+  { id: "stena-image", kind: "moored-ship", title: "STENA IMAGE", subtitle: "Hellerup · bulk carrier", pos: [-17.5, 0, 5], rotation: N, size: "large", collisionRadius: 4.5 },
 
-  // CLIENT SHIPS — Zona Común (centered on 203, 133)
-  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [198, 0, 128], rotation: -0.3, color: "#00FF88", collisionRadius: 6, clickable: true },
-  { id: "marpla", kind: "ship", title: "MARPLA", pos: [207, 0, 130], rotation: 0.5, color: "#00FF88", collisionRadius: 6, clickable: true },
-  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [202, 0, 140], rotation: 0.1, color: "#00FF88", collisionRadius: 6, clickable: true },
-
-  // MEGA SHIP
-  { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [215, 0, 135], rotation: -0.15, color: "#25DB79", collisionRadius: 15, clickable: true },
-
-  // EASTER EGGS (real bunker vessels)
-  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [210, 0, 142], rotation: -0.1, color: "#888888", collisionRadius: 5 },
-  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [196, 0, 136], rotation: 0.3, color: "#888888", collisionRadius: 5 },
+  // ------------------------------------------------ Zona Común (km ~2) ----
+  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [665, 0, 5040], rotation: -0.3, color: "#00FF88", collisionRadius: 4, clickable: true },
+  { id: "marpla", kind: "ship", title: "MARPLA", pos: [686, 0, 5034], rotation: 0.5, color: "#00FF88", collisionRadius: 4, clickable: true },
+  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [672, 0, 5064], rotation: 0.1, color: "#00FF88", collisionRadius: 4, clickable: true },
+  { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [700, 0, 5080], rotation: -0.15, color: "#25DB79", collisionRadius: 9, clickable: true },
+  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [718, 0, 5050], rotation: -0.1, color: "#888888", collisionRadius: 4 },
+  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [648, 0, 5062], rotation: 0.3, color: "#888888", collisionRadius: 4 },
 ];
 
-/** Approximate radius of the B/T NANY (hull 8 long) for collisions. */
-export const BOAT_RADIUS = 4;
+/**
+ * Green lateral buoy at km 98 where the NANY turns around (the "caída"),
+ * upstream of the no-turning zone (km 96–97.5). On the Delta-side (east)
+ * edge of the channel: starboard when heading upstream.
+ */
+export const TURN_BUOY: [number, number, number] = [13.3, 0, -39.5];
+
+/** Hull obstacles with no waypoint of their own (GNL Escobar LNG carrier). */
+export const EXTRA_OBSTACLES: { pos: [number, number]; r: number }[] = [
+  { pos: [37, 1092], r: 2 },
+  { pos: [37, 1100], r: 2 },
+  { pos: [37, 1108], r: 2 },
+];
+
+/** Collision radius of the B/T NANY (80 m hull = 4 u). */
+export const BOAT_RADIUS = 2;
 
 /** Range (to the waypoint's edge) at which the HUD highlights it. */
 export const NEAR_DISTANCE = 15;
 
-/**
- * Nearest waypoint measured to its EDGE (center distance − collisionRadius),
- * so big blocking ones (Puerto BA r=20, Evolvere r=15) can still read "near"
- * when you're alongside instead of never getting closer than their radius.
- */
 export const VUELTAS = WAYPOINTS.filter((w) => w.kind === "vuelta");
 
 /** Closest vuelta whose alert range contains (x,z), or null. */
@@ -114,6 +111,10 @@ export function activeVuelta(x: number, z: number) {
   return best;
 }
 
+/**
+ * Nearest waypoint measured to its EDGE (center distance − collisionRadius),
+ * so big blocking ones can still read "near" when you're alongside.
+ */
 export function nearestWaypoint(x: number, z: number) {
   let best = WAYPOINTS[0];
   let bestDist = Infinity;
@@ -126,24 +127,3 @@ export function nearestWaypoint(x: number, z: number) {
   }
   return { waypoint: best, distance: bestDist };
 }
-
-// ----------------------------------------------------- IALA lateral marks ----
-// Decorative navigation buoys (no collision, no CTA), pairs along the Canal
-// Mitre. IALA Region B (Argentina): sailing downstream toward Km 12, RED to
-// starboard (south, +z) and GREEN to port (north).
-export type NavBuoy = { id: string; side: "red" | "green"; pos: [number, number, number] };
-
-export const NAV_BUOYS: NavBuoy[] = [
-  { id: "nav-r1", side: "red", pos: [62, 0, 63] },
-  { id: "nav-g1", side: "green", pos: [62, 0, 58] },
-  { id: "nav-r2", side: "red", pos: [68, 0, 68] },
-  { id: "nav-g2", side: "green", pos: [68, 0, 63] },
-  { id: "nav-r3", side: "red", pos: [73, 0, 74] },
-  { id: "nav-g3", side: "green", pos: [73, 0, 69] },
-  { id: "nav-r4", side: "red", pos: [78, 0, 80] },
-  { id: "nav-g4", side: "green", pos: [78, 0, 75] },
-  { id: "nav-r5", side: "red", pos: [82, 0, 86] },
-  { id: "nav-g5", side: "green", pos: [82, 0, 81] },
-  { id: "nav-r6", side: "red", pos: [85, 0, 91] },
-  { id: "nav-g6", side: "green", pos: [85, 0, 86] },
-];

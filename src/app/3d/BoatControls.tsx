@@ -3,44 +3,61 @@
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
-import { START, UNMOOR_EVENT, useBoatTelemetry } from "./BoatTelemetry";
+import { START, UNMOOR_EVENT, useBoatTelemetry, type Telemetry } from "./BoatTelemetry";
 import { SHORE_MARGIN, WORLD_BOUNDS } from "./environment";
-import { navigableSd } from "./river-geometry";
-import { BOAT_RADIUS, WAYPOINTS } from "./waypoints-data";
+import { navigableSd, waterSd } from "./river-geometry";
+import { speedLimitAt } from "./route-info";
+import { BOAT_RADIUS, EXTRA_OBSTACLES, WAYPOINTS } from "./waypoints-data";
 
-export const MAX_SPEED = 8; // units/s
-const MAX_REVERSE = 3;
-const ACCELERATION = 2; // units/s²
-const DRAG = 0.8; // natural deceleration, units/s²
+// Ship handling at 1 u = 20 m (speeds in u/s already include TIME_SCALE, so
+// 10 kn = 5.14 u/s — see scale.ts). Tuned by simulation: the 180° turn at the
+// green buoy takes ~4 ahead/astern cycles (~45 s) in the 150 m channel, and
+// the route downstream clears every bank at cruise.
+const ACCELERATION = 0.5; // u/s²
+const BOOST_MULT = 1.5; // Shift: faster acceleration (the regulatory max still applies)
+const DRAG = 0.25; // natural deceleration, u/s²
 const BRAKE_MULT = 5; // Space: drag × this
-const TURN_SPEED = 0.8; // rad/s at MAX_SPEED
-const BOOST_MULT = 1.5;
+const MAX_REVERSE = 0.75; // u/s astern (astern power is weaker than ahead)
+const OVERSPEED_DECEL = 1; // u/s² when entering a slower zone
+// Rudder: needs water flow past it. Below RUDDER_DEAD_SPEED it does nothing;
+// effectiveness ramps up to full at RUDDER_FULL_SPEED (min radius ≈ 2 u, half
+// a ship length — a hard-over rudder kick); at 10 kn the radius is ≈ 10 u.
+const RUDDER_DEAD_SPEED = 0.3;
+const RUDDER_FULL_SPEED = 1;
+const TURN_RATE = 0.5; // rad/s at full effectiveness
+const RIVER_DRIFT = 0.02; // u/s toward +Z (downstream current), whenever unmoored
 const SOFT_ZONE = 6; // start slowing this far from the world limit
 const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
+const NOTICE_MS = 2000;
 
-// Only blocking waypoints, resolved once (no per-frame allocation)
-const OBSTACLES = WAYPOINTS.filter((w) => w.collisionRadius > 0);
+// Blocking obstacles resolved once (no per-frame allocation)
+const OBSTACLES: { x: number; z: number; r: number }[] = [
+  ...WAYPOINTS.filter((w) => w.collisionRadius > 0).map((w) => ({ x: w.pos[0], z: w.pos[2], r: w.collisionRadius })),
+  ...EXTRA_OBSTACLES.map((o) => ({ x: o.pos[0], z: o.pos[1], r: o.r })),
+];
 
 /**
- * True if moving (x,z) → (nx,nz) runs into an obstacle or a river bank. A move that
- * gets AWAY from something you're already touching is always allowed, so the
- * boat can never get stuck (reverse out after a bump).
+ * What stops moving (x,z) → (nx,nz): an obstacle, the bank, or the shallows
+ * outside the dredged channel. A move that gets AWAY from something you're
+ * already touching is always allowed, so the boat never gets stuck.
  */
-function blocked(x: number, z: number, nx: number, nz: number) {
-  for (const w of OBSTACLES) {
-    const min = BOAT_RADIUS + w.collisionRadius;
-    const dx = nx - w.pos[0];
-    const dz = nz - w.pos[2];
+function blockedBy(x: number, z: number, nx: number, nz: number): "obstacle" | "shallow" | "bank" | null {
+  for (const o of OBSTACLES) {
+    const min = BOAT_RADIUS + o.r;
+    const dx = nx - o.x;
+    const dz = nz - o.z;
     const nextSq = dx * dx + dz * dz;
     if (nextSq < min * min) {
-      const cx = x - w.pos[0];
-      const cz = z - w.pos[2];
-      if (nextSq < cx * cx + cz * cz) return true; // getting closer
+      const cx = x - o.x;
+      const cz = z - o.z;
+      if (nextSq < cx * cx + cz * cz) return "obstacle"; // getting closer
     }
   }
-  // River banks: block a move that ends near/over land AND gets closer to it
   const next = navigableSd(nx, nz);
-  return next > -SHORE_MARGIN && next > navigableSd(x, z);
+  if (next > -SHORE_MARGIN && next > navigableSd(x, z)) {
+    return waterSd(nx, nz) < 0 ? "shallow" : "bank";
+  }
+  return null;
 }
 
 function syncBoat(boat: Group | null, x: number, z: number, heading: number) {
@@ -49,6 +66,10 @@ function syncBoat(boat: Group | null, x: number, z: number, heading: number) {
   boat.rotation.y = heading;
 }
 
+function notify(t: Telemetry, text: string) {
+  t.notice = text;
+  t.noticeUntil = performance.now() + NOTICE_MS;
+}
 
 type Keys = { fwd: boolean; back: boolean; left: boolean; right: boolean; boost: boolean; brake: boolean };
 
@@ -77,7 +98,7 @@ function decay(v: number, amount: number) {
 export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | null> }) {
   const telemetry = useBoatTelemetry();
   const keys = useRef<Keys>({ fwd: false, back: false, left: false, right: false, boost: false, brake: false });
-  // Moored at AXION until the tutorial's "DESAMARRAR BUQUE" fires `unmoor`
+  // Moored at AXION until the tutorial's DESAMARRAR fires `unmoor`
   const moored = useRef(true);
 
   useEffect(() => {
@@ -127,43 +148,50 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
       return;
     }
 
-    const boostMult = k.boost ? BOOST_MULT : 1;
-    const maxFwd = MAX_SPEED * boostMult;
+    const limit = speedLimitAt(t.z);
     let v = t.velocity;
 
-    // Thrust / drag
+    // Engine / drag
     const thrust = (k.fwd ? 1 : 0) - (k.back ? 1 : 0);
-    if (thrust > 0) v += ACCELERATION * boostMult * dt;
+    if (thrust > 0) v += ACCELERATION * (k.boost ? BOOST_MULT : 1) * dt;
     else if (thrust < 0) v -= ACCELERATION * dt;
     else v = decay(v, DRAG * dt);
     if (k.brake) v = decay(v, DRAG * BRAKE_MULT * dt);
 
-    // Clamp: reverse is hard-limited; over max forward (boost released) bleeds off
+    // Regulatory max speed for this stretch: the throttle clamps at it, and
+    // entering a slower zone bleeds speed off. The HUD shows a banner.
     if (v < -MAX_REVERSE) v = -MAX_REVERSE;
-    if (v > maxFwd) v = Math.max(maxFwd, v - DRAG * 2 * dt);
+    if (v > limit.ups) {
+      const wasAt = t.velocity <= limit.ups + 1e-3;
+      v = wasAt ? limit.ups : Math.max(limit.ups, v - OVERSPEED_DECEL * dt);
+      if (thrust > 0 || !wasAt) notify(t, `VEL MAX: ${limit.kn} KN`);
+    }
 
-    // Rudder: turn rate is proportional to speed (no way on = no steering)
-    // and flips astern, like a real ship
+    // Rudder: no flow, no steering; inverted astern (like a real ship)
     const rudder = (k.left ? 1 : 0) - (k.right ? 1 : 0);
-    t.heading += rudder * TURN_SPEED * (v / MAX_SPEED) * dt;
+    const speed = Math.abs(v);
+    if (rudder !== 0 && speed >= RUDDER_DEAD_SPEED) {
+      const effect = Math.min(1, speed / RUDDER_FULL_SPEED);
+      t.heading += rudder * TURN_RATE * effect * Math.sign(v) * dt;
+    }
 
     // Bow is local +X → world forward = (cos h, 0, -sin h), matching rotation.y = h
-    const dirX = Math.cos(t.heading);
-    const dirZ = -Math.sin(t.heading);
+    const vx = Math.cos(t.heading) * v;
+    const vz = -Math.sin(t.heading) * v + RIVER_DRIFT;
 
     // Soft world limit: damp speed when moving toward a nearby edge
-    const vx = dirX * v;
-    const vz = dirZ * v;
     const gap = Math.min(
       vx > 0 ? WORLD_BOUNDS.maxX - t.x : vx < 0 ? t.x - WORLD_BOUNDS.minX : Infinity,
       vz > 0 ? WORLD_BOUNDS.maxZ - t.z : vz < 0 ? t.z - WORLD_BOUNDS.minZ : Infinity,
     );
     if (gap < SOFT_ZONE) v *= Math.exp(-6 * (1 - gap / SOFT_ZONE) * dt);
 
-    const nx = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, t.x + dirX * v * dt));
-    const nz = Math.max(WORLD_BOUNDS.minZ, Math.min(WORLD_BOUNDS.maxZ, t.z + dirZ * v * dt));
-    if (blocked(t.x, t.z, nx, nz)) {
+    const nx = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, t.x + vx * dt));
+    const nz = Math.max(WORLD_BOUNDS.minZ, Math.min(WORLD_BOUNDS.maxZ, t.z + vz * dt));
+    const hit = blockedBy(t.x, t.z, nx, nz);
+    if (hit) {
       v *= BOUNCE_DAMPING; // damped bounce: stop hard, keep position
+      if (hit === "shallow") notify(t, "FUERA DEL CANAL · BAJO FONDO");
     } else {
       t.x = nx;
       t.z = nz;

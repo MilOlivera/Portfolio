@@ -4,7 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef, type Ref } from "react";
 import { Shape, type Group, type MeshStandardMaterial } from "three";
 
-// B/T NANY low-poly river tanker (83 × 13.8 m, ~6:1). Bow points to +X,
+// B/T NANY low-poly river tanker (80 × 14 m). Bow points to +X,
 // stern (bridge) to -X. Three.js materials can't read CSS tokens → hex.
 const HULL = "#1a7a40";
 const AMBER = "#FFB020";
@@ -26,6 +26,7 @@ const VALVES_X = [2, -0.5, -2]; // between lids, never overlapping one
 const SIDES = [1, -1] as const;
 
 const HULL_EXTRUDE = { depth: 1, bevelEnabled: false };
+const NANY_SCALE: [number, number, number] = [4 / 8.3, 0.5, 0.5];
 
 type Props = {
   ref?: Ref<Group>;
@@ -70,7 +71,10 @@ export default function Boat({ ref, position, rotation }: Props) {
 
   return (
     <group ref={ref} position={position} rotation={rotation}>
-      <group ref={parts}>
+      {/* Modelled at 8.3 × 1.4 u; scaled to the real B/T NANY at 1 u = 20 m:
+          eslora 80 m = 4 u, manga 14 m = 0.7 u, moderate mast. Lowered so the
+          hull sits ~0.12 u (2.4 m) deep — loaded with IFO 380. */}
+      <group ref={parts} scale={NANY_SCALE} position={[0, -0.12, 0]}>
       {/* Hull: outline extruded along Z, rotated so it rises from y=0 to y=1 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <extrudeGeometry args={[hullShape, HULL_EXTRUDE]} />

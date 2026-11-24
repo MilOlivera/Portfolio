@@ -4,7 +4,8 @@ import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
 import type { MeshStandardMaterial } from "three";
-import { RIVER_WIDTH, bankPoint } from "./river-geometry";
+import { BANK_Y } from "./environment";
+import { HALF_WIDTH, bankPoint } from "./river-geometry";
 import { WAYPOINTS, type Waypoint } from "./waypoints-data";
 
 // Labels are DOM, so they use the theme tokens. They never take pointer
@@ -35,26 +36,13 @@ function Label({
 
 // ------------------------------------------------------------- landmark ----
 // Low block inside its collision circle (side = r, so neighbours don't merge).
-// Landmarks with a `site` are only a label there (their buildings live on the
-// Campana quay in Shoreline.tsx).
+// Landmarks are labels only: their structures are dedicated components
+// (RefineryPAE, GNLEscobar, PNALima, GrainTerminal, Aeroparque, ZarateBridge…).
 function Landmark({ w }: { w: Waypoint }) {
-  if (w.site) {
-    return (
-      <group position={w.site}>
-        <Label y={5.5} w={w} className="bg-black/60 px-2 py-1 text-xs font-bold text-text" />
-      </group>
-    );
-  }
-  const side = w.collisionRadius;
-  const height = 1.5 + w.collisionRadius * 0.15;
   return (
-    <group position={w.pos}>
-      <mesh position={[0, height / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[side, height, side]} />
-        <meshStandardMaterial color={w.color ?? "#b8a586"} roughness={0.9} />
-      </mesh>
+    <group position={w.site ?? w.pos}>
       <Label
-        y={height + 2.5}
+        y={w.labelY ?? 3}
         w={w}
         className={`bg-black/60 px-2 py-1 text-xs font-bold ${w.struck ? "text-warn" : "text-text"}`}
       />
@@ -65,18 +53,18 @@ function Landmark({ w }: { w: Waypoint }) {
 // --------------------------------------------------------------- vuelta ----
 // Nautical warning sign on the bank beside the bend (pos is on the centerline).
 function VueltaSign({ w }: { w: Waypoint }) {
-  const [x, z] = bankPoint(w.pos[0], w.pos[2], RIVER_WIDTH / 2 + 2.5);
+  const [x, z] = bankPoint(w.pos[0], w.pos[2], HALF_WIDTH + 1.5);
   return (
-    <group position={[x, 0.3, z]}>
-      <mesh position={[0, 1.2, 0]}>
-        <cylinderGeometry args={[0.08, 0.08, 2.4, 6]} />
+    <group position={[x, BANK_Y, z]}>
+      <mesh position={[0, 0.6, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 1.2, 6]} />
         <meshStandardMaterial color="#dddddd" />
       </mesh>
-      <mesh position={[0, 2.6, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-        <boxGeometry args={[1.4, 0.9, 0.08]} />
+      <mesh position={[0, 1.3, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <boxGeometry args={[0.7, 0.45, 0.04]} />
         <meshStandardMaterial color="#FFB020" emissive="#FFB020" emissiveIntensity={0.25} />
       </mesh>
-      <Html position={[0, 4, 0]} distanceFactor={18} {...LABEL_PROPS}>
+      <Html position={[0, 2, 0]} distanceFactor={14} {...LABEL_PROPS}>
         <div className="rounded border border-warn/80 bg-bg/80 px-2 py-1 text-center font-mono whitespace-nowrap text-warn">
           <div className="text-xs font-bold">⚠ {w.title}</div>
           {w.subtitle && <div className="text-[10px] opacity-80">{w.subtitle}</div>}
@@ -101,6 +89,8 @@ function lightLevel(type: Waypoint["buoyType"], t: number) {
   return (Math.sin(t * 2.5) + 1) / 2;
 }
 
+const PROJECT_BUOY_SCALE = 0.6; // modelled ~2.5 u tall; 1 u = 20 m
+
 function Buoy({ w }: { w: Waypoint }) {
   const light = useRef<MeshStandardMaterial>(null);
   const cardinal = w.buoyType === "cardinal-east";
@@ -113,7 +103,7 @@ function Buoy({ w }: { w: Waypoint }) {
   });
 
   return (
-    <group position={w.pos}>
+    <group position={w.pos} scale={PROJECT_BUOY_SCALE}>
       {cardinal ? (
         // East cardinal body: black–yellow–black bands, bottom to top
         <>

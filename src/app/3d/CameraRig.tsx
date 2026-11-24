@@ -7,9 +7,9 @@ import { PerspectiveCamera, Vector3, type Group } from "three";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 
 const UP = new Vector3(0, 1, 0);
-const BRIDGE_OFFSET = new Vector3(-2.5, 3.5, 0); // 1.2 above the red roof, at its forward edge
-const LOOK_OFFSET = new Vector3(15, 0, 0); // far ahead at water level: deck below, horizon above
-const ORBIT_START_OFFSET = new Vector3(-14, 7, 6); // aft-quarter view
+const BRIDGE_OFFSET = new Vector3(-1.2, 1.6, 0); // above the bridge roof (y≈1.07), at its forward edge
+const LOOK_OFFSET = new Vector3(7.5, 0, 0); // ahead at water level: deck below, horizon above
+const ORBIT_START_OFFSET = new Vector3(-7, 3.5, 3); // aft-quarter view
 const FOV = 80;
 
 // Scratch vectors reused every frame (no per-frame allocation)
@@ -74,6 +74,6 @@ export default function CameraRig({ boatRef }: { boatRef: RefObject<Group | null
   });
 
   return mode === "orbit" ? (
-    <OrbitControls ref={controls} enablePan={false} minDistance={6} maxDistance={40} maxPolarAngle={Math.PI / 2 - 0.05} />
+    <OrbitControls ref={controls} enablePan={false} minDistance={3} maxDistance={30} maxPolarAngle={Math.PI / 2 - 0.05} />
   ) : null;
 }

@@ -10,21 +10,22 @@ export const HORIZON_HEX = "#c4a885";
 export const FOG_NEAR = 60;
 export const FOG_FAR = 200;
 
-export const WATER_SIZE = 300;
-export const WATER_SEGMENTS = 128;
+// Water plane follows the boat; 1-unit cells so the short river chop
+// (1 unit = 20 m) is resolved without aliasing.
+export const WATER_SIZE = 256;
+export const WATER_SEGMENTS = 256;
+/** Calm river: crests of ~1.5 m (0.075 u). */
+export const WAVE_HEIGHT = 0.03;
 
 // ---------------------------------------------------------------- land ----
-// The river shape (channel, basin, anchorage, quay, Delta) lives in
+// The river shape (channel, basins, estuary, canals, Delta) lives in
 // river-geometry.ts; terrain and collision both read it.
 
-/** Sailing area: the route + a bit of the upstream reach (bridge stays far). */
-export const WORLD_BOUNDS = { minX: -20, maxX: 240, minZ: -45, maxZ: 180 };
+/** Sailing area: the whole route, a bit upstream of the turning buoy, the anchorage. */
+export const WORLD_BOUNDS = { minX: -40, maxX: 800, minZ: -90, maxZ: 5200 };
 
-/** Land surface sits just above the tallest wave crest (~0.25). */
-export const BANK_Y = 0.3;
+/** Land surface: low Delta banks, just above the wave crests. */
+export const BANK_Y = 0.12;
 
-/** Boat center stops this far inside the waterline (hull half-beam 0.7). */
-export const SHORE_MARGIN = 1;
-
-/** Terrain extent (covers the whole world plus a fogged rim). */
-export const TERRAIN = { minX: -80, maxX: 260, minZ: -130, maxZ: 200, cell: 1.5 };
+/** Boat center stops this far inside the waterline (hull half-beam 0.35). */
+export const SHORE_MARGIN = 0.6;
