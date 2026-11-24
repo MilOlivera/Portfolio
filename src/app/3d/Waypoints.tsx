@@ -2,11 +2,11 @@
 
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useRef, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { MeshStandardMaterial } from "three";
 import { BANK_Y } from "./environment";
 import { VISUAL_HALF, bankPoint } from "./river-geometry";
-import { WAYPOINTS, type Waypoint } from "./waypoints-data";
+import { OPEN_WAYPOINT_EVENT, WAYPOINTS, type Waypoint } from "./waypoints-data";
 
 // Labels are DOM, so they use the theme tokens. They never take pointer
 // events (OrbitControls in V view) and stay below the HUD (z-10) instead of
@@ -171,13 +171,13 @@ function Buoy({ w }: { w: Waypoint }) {
 }
 
 // ----------------------------------------------------------------- ship ----
-function ShipHull({ ghost = false }: { ghost?: boolean }) {
+function ShipHull({ ghost = false, hull = "#1a4a30" }: { ghost?: boolean; hull?: string }) {
   const mat = ghost ? { transparent: true, opacity: 0.45 } : {};
   return (
     <>
       <mesh position={[0, 0.5, 0]} castShadow={!ghost}>
         <boxGeometry args={[6, 1, 1.2]} />
-        <meshStandardMaterial color={ghost ? "#555555" : "#1a4a30"} {...mat} />
+        <meshStandardMaterial color={ghost ? "#555555" : hull} {...mat} />
       </mesh>
       <mesh position={[-2, 1.5, 0]} castShadow={!ghost}>
         <boxGeometry args={[1.5, 1, 1]} />
@@ -192,8 +192,33 @@ function ShipHull({ ghost = false }: { ghost?: boolean }) {
 }
 
 function Rotated({ w, children }: { w: Waypoint; children: ReactNode }) {
+  const [hover, setHover] = useState(false);
+  const clickable = Boolean(w.clickable && w.media);
+
+  useEffect(() => {
+    if (!clickable) return;
+    document.body.style.cursor = hover ? "pointer" : "";
+    return () => {
+      document.body.style.cursor = "";
+    };
+  }, [hover, clickable]);
+
   return (
-    <group position={w.pos} rotation={[0, w.rotation ?? 0, 0]}>
+    <group
+      position={w.pos}
+      rotation={[0, w.rotation ?? 0, 0]}
+      // Zona Común ships: click opens the project carousel (AlTravesDetector)
+      onClick={
+        clickable
+          ? (e) => {
+              e.stopPropagation();
+              window.dispatchEvent(new CustomEvent(OPEN_WAYPOINT_EVENT, { detail: w.id }));
+            }
+          : undefined
+      }
+      onPointerOver={clickable ? () => setHover(true) : undefined}
+      onPointerOut={clickable ? () => setHover(false) : undefined}
+    >
       {children}
     </group>
   );
@@ -202,7 +227,7 @@ function Rotated({ w, children }: { w: Waypoint; children: ReactNode }) {
 function ClientShip({ w }: { w: Waypoint }) {
   return (
     <Rotated w={w}>
-      <ShipHull />
+      <ShipHull hull={w.color} />
       <Label
         y={3}
         w={w}

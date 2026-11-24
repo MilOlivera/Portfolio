@@ -31,9 +31,21 @@ type Readout = {
   dist: string;
   near: boolean;
   notice: string;
+  autoSlow: boolean;
 };
 
-const EMPTY: Readout = { km: "97.0", zone: "—", vel: "0.0", limit: 0, rumbo: "000", next: "—", dist: "—", near: false, notice: "" };
+const EMPTY: Readout = {
+  km: "97.0",
+  zone: "—",
+  vel: "0.0",
+  limit: 0,
+  rumbo: "000",
+  next: "—",
+  dist: "—",
+  near: false,
+  notice: "",
+  autoSlow: false,
+};
 
 /** Polls the telemetry ref and re-renders only when the formatted values change. */
 function useReadout() {
@@ -55,6 +67,7 @@ function useReadout() {
         dist: `${Math.round(distance * METERS_PER_UNIT)} m`,
         near: distance < NEAR_DISTANCE,
         notice: performance.now() < t.noticeUntil ? t.notice : "",
+        autoSlow: performance.now() < t.autoSlowUntil,
       };
       setReadout((r) =>
         (Object.keys(next) as (keyof Readout)[]).every((k) => r[k] === next[k]) ? r : next,
@@ -70,7 +83,7 @@ export default function Hud() {
   const router = useRouter();
   // Read once on the client; server snapshot is "desktop" (no redirect).
   const mobile = useSyncExternalStore(noopSubscribe, isTouchMobile, () => false);
-  const { km, zone, vel, limit, rumbo, next, dist, near, notice } = useReadout();
+  const { km, zone, vel, limit, rumbo, next, dist, near, notice, autoSlow } = useReadout();
   const [helpVisible, setHelpVisible] = useState(true);
 
   useEffect(() => {
@@ -114,8 +127,13 @@ export default function Hud() {
           <dt className="text-text-mute">ZONA:</dt>
           <dd className="max-w-[26ch] text-text">{zone}</dd>
           <dt className="text-text-mute">VEL:</dt>
-          <dd className="text-green tabular-nums">
-            {vel} kn <span className="text-text-mute">/ máx {limit}</span>
+          <dd className={`tabular-nums ${autoSlow ? "font-bold text-warn" : "text-green"}`}>
+            {vel} kn{" "}
+            {autoSlow ? (
+              <span className="text-warn">· AUTO-SLOW · AL TRAVÉS</span>
+            ) : (
+              <span className="text-text-mute">/ máx {limit}</span>
+            )}
           </dd>
           <dt className="text-text-mute">RUMBO:</dt>
           <dd className="text-green tabular-nums">{rumbo}°</dd>

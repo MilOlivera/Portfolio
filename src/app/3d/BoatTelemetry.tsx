@@ -16,6 +16,9 @@ export type Telemetry = {
   noticeUntil: number;
   /** Real seconds spent continuously outside the dredged fairway. */
   offFairway: number;
+  /** Al-través auto-slow: performance.now() until which speed is clamped to autoSlowKn. */
+  autoSlowUntil: number;
+  autoSlowKn: number;
 };
 
 /**
@@ -31,6 +34,8 @@ export const START: Telemetry = {
   notice: "",
   noticeUntil: 0,
   offFairway: 0,
+  autoSlowUntil: 0,
+  autoSlowKn: 2,
 };
 
 /** Window event fired by the tutorial's "DESAMARRAR" button. */

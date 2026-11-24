@@ -2,8 +2,8 @@
 // HUD zone name. Pure data (no three.js) — read by the physics and the HUD.
 import { kmToZ, knotsToUps, zToKm } from "./scale";
 
-// GNL Escobar safety area around the FSRU (the 4 yellow buoys, z 95–125).
-export const GNL_ZONE = { fromZ: 95, toZ: 125 };
+// GNL Escobar safety area around the FSRU (the 4 yellow buoys, z 184–214).
+export const GNL_ZONE = { fromZ: 184, toZ: 214 };
 
 /** Speed limits by world Z (the route runs monotonically +Z downstream). */
 const SPEED_ZONES: { fromZ: number; toZ: number; kn: number; label: string }[] = [

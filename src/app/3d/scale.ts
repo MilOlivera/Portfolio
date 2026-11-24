@@ -17,7 +17,7 @@ export const KT_TO_UPS = (0.5144 / METERS_PER_UNIT) * HANDLING_COMPRESSION;
 
 /**
  * Clock multiplier for the whole ship simulation (movement, acceleration,
- * rudder, current). On the compressed route (~430 u) at ×2: ~1 min flat out
+ * rudder, current). On the compressed route (~530 u) at ×2: ~1 min flat out
  * with an autopilot (simulated), ~2–2.5 min playing normally. Turning radii
  * don't change with it, and the HUD keeps reading the true knots.
  */
@@ -32,18 +32,17 @@ const KM_Z: [km: number, z: number][] = [
   [101, -40], // Vuelta del Este
   [98, -15], // green turning buoy
   [97, 0], // B/T NANY berth (Terminal AXION, Campana)
-  [95, 25], // Vuelta de Campana
-  [90, 35], // Vuelta del Hinojo
-  [80, 50], // Vuelta del Tordillo
-  [77, 90], // Puerto Escobar
-  [74.5, 110], // FSRU EXPEDIENT · GNL Escobar
-  [70, 130],
-  [50, 170], // PNA LIMA · Canal de la Honda
-  [48, 190], // start of the Canal Mitre
-  [38, 250],
-  [20, 310], // Aeroparque
-  [12, 370], // end of the Canal Mitre
-  [2, 420], // Zona Común
+  [95, 35], // Vuelta de Campana (apex)
+  [90, 72], // Vuelta del Hinojo (apex)
+  [80, 108], // Vuelta del Tordillo (apex)
+  [77, 175], // Puerto Escobar
+  [74.5, 200], // FSRU EXPEDIENT · GNL Escobar
+  [50, 250], // PNA LIMA · Canal de la Honda
+  [48, 275], // start of the Canal Mitre
+  [38, 335],
+  [20, 395], // Aeroparque
+  [12, 455], // end of the Canal Mitre
+  [2, 510], // Zona Común
 ];
 
 function lerpTable(v: number, from: 0 | 1, to: 0 | 1, descending: boolean) {

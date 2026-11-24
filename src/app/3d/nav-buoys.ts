@@ -30,10 +30,10 @@ const mitrePairs: NavBuoy[] = MITRE_PAIRS_KM.flatMap((km) => {
 // marks, St Andrew's cross topmark (Disposición SNAV NA9 N° 004/11).
 const gnlBuoys: NavBuoy[] = (
   [
-    [18, 95],
-    [32, 95],
-    [32, 125],
-    [18, 125],
+    [20.9, 184.5],
+    [34.9, 184.5],
+    [34.9, 214.5],
+    [20.9, 214.5],
   ] as const
 ).map(([x, z], i) => ({ id: `gnl-${i}`, kind: "yellow", pos: [x, 0, z] }));
 

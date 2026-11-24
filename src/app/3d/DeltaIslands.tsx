@@ -21,7 +21,7 @@ const ISLANDS: Island[] = [
   { pos: [66, -56], size: 4, squash: 0.8, rot: 0.3, trees: [[0, 0], [-0.7, 0.3]] },
   { pos: [52, 0], size: 4, squash: 0.6, rot: 1.3, trees: [[-0.8, 0], [0.7, 0.3]] },
   { pos: [66, -8], size: 5, squash: 0.75, rot: 2.2, trees: [[0, 0], [1, 0.4], [-1, -0.4]] },
-  { pos: [36, 16], size: 3, squash: 0.8, rot: 0.8, trees: [[0, 0], [0.6, 0.3]] },
+  { pos: [56, 16], size: 3, squash: 0.8, rot: 0.8, trees: [[0, 0], [0.6, 0.3]] },
 ];
 
 export default function DeltaIslands() {

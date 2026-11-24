@@ -227,8 +227,8 @@ export function DeltaHouse({ position, rotationY = 0, lit = false }: Props) {
 
 // East-bank houses at the visible river's edge (piles in the shallows), fronts
 // facing west toward the river. Placed against the river geometry, clear of
-// the Delta canal mouths (z 42.5 / 133 / 172).
-const HOUSE_Z = [12, 30, 55, 75, 100, 118, 148, 160];
+// the Delta canal mouths (z 90 / 219 / 254).
+const HOUSE_Z = [12, 40, 70, 120, 140, 160, 185, 235];
 const HOUSES: { x: number; z: number; lit: boolean }[] = HOUSE_Z.map((z, i) => {
   const [x, hz] = besideRiver(z, -(VISUAL_HALF + 1.2));
   return { x, z: hz, lit: i % 2 === 0 };

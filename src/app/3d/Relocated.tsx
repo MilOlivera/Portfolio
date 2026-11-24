@@ -36,10 +36,10 @@ const OLD = {
 };
 
 const NEW = {
-  lima: anchorAt(170, 13.5), // patrol boat ends ~0.8 u inside the waterline
-  grain: anchorAt(132, 15.5), // pier reaches the visible river's edge
-  aero: anchorAt(310, 55), // runway 15 u inland of the estuary coast (40 u)
-  laPlata: anchorAt(385, 60), // cranes on the estuary coast
+  lima: anchorAt(250, 13.5), // patrol boat ends ~0.8 u inside the waterline
+  grain: anchorAt(228, 15.5), // pier reaches the visible river's edge
+  aero: anchorAt(395, 55), // runway 15 u inland of the estuary coast (40 u)
+  laPlata: anchorAt(477, 60), // cranes on the estuary coast
 };
 
 export default function RelocatedLandmarks() {

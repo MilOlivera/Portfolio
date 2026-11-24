@@ -19,34 +19,41 @@ export const RIVER_CENTERLINE = [
   new Vector3(0, 0, -15), // green turning buoy
   new Vector3(0, 0, 0), // B/T NANY berth
 
-  // Downstream (sailed, compact)
-  new Vector3(3, 0, 15), // falling off downstream
-  new Vector3(8, 0, 25), // Vuelta de Campana
-  new Vector3(12, 0, 35), // Vuelta del Hinojo
-  new Vector3(15, 0, 50), // Vuelta del Tordillo
+  // Downstream (sailed). The vueltas swing hard across: you FEEL them.
+  new Vector3(5, 0, 15), // falling off, straight south
+  // Vuelta de Campana: sharp bend to starboard (east)
+  new Vector3(20, 0, 22),
+  new Vector3(32, 0, 35), // apex
+  new Vector3(28, 0, 48),
+  // Vuelta del Hinojo: counter-bend to port (west)
+  new Vector3(12, 0, 60),
+  new Vector3(2, 0, 72), // apex
+  new Vector3(8, 0, 85),
+  // Vuelta del Tordillo: third bend to starboard
+  new Vector3(22, 0, 95),
+  new Vector3(32, 0, 108), // apex
+  new Vector3(30, 0, 125), // into the cancha larga
 
-  // Cancha larga (Escobar + GNL)
-  new Vector3(18, 0, 70),
-  new Vector3(22, 0, 90), // Puerto Escobar (tugs, port side)
-  new Vector3(25, 0, 110), // FSRU EXPEDIENT (port side)
-  new Vector3(28, 0, 130), // end of the GNL area
+  // Cancha larga (straight)
   new Vector3(30, 0, 150),
+  new Vector3(28, 0, 175), // Puerto Escobar (port side)
+  new Vector3(28, 0, 200), // FSRU EXPEDIENT (port side)
+  new Vector3(32, 0, 225),
 
-  // Into the Ingeniero Mitre
-  new Vector3(35, 0, 170), // PNA LIMA + Canal de la Honda
-  new Vector3(40, 0, 190), // start of the Canal Mitre
+  // Into the Ingeniero Mitre (gentle bend to starboard)
+  new Vector3(40, 0, 250), // PNA LIMA + Canal de la Honda
+  new Vector3(50, 0, 275), // start of the Canal Mitre
 
-  // Canal Mitre (straight, IALA-buoyed)
-  new Vector3(50, 0, 220),
-  new Vector3(60, 0, 250), // km 38 (Finanzas, outside the channel)
-  new Vector3(70, 0, 280),
-  new Vector3(80, 0, 310), // off Aeroparque
-  new Vector3(90, 0, 340),
-  new Vector3(100, 0, 370), // km 12 (Relojes, cardinal)
-
-  // Zona Común (anchorage + mega Evolvere)
-  new Vector3(110, 0, 400),
-  new Vector3(120, 0, 420),
+  // Canal Mitre (straight SE, IALA-buoyed)
+  new Vector3(60, 0, 305),
+  new Vector3(70, 0, 335), // km 38 (Finanzas, outside the channel)
+  new Vector3(80, 0, 365),
+  new Vector3(90, 0, 395), // off Aeroparque
+  new Vector3(100, 0, 425),
+  new Vector3(110, 0, 455), // km 12 (Relojes, cardinal)
+  new Vector3(120, 0, 485),
+  new Vector3(130, 0, 510), // Zona Común · mega Evolvere
+  new Vector3(140, 0, 560), // continues past the fog
 ];
 
 export const RIVER_CURVE = new CatmullRomCurve3(RIVER_CENTERLINE, false, "catmullrom", 0.5);
@@ -136,12 +143,12 @@ export const JETTY: Rect = { minX: -2, maxX: -1, minZ: -8, maxZ: 10 };
 /** Causeway joining the berth to the west bank (north end of the dársena). */
 export const CAUSEWAY: Rect = { minX: -11, maxX: -2, minZ: -10, maxZ: -8 };
 // Zona Común anchorage.
-export const ANCHORAGE: Circle = { x: 118, z: 416, r: 30 };
+export const ANCHORAGE: Circle = { x: 127, z: 510, r: 28 };
 
 // Río de la Plata around the Canal Mitre: wide open shallows (visible, not
 // navigable). Widens from the Mitre start.
-const ESTUARY_START_Z = 178;
-const ESTUARY_FULL_Z = 200;
+const ESTUARY_START_Z = 263;
+const ESTUARY_FULL_Z = 285;
 const ESTUARY_HALF_WIDTH = 40;
 
 // Delta side canals (visible water, not navigable): perpendicular to the river
@@ -149,9 +156,9 @@ const ESTUARY_HALF_WIDTH = 40;
 const CANAL_LENGTH = 60;
 const CANAL_HALF_WIDTH = 3;
 export const CANALS = [
-  { id: "gob-arias", name: "Canal Gob. Arias", z: 42.5 },
-  { id: "gob-laserna", name: "Canal Gob. La Serna", z: 133 },
-  { id: "canal-honda", name: "Canal de la Honda", z: 172 },
+  { id: "gob-arias", name: "Canal Gob. Arias", z: 90 },
+  { id: "gob-laserna", name: "Canal Gob. La Serna", z: 219 },
+  { id: "canal-honda", name: "Canal de la Honda", z: 254 },
 ].map((c) => {
   const f = frameAtZ(c.z);
   return { ...c, x0: f.x, z0: f.z, ax: -f.wx, az: -f.wz, length: CANAL_LENGTH, halfWidth: CANAL_HALF_WIDTH };

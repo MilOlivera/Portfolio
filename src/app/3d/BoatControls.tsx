@@ -9,7 +9,13 @@ import { navigableSd, outsideFairway, waterSd } from "./river-geometry";
 import { OFF_FAIRWAY_KN, speedLimitAt } from "./route-info";
 import { knotsToUps } from "./scale";
 import { TIME_SCALE } from "./scale";
-import { BOAT_RADIUS, EXTRA_OBSTACLES, WAYPOINTS } from "./waypoints-data";
+import {
+  AUTO_SLOW_CANCEL_EVENT,
+  AUTO_SLOW_EVENT,
+  BOAT_RADIUS,
+  EXTRA_OBSTACLES,
+  WAYPOINTS,
+} from "./waypoints-data";
 
 // Ship handling at 1 u = 20 m, in u/s of SIMULATION time (10 kn = 5.14 u/s;
 // the clock multiplier is TIME_SCALE — see scale.ts). Tuned by simulation:
@@ -26,12 +32,13 @@ const OVERSPEED_DECEL = 1; // u/s² when entering a slower zone
 // a ship length — a hard-over rudder kick); at 10 kn the radius is ≈ 10 u.
 const RUDDER_DEAD_SPEED = 0.3;
 const RUDDER_FULL_SPEED = 1;
-const TURN_RATE = 0.5; // rad/s at full effectiveness
+const TURN_RATE = 0.65; // rad/s at full effectiveness (+30% for the amplified vueltas)
 const RIVER_DRIFT = 0.02; // u/s toward +Z (downstream current), whenever unmoored
 const SOFT_ZONE = 6; // start slowing this far from the world limit
 const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
 const NOTICE_MS = 2000;
 const OFF_FAIRWAY_HINT_S = 5; // after this long outside the fairway, suggest going back
+const AUTO_SLOW_EASE = 4; // 1/s (real time): ease-out to the al-través speed in ~1 s
 const MAX_SUBSTEP = 1 / 30; // s of sim time per physics substep
 
 // Blocking obstacles resolved once (no per-frame allocation)
@@ -104,8 +111,10 @@ function simulate(t: Telemetry, k: Keys, dt: number) {
   // Outside the dredged fairway the hull scrapes: 3 kn max ("bajo fondo")
   const offFairway = outsideFairway(t.x, t.z);
   const zoneLimit = speedLimitAt(t.z);
-  const limit =
+  let limit =
     offFairway && OFF_FAIRWAY_KN < zoneLimit.kn ? { kn: OFF_FAIRWAY_KN, ups: knotsToUps(OFF_FAIRWAY_KN) } : zoneLimit;
+  const autoSlow = performance.now() < t.autoSlowUntil && t.autoSlowKn < limit.kn;
+  if (autoSlow) limit = { kn: t.autoSlowKn, ups: knotsToUps(t.autoSlowKn) };
   t.offFairway = offFairway ? t.offFairway + dt / TIME_SCALE : 0;
   if (offFairway) {
     notify(t, t.offFairway > OFF_FAIRWAY_HINT_S ? "VOLVÉ AL CANAL ENTRE LAS BOYAS" : "FUERA DEL CANAL · BAJO FONDO");
@@ -122,7 +131,10 @@ function simulate(t: Telemetry, k: Keys, dt: number) {
   // Regulatory max speed for this stretch: the throttle clamps at it, and
   // entering a slower zone bleeds speed off. The HUD shows a banner.
   if (v < -MAX_REVERSE) v = -MAX_REVERSE;
-  if (v > limit.ups) {
+  if (autoSlow && v > limit.ups) {
+    // Al través: ease-out down to 2 kn in ~1 s (real time)
+    v = limit.ups + (v - limit.ups) * Math.exp((-AUTO_SLOW_EASE * dt) / TIME_SCALE);
+  } else if (v > limit.ups) {
     const wasAt = t.velocity <= limit.ups + 1e-3;
     v = wasAt ? limit.ups : Math.max(limit.ups, v - OVERSPEED_DECEL * dt);
     if (!offFairway && (thrust > 0 || !wasAt)) notify(t, `VEL MAX: ${limit.kn} KN`);
@@ -173,6 +185,25 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
     window.addEventListener(UNMOOR_EVENT, onUnmoor);
     return () => window.removeEventListener(UNMOOR_EVENT, onUnmoor);
   }, []);
+
+  // Al-través carousel: clamp to its speed while it's open
+  useEffect(() => {
+    const t = telemetry.current;
+    const onSlow = (e: Event) => {
+      const { toKn, holdMs } = (e as CustomEvent<{ toKn: number; holdMs: number }>).detail;
+      t.autoSlowKn = toKn;
+      t.autoSlowUntil = performance.now() + holdMs;
+    };
+    const onCancel = () => {
+      t.autoSlowUntil = 0;
+    };
+    window.addEventListener(AUTO_SLOW_EVENT, onSlow);
+    window.addEventListener(AUTO_SLOW_CANCEL_EVENT, onCancel);
+    return () => {
+      window.removeEventListener(AUTO_SLOW_EVENT, onSlow);
+      window.removeEventListener(AUTO_SLOW_CANCEL_EVENT, onCancel);
+    };
+  }, [telemetry]);
 
   useEffect(() => {
     const t = telemetry.current;

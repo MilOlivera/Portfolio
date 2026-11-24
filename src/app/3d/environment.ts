@@ -22,7 +22,7 @@ export const WAVE_HEIGHT = 0.03;
 // river-geometry.ts; terrain and collision both read it.
 
 /** Sailing area: the whole route, a bit upstream of the turning buoy, the anchorage. */
-export const WORLD_BOUNDS = { minX: -30, maxX: 170, minZ: -30, maxZ: 460 };
+export const WORLD_BOUNDS = { minX: -30, maxX: 180, minZ: -30, maxZ: 550 };
 
 /** Land surface: low Delta banks, just above the wave crests. */
 export const BANK_Y = 0.12;
