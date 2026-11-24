@@ -7,6 +7,7 @@ import { START, UNMOOR_EVENT, useBoatTelemetry, type Telemetry } from "./BoatTel
 import { SHORE_MARGIN, WORLD_BOUNDS } from "./environment";
 import { navigableSd, waterSd } from "./river-geometry";
 import { speedLimitAt } from "./route-info";
+import { TIME_SCALE } from "./scale";
 import { BOAT_RADIUS, EXTRA_OBSTACLES, WAYPOINTS } from "./waypoints-data";
 
 // Ship handling at 1 u = 20 m (speeds in u/s already include TIME_SCALE, so
@@ -29,6 +30,7 @@ const RIVER_DRIFT = 0.02; // u/s toward +Z (downstream current), whenever unmoor
 const SOFT_ZONE = 6; // start slowing this far from the world limit
 const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
 const NOTICE_MS = 2000;
+const MAX_SUBSTEP = 1 / 30; // s of sim time per physics substep
 
 // Blocking obstacles resolved once (no per-frame allocation)
 const OBSTACLES: { x: number; z: number; r: number }[] = [
@@ -95,6 +97,59 @@ function decay(v: number, amount: number) {
   return Math.abs(v) <= amount ? 0 : v - Math.sign(v) * amount;
 }
 
+/** One handling step of `dt` simulated seconds (velocities in u/s of sim time). */
+function simulate(t: Telemetry, k: Keys, dt: number) {
+  const limit = speedLimitAt(t.z);
+  let v = t.velocity;
+
+  // Engine / drag
+  const thrust = (k.fwd ? 1 : 0) - (k.back ? 1 : 0);
+  if (thrust > 0) v += ACCELERATION * (k.boost ? BOOST_MULT : 1) * dt;
+  else if (thrust < 0) v -= ACCELERATION * dt;
+  else v = decay(v, DRAG * dt);
+  if (k.brake) v = decay(v, DRAG * BRAKE_MULT * dt);
+
+  // Regulatory max speed for this stretch: the throttle clamps at it, and
+  // entering a slower zone bleeds speed off. The HUD shows a banner.
+  if (v < -MAX_REVERSE) v = -MAX_REVERSE;
+  if (v > limit.ups) {
+    const wasAt = t.velocity <= limit.ups + 1e-3;
+    v = wasAt ? limit.ups : Math.max(limit.ups, v - OVERSPEED_DECEL * dt);
+    if (thrust > 0 || !wasAt) notify(t, `VEL MAX: ${limit.kn} KN`);
+  }
+
+  // Rudder: no flow, no steering; inverted astern (like a real ship)
+  const rudder = (k.left ? 1 : 0) - (k.right ? 1 : 0);
+  const speed = Math.abs(v);
+  if (rudder !== 0 && speed >= RUDDER_DEAD_SPEED) {
+    const effect = Math.min(1, speed / RUDDER_FULL_SPEED);
+    t.heading += rudder * TURN_RATE * effect * Math.sign(v) * dt;
+  }
+
+  // Bow is local +X → world forward = (cos h, 0, -sin h), matching rotation.y = h
+  const vx = Math.cos(t.heading) * v;
+  const vz = -Math.sin(t.heading) * v + RIVER_DRIFT;
+
+  // Soft world limit: damp speed when moving toward a nearby edge
+  const gap = Math.min(
+    vx > 0 ? WORLD_BOUNDS.maxX - t.x : vx < 0 ? t.x - WORLD_BOUNDS.minX : Infinity,
+    vz > 0 ? WORLD_BOUNDS.maxZ - t.z : vz < 0 ? t.z - WORLD_BOUNDS.minZ : Infinity,
+  );
+  if (gap < SOFT_ZONE) v *= Math.exp(-6 * (1 - gap / SOFT_ZONE) * dt);
+
+  const nx = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, t.x + vx * dt));
+  const nz = Math.max(WORLD_BOUNDS.minZ, Math.min(WORLD_BOUNDS.maxZ, t.z + vz * dt));
+  const hit = blockedBy(t.x, t.z, nx, nz);
+  if (hit) {
+    v *= BOUNCE_DAMPING; // damped bounce: stop hard, keep position
+    if (hit === "shallow") notify(t, "FUERA DEL CANAL · BAJO FONDO");
+  } else {
+    t.x = nx;
+    t.z = nz;
+  }
+  t.velocity = v;
+}
+
 export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | null> }) {
   const telemetry = useBoatTelemetry();
   const keys = useRef<Keys>({ fwd: false, back: false, left: false, right: false, boost: false, brake: false });
@@ -137,7 +192,6 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
   }, [telemetry]);
 
   useFrame((_, rawDelta) => {
-    const dt = Math.min(rawDelta, 0.1); // avoid jumps after a tab switch
     const k = keys.current;
     const t = telemetry.current;
 
@@ -148,55 +202,11 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
       return;
     }
 
-    const limit = speedLimitAt(t.z);
-    let v = t.velocity;
-
-    // Engine / drag
-    const thrust = (k.fwd ? 1 : 0) - (k.back ? 1 : 0);
-    if (thrust > 0) v += ACCELERATION * (k.boost ? BOOST_MULT : 1) * dt;
-    else if (thrust < 0) v -= ACCELERATION * dt;
-    else v = decay(v, DRAG * dt);
-    if (k.brake) v = decay(v, DRAG * BRAKE_MULT * dt);
-
-    // Regulatory max speed for this stretch: the throttle clamps at it, and
-    // entering a slower zone bleeds speed off. The HUD shows a banner.
-    if (v < -MAX_REVERSE) v = -MAX_REVERSE;
-    if (v > limit.ups) {
-      const wasAt = t.velocity <= limit.ups + 1e-3;
-      v = wasAt ? limit.ups : Math.max(limit.ups, v - OVERSPEED_DECEL * dt);
-      if (thrust > 0 || !wasAt) notify(t, `VEL MAX: ${limit.kn} KN`);
-    }
-
-    // Rudder: no flow, no steering; inverted astern (like a real ship)
-    const rudder = (k.left ? 1 : 0) - (k.right ? 1 : 0);
-    const speed = Math.abs(v);
-    if (rudder !== 0 && speed >= RUDDER_DEAD_SPEED) {
-      const effect = Math.min(1, speed / RUDDER_FULL_SPEED);
-      t.heading += rudder * TURN_RATE * effect * Math.sign(v) * dt;
-    }
-
-    // Bow is local +X → world forward = (cos h, 0, -sin h), matching rotation.y = h
-    const vx = Math.cos(t.heading) * v;
-    const vz = -Math.sin(t.heading) * v + RIVER_DRIFT;
-
-    // Soft world limit: damp speed when moving toward a nearby edge
-    const gap = Math.min(
-      vx > 0 ? WORLD_BOUNDS.maxX - t.x : vx < 0 ? t.x - WORLD_BOUNDS.minX : Infinity,
-      vz > 0 ? WORLD_BOUNDS.maxZ - t.z : vz < 0 ? t.z - WORLD_BOUNDS.minZ : Infinity,
-    );
-    if (gap < SOFT_ZONE) v *= Math.exp(-6 * (1 - gap / SOFT_ZONE) * dt);
-
-    const nx = Math.max(WORLD_BOUNDS.minX, Math.min(WORLD_BOUNDS.maxX, t.x + vx * dt));
-    const nz = Math.max(WORLD_BOUNDS.minZ, Math.min(WORLD_BOUNDS.maxZ, t.z + vz * dt));
-    const hit = blockedBy(t.x, t.z, nx, nz);
-    if (hit) {
-      v *= BOUNCE_DAMPING; // damped bounce: stop hard, keep position
-      if (hit === "shallow") notify(t, "FUERA DEL CANAL · BAJO FONDO");
-    } else {
-      t.x = nx;
-      t.z = nz;
-    }
-    t.velocity = v;
+    // Fast-forward (TIME_SCALE): run the whole handling model faster than the
+    // clock, in fixed substeps so collisions never tunnel through the jetty.
+    const simDt = Math.min(rawDelta, 0.1) * TIME_SCALE;
+    const steps = Math.ceil(simDt / MAX_SUBSTEP);
+    for (let i = 0; i < steps; i++) simulate(t, k, simDt / steps);
     syncBoat(boatRef.current, t.x, t.z, t.heading);
   });
 

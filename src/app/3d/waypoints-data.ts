@@ -77,10 +77,11 @@ export const WAYPOINTS: Waypoint[] = [
 
 /**
  * Green lateral buoy at km 98 where the NANY turns around (the "caída"),
- * upstream of the no-turning zone (km 96–97.5). On the Delta-side (east)
- * edge of the channel: starboard when heading upstream.
+ * upstream of the no-turning zone (km 96–97.5). On the port-side margin
+ * (Campana, west): at the channel's west edge — the centerline is at x≈10
+ * here, so x=-5 would be 11 u inland; port side when heading upstream.
  */
-export const TURN_BUOY: [number, number, number] = [13.3, 0, -39.5];
+export const TURN_BUOY: [number, number, number] = [6.7, 0, -40.5];
 
 /** Hull obstacles with no waypoint of their own (GNL Escobar LNG carrier). */
 export const EXTRA_OBSTACLES: { pos: [number, number]; r: number }[] = [
