@@ -4,7 +4,6 @@ import { Sky } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useRef } from "react";
 import type { Group } from "three";
-import Aeroparque from "./Aeroparque";
 import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
@@ -13,11 +12,11 @@ import DeltaHouses from "./DeltaHouses";
 import DeltaIslands from "./DeltaIslands";
 import NavBuoys from "./NavBuoys";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
+import FSRUExpedient from "./FSRUExpedient";
 import GNLEscobar from "./GNLEscobar";
-import GrainTerminal from "./GrainTerminal";
-import LaPlataSkyline from "./LaPlataSkyline";
-import PNALima from "./PNALima";
+import PuertoEscobar from "./PuertoEscobar";
 import RefineryPAE from "./RefineryPAE";
+import RelocatedLandmarks from "./Relocated";
 import Shoreline from "./Shoreline";
 import SunLight from "./SunLight";
 import Water from "./Water";
@@ -60,11 +59,10 @@ export default function SceneCanvas() {
       <DeltaIslands />
       <DeltaHouses />
       <DeltaCanals />
+      <PuertoEscobar />
       <GNLEscobar />
-      <GrainTerminal />
-      <PNALima />
-      <Aeroparque />
-      <LaPlataSkyline />
+      <FSRUExpedient />
+      <RelocatedLandmarks />
 
       <Waypoints />
       <NavBuoys />

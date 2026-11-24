@@ -13,7 +13,7 @@ export type NavBuoy = { id: string; kind: NavBuoyKind; pos: [number, number, num
 // downstream RED is to PORT = east side, GREEN to starboard = west.
 const MITRE_PAIRS_KM = [44, 40, 36, 32, 28, 20, 14];
 const LATERAL_OFFSET = 4;
-const RED_SIDE = "east" as "west" | "east"; // flip to "west" to mirror the pairs
+export const RED_SIDE = "east" as "east" | "west"; // flip to "west" to mirror the pairs
 const RED_SIGN = RED_SIDE === "west" ? 1 : -1; // besideRiver: + = west, − = east
 
 const mitrePairs: NavBuoy[] = MITRE_PAIRS_KM.flatMap((km) => {
@@ -26,14 +26,14 @@ const mitrePairs: NavBuoy[] = MITRE_PAIRS_KM.flatMap((km) => {
   ];
 });
 
-// GNL Escobar turning area (km 75.5–76.5): yellow special marks, St Andrew's
-// cross topmark (Disposición SNAV NA9 N° 004/11).
+// GNL Escobar safety perimeter around the FSRU EXPEDIENT: yellow special
+// marks, St Andrew's cross topmark (Disposición SNAV NA9 N° 004/11).
 const gnlBuoys: NavBuoy[] = (
   [
-    [55, 1070],
-    [65, 1090],
-    [75, 1110],
-    [65, 1130],
+    [18, 95],
+    [32, 95],
+    [32, 125],
+    [18, 125],
   ] as const
 ).map(([x, z], i) => ({ id: `gnl-${i}`, kind: "yellow", pos: [x, 0, z] }));
 

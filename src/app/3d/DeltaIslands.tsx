@@ -10,18 +10,18 @@ const TRUNK = "#5a4030";
 type Island = { pos: [number, number]; size: number; squash: number; rot: number; trees: [number, number][] };
 
 const ISLANDS: Island[] = [
-  { pos: [24, -60], size: 4, squash: 0.7, rot: 0.4, trees: [[-0.6, 0.2], [0.7, -0.3]] },
-  { pos: [32, -38], size: 5, squash: 0.8, rot: 1.1, trees: [[0, 0], [1.1, 0.5], [-1, -0.4]] },
-  { pos: [27, -14], size: 3.5, squash: 0.6, rot: 0.2, trees: [[-0.5, 0], [0.6, 0.3]] },
-  { pos: [41, -70], size: 5, squash: 0.75, rot: 2.0, trees: [[0, 0], [0.9, 0.3]] },
-  { pos: [46, -24], size: 6, squash: 0.65, rot: 0.9, trees: [[-1.2, 0.2], [0.2, -0.4], [1.3, 0.3]] },
-  { pos: [38, 5], size: 4, squash: 0.85, rot: 2.6, trees: [[0, 0.5], [0.8, -0.4]] },
-  { pos: [56, -50], size: 5, squash: 0.55, rot: 0.6, trees: [[-1.2, 0], [0.4, 0.4], [1.4, -0.2]] },
-  { pos: [59, -6], size: 6, squash: 0.7, rot: 1.7, trees: [[-0.9, -0.3], [0.9, 0.4]] },
-  { pos: [66, -80], size: 4, squash: 0.8, rot: 0.3, trees: [[0, 0], [-0.7, 0.3]] },
-  { pos: [51, 26], size: 4, squash: 0.6, rot: 1.3, trees: [[-0.8, 0], [0.7, 0.3]] },
-  { pos: [68, 16], size: 5, squash: 0.75, rot: 2.2, trees: [[0, 0], [1, 0.4], [-1, -0.4]] },
-  { pos: [24, 34], size: 3, squash: 0.8, rot: 0.8, trees: [[0, 0], [0.6, 0.3]] },
+  { pos: [38, -48], size: 4, squash: 0.7, rot: 0.4, trees: [[-0.6, 0.2], [0.7, -0.3]] },
+  { pos: [34, -30], size: 5, squash: 0.8, rot: 1.1, trees: [[0, 0], [1.1, 0.5], [-1, -0.4]] },
+  { pos: [30, -10], size: 3.5, squash: 0.6, rot: 0.2, trees: [[-0.5, 0], [0.6, 0.3]] },
+  { pos: [44, -58], size: 5, squash: 0.75, rot: 2.0, trees: [[0, 0], [0.9, 0.3]] },
+  { pos: [46, -36], size: 6, squash: 0.65, rot: 0.9, trees: [[-1.2, 0.2], [0.2, -0.4], [1.3, 0.3]] },
+  { pos: [40, 8], size: 4, squash: 0.85, rot: 2.6, trees: [[0, 0.5], [0.8, -0.4]] },
+  { pos: [56, -48], size: 5, squash: 0.55, rot: 0.6, trees: [[-1.2, 0], [0.4, 0.4], [1.4, -0.2]] },
+  { pos: [58, -24], size: 6, squash: 0.7, rot: 1.7, trees: [[-0.9, -0.3], [0.9, 0.4]] },
+  { pos: [66, -56], size: 4, squash: 0.8, rot: 0.3, trees: [[0, 0], [-0.7, 0.3]] },
+  { pos: [52, 0], size: 4, squash: 0.6, rot: 1.3, trees: [[-0.8, 0], [0.7, 0.3]] },
+  { pos: [66, -8], size: 5, squash: 0.75, rot: 2.2, trees: [[0, 0], [1, 0.4], [-1, -0.4]] },
+  { pos: [36, 16], size: 3, squash: 0.8, rot: 0.8, trees: [[0, 0], [0.6, 0.3]] },
 ];
 
 export default function DeltaIslands() {

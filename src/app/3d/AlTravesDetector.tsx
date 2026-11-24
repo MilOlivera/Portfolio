@@ -3,15 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { findProject, requestDemoMailto, type Project } from "@/lib/projects";
 import { useBoatTelemetry } from "./BoatTelemetry";
-import { WAYPOINTS, type Waypoint } from "./waypoints-data";
+import { OPEN_WAYPOINT_EVENT, WAYPOINTS, type Waypoint } from "./waypoints-data";
 
 const POLL_MS = 100;
 const ABEAM_MIN = 1.3; // rad (~75°) off the bow…
 const ABEAM_MAX = 1.84; // …to ~105°: the buoy is "al través"
-const TRIGGER_DISTANCE = 15;
+const TRIGGER_DISTANCE = 8; // compressed river: waypoints are close together
 // Abeam lasts well under a second at full speed, so once triggered the CTA
 // stays until the boat opens the distance past this.
-const RELEASE_DISTANCE = 20;
+const RELEASE_DISTANCE = 12;
 
 const TARGETS = WAYPOINTS.filter((w) => w.alTravesDetection);
 
@@ -64,6 +64,16 @@ export default function AlTravesDetector() {
     return () => window.clearInterval(id);
   }, [telemetry]);
 
+  // Clicking a clickable 3D model (the FSRU) opens its modal directly
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const w = WAYPOINTS.find((wp) => wp.id === (e as CustomEvent<string>).detail);
+      if (w) setModal(w);
+    };
+    window.addEventListener(OPEN_WAYPOINT_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_WAYPOINT_EVENT, onOpen);
+  }, []);
+
   // Esc closes the modal
   useEffect(() => {
     if (!modal) return;
@@ -89,14 +99,14 @@ export default function AlTravesDetector() {
           <div className="pointer-events-auto w-full max-w-sm border border-green bg-bg/85 p-4 font-mono backdrop-blur">
             <p className="text-sm font-bold tracking-wider text-green">◉ {active.title.toUpperCase()}</p>
             <p className="mt-1 line-clamp-2 font-sans text-xs text-text-mid">
-              {activeProject?.blurb ?? active.subtitle}
+              {activeProject?.blurb ?? active.info?.[1]?.[1] ?? active.subtitle}
             </p>
             <button
               type="button"
               onClick={() => setModal(active)}
               className="mt-3 cursor-pointer border border-green px-3 py-1.5 text-xs font-bold tracking-wider text-green transition-colors hover:bg-green hover:text-bg"
             >
-              [ VER PROYECTO ]
+              {active.info ? "[ VER FICHA TÉCNICA ]" : "[ VER PROYECTO ]"}
             </button>
           </div>
         )}
@@ -127,6 +137,16 @@ export default function AlTravesDetector() {
             <h2 id="altraves-title" className="mt-2 text-lg font-bold text-green">
               {modalProject?.title ?? modal.title}
             </h2>
+            {modal.info && (
+              <dl className="mt-4 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 border-t border-border pt-4 text-sm">
+                {modal.info.map(([k, v]) => (
+                  <div key={k} className="contents">
+                    <dt className="text-text-mute">{k}</dt>
+                    <dd className="text-text">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
             {modalProject && (
               <>
                 <p className="mt-3 font-sans text-sm leading-relaxed text-text-mid">{modalProject.blurb}</p>
@@ -139,7 +159,7 @@ export default function AlTravesDetector() {
                 </ul>
               </>
             )}
-            <div className="mt-6">
+            <div className={modal.info ? "hidden" : "mt-6"}>
               {action.disabled || !action.href ? (
                 <span className="inline-block border border-border-strong px-4 py-2 text-sm text-text-mute">
                   {action.label}

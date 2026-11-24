@@ -3,12 +3,12 @@
 import { useMemo } from "react";
 import { BufferAttribute, BufferGeometry } from "three";
 import { BANK_Y } from "./environment";
-import { JETTY, RIVER_CURVE, waterSdKnown } from "./river-geometry";
+import { CAUSEWAY, JETTY, RIVER_CURVE, waterSdKnown } from "./river-geometry";
 
-// River banks for a 5.5 km route. A world-sized grid would need millions of
-// vertices, so the land is a RIBBON that follows the centerline: rows every
-// 2 u along the river, columns at fixed offsets (dense near the banks, sparse
-// far out, ±220 u — past the fog). Each vertex's height comes from the same
+// River banks along the whole route. A world-sized grid would need far more
+// vertices than needed, so the land is a RIBBON that follows the centerline: rows every
+// 1 u along the river, columns at fixed offsets (dense near the banks, sparse
+// far out, ±210 u — past the fog). Each vertex's height comes from the same
 // signed-distance functions as the collision: flat land at BANK_Y, a short
 // sloped bank, and a bed below the water wherever there's river, basin,
 // estuary, canal or Delta channel. Past the ribbon the open water plane shows
@@ -17,10 +17,11 @@ const LAND_COLOR = "#3d5a3d";
 const BED_Y = -0.6;
 const SLOPE_IN = -1; // sd where the bed starts rising
 const SLOPE_OUT = 0.6; // sd where flat land begins
-const ROW_SPACING = 2;
+const ROW_SPACING = 1;
+// Dense across the 20 u river and its banks, sparse far out (past the fog).
 const HALF_OFFSETS = [
-  0, 1, 2, 3, 3.75, 4.5, 5.5, 7, 9, 11, 13.5, 16, 19, 22, 26, 30, 35, 40, 46, 52, 59, 66, 72, 80, 90, 100, 112,
-  126, 142, 160, 185, 220,
+  0, 2, 4, 6, 7, 8, 8.5, 9, 9.5, 10, 10.5, 11, 12, 13, 14, 15, 16, 17.5, 19, 21, 23, 25, 28, 31, 35, 39, 44, 50,
+  57, 65, 75, 87, 100, 120, 145, 175, 210,
 ];
 const OFFSETS = [...HALF_OFFSETS.slice(1).reverse().map((o) => -o), ...HALF_OFFSETS]; // west (+) … east (−)
 
@@ -76,7 +77,7 @@ function buildRibbon() {
 const JETTY_TOP = BANK_Y + 0.25;
 
 export default function Shoreline() {
-  // ~110k vertices, built once per visit
+  // ~45k vertices, built once per visit
   const ribbon = useMemo(buildRibbon, []);
   const jettyW = JETTY.maxX - JETTY.minX;
   const jettyL = JETTY.maxZ - JETTY.minZ;
@@ -92,6 +93,15 @@ export default function Shoreline() {
       {/* Terminal AXION jetty: the B/T NANY lies alongside, port side */}
       <mesh position={[jettyX, (JETTY_TOP - 0.6) / 2, jettyZ]} castShadow receiveShadow>
         <boxGeometry args={[jettyW, JETTY_TOP + 0.6, jettyL]} />
+        <meshStandardMaterial color="#9a9a94" roughness={0.85} />
+      </mesh>
+      {/* Causeway back to the west bank */}
+      <mesh
+        position={[(CAUSEWAY.minX + CAUSEWAY.maxX) / 2, (JETTY_TOP - 0.6) / 2, (CAUSEWAY.minZ + CAUSEWAY.maxZ) / 2]}
+        castShadow
+        receiveShadow
+      >
+        <boxGeometry args={[CAUSEWAY.maxX - CAUSEWAY.minX, JETTY_TOP + 0.6, CAUSEWAY.maxZ - CAUSEWAY.minZ]} />
         <meshStandardMaterial color="#9a9a94" roughness={0.85} />
       </mesh>
       {[-6, -2, 2, 6].map((dz) => (

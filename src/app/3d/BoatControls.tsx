@@ -5,15 +5,16 @@ import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
 import { START, UNMOOR_EVENT, useBoatTelemetry, type Telemetry } from "./BoatTelemetry";
 import { SHORE_MARGIN, WORLD_BOUNDS } from "./environment";
-import { navigableSd, waterSd } from "./river-geometry";
-import { speedLimitAt } from "./route-info";
+import { navigableSd, outsideFairway, waterSd } from "./river-geometry";
+import { OFF_FAIRWAY_KN, speedLimitAt } from "./route-info";
+import { knotsToUps } from "./scale";
 import { TIME_SCALE } from "./scale";
 import { BOAT_RADIUS, EXTRA_OBSTACLES, WAYPOINTS } from "./waypoints-data";
 
-// Ship handling at 1 u = 20 m (speeds in u/s already include TIME_SCALE, so
-// 10 kn = 5.14 u/s — see scale.ts). Tuned by simulation: the 180° turn at the
-// green buoy takes ~4 ahead/astern cycles (~45 s) in the 150 m channel, and
-// the route downstream clears every bank at cruise.
+// Ship handling at 1 u = 20 m, in u/s of SIMULATION time (10 kn = 5.14 u/s;
+// the clock multiplier is TIME_SCALE — see scale.ts). Tuned by simulation:
+// the 180° turn at the green buoy takes a few ahead/astern cycles, and the
+// route downstream clears every bank at cruise.
 const ACCELERATION = 0.5; // u/s²
 const BOOST_MULT = 1.5; // Shift: faster acceleration (the regulatory max still applies)
 const DRAG = 0.25; // natural deceleration, u/s²
@@ -30,6 +31,7 @@ const RIVER_DRIFT = 0.02; // u/s toward +Z (downstream current), whenever unmoor
 const SOFT_ZONE = 6; // start slowing this far from the world limit
 const BOUNCE_DAMPING = 0.3; // velocity multiplier when hitting something
 const NOTICE_MS = 2000;
+const OFF_FAIRWAY_HINT_S = 5; // after this long outside the fairway, suggest going back
 const MAX_SUBSTEP = 1 / 30; // s of sim time per physics substep
 
 // Blocking obstacles resolved once (no per-frame allocation)
@@ -99,7 +101,15 @@ function decay(v: number, amount: number) {
 
 /** One handling step of `dt` simulated seconds (velocities in u/s of sim time). */
 function simulate(t: Telemetry, k: Keys, dt: number) {
-  const limit = speedLimitAt(t.z);
+  // Outside the dredged fairway the hull scrapes: 3 kn max ("bajo fondo")
+  const offFairway = outsideFairway(t.x, t.z);
+  const zoneLimit = speedLimitAt(t.z);
+  const limit =
+    offFairway && OFF_FAIRWAY_KN < zoneLimit.kn ? { kn: OFF_FAIRWAY_KN, ups: knotsToUps(OFF_FAIRWAY_KN) } : zoneLimit;
+  t.offFairway = offFairway ? t.offFairway + dt / TIME_SCALE : 0;
+  if (offFairway) {
+    notify(t, t.offFairway > OFF_FAIRWAY_HINT_S ? "VOLVÉ AL CANAL ENTRE LAS BOYAS" : "FUERA DEL CANAL · BAJO FONDO");
+  }
   let v = t.velocity;
 
   // Engine / drag
@@ -115,7 +125,7 @@ function simulate(t: Telemetry, k: Keys, dt: number) {
   if (v > limit.ups) {
     const wasAt = t.velocity <= limit.ups + 1e-3;
     v = wasAt ? limit.ups : Math.max(limit.ups, v - OVERSPEED_DECEL * dt);
-    if (thrust > 0 || !wasAt) notify(t, `VEL MAX: ${limit.kn} KN`);
+    if (!offFairway && (thrust > 0 || !wasAt)) notify(t, `VEL MAX: ${limit.kn} KN`);
   }
 
   // Rudder: no flow, no steering; inverted astern (like a real ship)
@@ -142,7 +152,7 @@ function simulate(t: Telemetry, k: Keys, dt: number) {
   const hit = blockedBy(t.x, t.z, nx, nz);
   if (hit) {
     v *= BOUNCE_DAMPING; // damped bounce: stop hard, keep position
-    if (hit === "shallow") notify(t, "FUERA DEL CANAL · BAJO FONDO");
+    if (hit === "shallow") notify(t, "BAJO FONDO · NO NAVEGABLE");
   } else {
     t.x = nx;
     t.z = nz;

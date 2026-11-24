@@ -14,6 +14,8 @@ export type Telemetry = {
   notice: string;
   /** performance.now() until which `notice` is shown. */
   noticeUntil: number;
+  /** Real seconds spent continuously outside the dredged fairway. */
+  offFairway: number;
 };
 
 /**
@@ -21,7 +23,15 @@ export type Telemetry = {
  * port side, bow to the north (-Z), upstream. Bow is local +X → world forward
  * = (cos h, 0, -sin h), so north is h = +π/2.
  */
-export const START: Telemetry = { velocity: 0, heading: Math.PI / 2, x: 0, z: 0, notice: "", noticeUntil: 0 };
+export const START: Telemetry = {
+  velocity: 0,
+  heading: Math.PI / 2,
+  x: 0,
+  z: 0,
+  notice: "",
+  noticeUntil: 0,
+  offFairway: 0,
+};
 
 /** Window event fired by the tutorial's "DESAMARRAR" button. */
 export const UNMOOR_EVENT = "unmoor";

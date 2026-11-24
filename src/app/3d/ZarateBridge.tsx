@@ -3,18 +3,17 @@
 import { useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute } from "three";
 
-// Puente Zárate–Brazo Largo, km 106: far upstream (north) of the Campana
-// berth (km 97), ~450 u (9 km) ahead of the bow — a silhouette on the northern
-// horizon. Spans E–W across the upstream reach (river-geometry.ts →
-// centerline x≈45 at z=-450, banks ±3.75), towers on land.
-// At that distance the scene fog (full at 200 u) would erase it, so its
-// materials skip fog and use a pre-hazed tone instead: still reads as "far".
-const Z = -450;
-const TOWER_X = [37, 53];
-const TOWER_H = 40;
-const DECK_Y = 10;
-const DECK_W = 6;
-const WHITE = "#d9cdb8"; // white blended toward the horizon haze (#c4a885)
+// Puente Zárate–Brazo Largo, km 106: upstream (north) of the Campana berth,
+// ~60 u ahead of the bow on the compressed river — a silhouette at the edge
+// of the haze. Spans E–W across the upstream reach (river-geometry.ts →
+// centerline x≈15 at z=-60, visible river ±10), towers on land. Scaled to
+// stay a backdrop at that distance (deck clears any mast).
+const Z = -60;
+const TOWER_X = [2, 28];
+const TOWER_H = 12;
+const DECK_Y = 4;
+const DECK_W = 2.4;
+const WHITE = "#e8e2d6";
 
 // Cable fan: from each tower top down to anchor points along both deck edges
 function buildCables() {
@@ -44,15 +43,15 @@ export default function ZarateBridge() {
       {TOWER_X.map((x) => (
         <mesh key={x} position={[x, TOWER_H / 2, Z]} castShadow>
           <boxGeometry args={[1, TOWER_H, 2]} />
-          <meshBasicMaterial color={WHITE} fog={false} />
+          <meshStandardMaterial color={WHITE} roughness={0.6} />
         </mesh>
       ))}
       <mesh position={[(west + east) / 2, DECK_Y, Z]} castShadow receiveShadow>
         <boxGeometry args={[east - west, 1, DECK_W]} />
-        <meshBasicMaterial color={WHITE} fog={false} />
+        <meshStandardMaterial color={WHITE} roughness={0.6} />
       </mesh>
       <lineSegments geometry={cables}>
-        <lineBasicMaterial color={WHITE} fog={false} />
+        <lineBasicMaterial color={WHITE} />
       </lineSegments>
     </group>
   );

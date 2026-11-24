@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { useRef, type ReactNode } from "react";
 import type { MeshStandardMaterial } from "three";
 import { BANK_Y } from "./environment";
-import { HALF_WIDTH, bankPoint } from "./river-geometry";
+import { VISUAL_HALF, bankPoint } from "./river-geometry";
 import { WAYPOINTS, type Waypoint } from "./waypoints-data";
 
 // Labels are DOM, so they use the theme tokens. They never take pointer
@@ -53,7 +53,7 @@ function Landmark({ w }: { w: Waypoint }) {
 // --------------------------------------------------------------- vuelta ----
 // Nautical warning sign on the bank beside the bend (pos is on the centerline).
 function VueltaSign({ w }: { w: Waypoint }) {
-  const [x, z] = bankPoint(w.pos[0], w.pos[2], HALF_WIDTH + 1.5);
+  const [x, z] = bankPoint(w.pos[0], w.pos[2], VISUAL_HALF + 1.5);
   return (
     <group position={[x, BANK_Y, z]}>
       <mesh position={[0, 0.6, 0]}>
@@ -303,6 +303,7 @@ export default function Waypoints() {
       {WAYPOINTS.map((w) => {
         switch (w.kind) {
           case "landmark":
+          case "fsru": // the FSRU model is FSRUExpedient.tsx; here only its label
             return <Landmark key={w.id} w={w} />;
           case "buoy":
             return <Buoy key={w.id} w={w} />;

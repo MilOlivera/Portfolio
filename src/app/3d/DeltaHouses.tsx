@@ -10,6 +10,7 @@ import {
   type MeshStandardMaterial,
 } from "three";
 import { BANK_Y } from "./environment";
+import { VISUAL_HALF, besideRiver } from "./river-geometry";
 
 // Paraná Delta stilt houses ("casas palafíticas"): small wooden bodies on piles
 // so the floor stays above the floods, a tiny deck with stairs to the water, a
@@ -224,19 +225,14 @@ export function DeltaHouse({ position, rotationY = 0, lit = false }: Props) {
   );
 }
 
-// East-bank houses at the water's edge, fronts facing west toward the river
-const HOUSES: { x: number; z: number; lit: boolean }[] = [
-  { x: 14.7, z: 119.7, lit: true },
-  { x: 24.3, z: 259.6, lit: false },
-  { x: 26.4, z: 429.7, lit: false },
-  { x: 38.0, z: 599.7, lit: true },
-  { x: 47.6, z: 759.7, lit: false },
-  { x: 55.7, z: 899.7, lit: false },
-  { x: 61.6, z: 999.7, lit: true },
-  { x: 94.9, z: 1249.3, lit: false },
-  { x: 121.9, z: 1449.3, lit: false },
-  { x: 156.9, z: 1649.2, lit: true },
-];
+// East-bank houses at the visible river's edge (piles in the shallows), fronts
+// facing west toward the river. Placed against the river geometry, clear of
+// the Delta canal mouths (z 42.5 / 133 / 172).
+const HOUSE_Z = [12, 30, 55, 75, 100, 118, 148, 160];
+const HOUSES: { x: number; z: number; lit: boolean }[] = HOUSE_Z.map((z, i) => {
+  const [x, hz] = besideRiver(z, -(VISUAL_HALF + 1.2));
+  return { x, z: hz, lit: i % 2 === 0 };
+});
 const FACE_WEST = Math.PI; // atan2(-0, -1): front (+X local) → world -X
 
 export default function DeltaHouses() {

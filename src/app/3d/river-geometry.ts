@@ -1,68 +1,65 @@
 import { CatmullRomCurve3, Vector3 } from "three";
-import { kmToZ } from "./scale";
 
-// Geometric source of truth for the river — official km posts of the Paraná
-// de las Palmas and Canal Emilio Mitre (Ordenanza 4-18 DPSN).
-// Scale: 1 unit = 20 m (scale.ts). Origin = B/T NANY berth, km 97.
-// Axes: +Z downstream (south), -Z upstream (north), +X east = starboard when
-// moored bow-north = the Delta bank; -X west = mainland (Campana, Escobar, BA).
+// Geometric source of truth for the river. Real km labels (Ordenanza 4-18
+// DPSN) with COMPRESSED distances (~12×, see scale.ts) so the voyage fits in
+// a few minutes. Object sizes stay at 1 u = 20 m.
+// Origin = B/T NANY berth, km 97. Axes: +Z downstream (south), -Z upstream,
+// +X east = Delta bank, -X west = mainland (Campana, Escobar, BA).
 //
-// Terrain (Shoreline.tsx) and collision (BoatControls.tsx) both read the
-// signed-distance functions below, so what you see is exactly what blocks you.
+// Two widths: the visible river (20 u = 400 m) and, inside it, the dredged
+// FAIRWAY (7.5 u = 150 m) marked by buoys. Outside the fairway you can still
+// sail, slowly ("bajo fondo"). Terrain (Shoreline.tsx) and collision
+// (BoatControls.tsx) both read the signed-distance functions below.
 
 export const RIVER_CENTERLINE = [
-  // Upstream reach (not sailed: scenery + Zárate–Brazo Largo bridge)
-  new Vector3(50, 0, -500), // km 107 · Zárate–Brazo Largo bridge
-  new Vector3(40, 0, -400), // km 105
-  new Vector3(30, 0, -200), // km 101 · Vuelta del Este
-  new Vector3(15, 0, -100), // km 99 · end of the Vuelta del Este
-  new Vector3(10, 0, -40), // km 98 · green turning buoy
-  new Vector3(0, 0, 0), // km 97 · B/T NANY berth
+  new Vector3(20, 0, -140), // upstream, past the fog (river doesn't end in view)
+  // Upstream reach (not sailed: scenery)
+  new Vector3(15, 0, -60), // Zárate–Brazo Largo bridge (far silhouette)
+  new Vector3(10, 0, -40), // km 101 · Vuelta del Este
+  new Vector3(0, 0, -15), // green turning buoy
+  new Vector3(0, 0, 0), // B/T NANY berth
 
-  // Downstream (sailed)
-  new Vector3(5, 0, 50), // km 96
-  new Vector3(15, 0, 200), // km 93
-  new Vector3(25, 0, 350), // km 90 · Vuelta del Hinojo
-  new Vector3(20, 0, 400), // km 89
-  new Vector3(30, 0, 550), // km 85 · Canal Gob. Arias (Delta side)
-  new Vector3(45, 0, 800), // km 80 · Vuelta del Tordillo (provisional)
-  new Vector3(60, 0, 1050), // km 75.5 · LNG carriers' turning area
-  new Vector3(70, 0, 1125), // km 74.5 · off the GNL Escobar jetty
-  new Vector3(90, 0, 1250), // km 72
-  new Vector3(110, 0, 1400), // km 70 · grain terminal
-  new Vector3(125, 0, 1500), // km 68
-  new Vector3(160, 0, 1700), // km 65 · Canal Gob. La Serna (Delta side)
-  new Vector3(200, 0, 2000), // km 55
-  new Vector3(225, 0, 2200), // km 50 · PNA LIMA + Canal de la Honda
-  new Vector3(245, 0, 2400), // km 48 · fork into the CANAL MITRE
+  // Downstream (sailed, compact)
+  new Vector3(3, 0, 15), // falling off downstream
+  new Vector3(8, 0, 25), // Vuelta de Campana
+  new Vector3(12, 0, 35), // Vuelta del Hinojo
+  new Vector3(15, 0, 50), // Vuelta del Tordillo
 
-  // Canal Emilio Mitre (straight, SE, IALA-buoyed)
-  new Vector3(280, 0, 2600), // km 44
-  new Vector3(320, 0, 2850), // km 40
-  new Vector3(360, 0, 3100), // km 36
-  new Vector3(400, 0, 3350), // km 32
-  new Vector3(440, 0, 3600), // km 28
-  new Vector3(480, 0, 3850), // km 24
-  new Vector3(520, 0, 4100), // km 20 · Aeroparque to the west
-  new Vector3(560, 0, 4350), // km 16
-  new Vector3(600, 0, 4600), // km 12 · end of the Canal Mitre
+  // Cancha larga (Escobar + GNL)
+  new Vector3(18, 0, 70),
+  new Vector3(22, 0, 90), // Puerto Escobar (tugs, port side)
+  new Vector3(25, 0, 110), // FSRU EXPEDIENT (port side)
+  new Vector3(28, 0, 130), // end of the GNL area
+  new Vector3(30, 0, 150),
 
-  // Zona Común (anchorage)
-  new Vector3(640, 0, 4800),
-  new Vector3(680, 0, 5000), // mega Evolvere just beyond
+  // Into the Ingeniero Mitre
+  new Vector3(35, 0, 170), // PNA LIMA + Canal de la Honda
+  new Vector3(40, 0, 190), // start of the Canal Mitre
+
+  // Canal Mitre (straight, IALA-buoyed)
+  new Vector3(50, 0, 220),
+  new Vector3(60, 0, 250), // km 38 (Finanzas, outside the channel)
+  new Vector3(70, 0, 280),
+  new Vector3(80, 0, 310), // off Aeroparque
+  new Vector3(90, 0, 340),
+  new Vector3(100, 0, 370), // km 12 (Relojes, cardinal)
+
+  // Zona Común (anchorage + mega Evolvere)
+  new Vector3(110, 0, 400),
+  new Vector3(120, 0, 420),
 ];
 
 export const RIVER_CURVE = new CatmullRomCurve3(RIVER_CENTERLINE, false, "catmullrom", 0.5);
 
-/** Navigable channel width: 7.5 u = 150 m. */
+/** Dredged fairway: 7.5 u = 150 m (the buoyed lane). */
 export const RIVER_WIDTH = 7.5;
 export const HALF_WIDTH = RIVER_WIDTH / 2;
+/** Visible river: 20 u = 400 m. */
+export const RIVER_WIDTH_VISUAL = 20;
+export const VISUAL_HALF = RIVER_WIDTH_VISUAL / 2;
 
 // ------------------------------------------------------------- samples ----
-// Arc-length samples (~4 u apart) as flat arrays, plus per-chunk bounding
-// boxes so distance queries skip far stretches. Z grows monotonically along
-// the curve, which frameAtZ() relies on.
-const SAMPLES = 1400;
+const SAMPLES = 600;
 const pts = RIVER_CURVE.getSpacedPoints(SAMPLES);
 const XS = Float64Array.from(pts, (p) => p.x);
 const ZS = Float64Array.from(pts, (p) => p.z);
@@ -93,7 +90,7 @@ export type RiverFrame = {
   wz: number;
 };
 
-/** Centerline point, downstream tangent and west normal at a given world Z. */
+/** Centerline point, downstream tangent and west normal at a given world Z (Z grows monotonically). */
 export function frameAtZ(z: number): RiverFrame {
   let lo = 0;
   let hi = SAMPLES;
@@ -122,40 +119,46 @@ export function besideRiver(z: number, offset: number): [number, number] {
   return [f.x + f.wx * offset, f.z + f.wz * offset];
 }
 
+/** rotation.y that aligns a local +X axis with the downstream tangent at `z`. */
+export function riverYaw(z: number) {
+  const f = frameAtZ(z);
+  return Math.atan2(-f.tz, f.tx);
+}
+
 // --------------------------------------------------------------- zones ----
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 type Circle = { x: number; z: number; r: number };
 
-// Port basin (dársena) west of the berth, where the other ships lie moored.
-const DARSENA: Rect = { minX: -20, maxX: -1.8, minZ: -10, maxZ: 20 };
-/** Concrete jetty the B/T NANY lies alongside (port side). Land, drawn as a pier. */
-export const JETTY: Rect = { minX: -1.8, maxX: -0.8, minZ: -8, maxZ: 10 };
-// GNL Escobar turning area (km 75.5–76.5), wide enough for the 4 yellow buoys.
-export const GNL_BASIN: Circle = { x: 66, z: 1100, r: 34 };
+// Campana port basin (dársena) west of the berth: the other tankers lie here.
+const DARSENA: Rect = { minX: -19, maxX: -2, minZ: -8, maxZ: 15 };
+/** Terminal AXION berth: the B/T NANY lies alongside (port side). */
+export const JETTY: Rect = { minX: -2, maxX: -1, minZ: -8, maxZ: 10 };
+/** Causeway joining the berth to the west bank (north end of the dársena). */
+export const CAUSEWAY: Rect = { minX: -11, maxX: -2, minZ: -10, maxZ: -8 };
 // Zona Común anchorage.
-export const ANCHORAGE: Circle = { x: 690, z: 5040, r: 60 };
+export const ANCHORAGE: Circle = { x: 118, z: 416, r: 30 };
 
-// Río de la Plata around the Canal Mitre: open shallow water (visible, not
-// navigable — the dredged channel is the only way). Widens from km ~49.
-const ESTUARY_START_Z = kmToZ(49.5);
-const ESTUARY_FULL_Z = ESTUARY_START_Z + 200;
-const ESTUARY_HALF_WIDTH = 70;
+// Río de la Plata around the Canal Mitre: wide open shallows (visible, not
+// navigable). Widens from the Mitre start.
+const ESTUARY_START_Z = 178;
+const ESTUARY_FULL_Z = 200;
+const ESTUARY_HALF_WIDTH = 40;
 
-// Delta side canals (visible water, not navigable): straight, perpendicular
-// to the river toward the east, starting on the centerline.
-const CANAL_LENGTH = 130;
-const CANAL_HALF_WIDTH = 4;
+// Delta side canals (visible water, not navigable): perpendicular to the river
+// toward the east, starting on the centerline.
+const CANAL_LENGTH = 60;
+const CANAL_HALF_WIDTH = 3;
 export const CANALS = [
-  { id: "gob-arias", name: "Canal Gob. Arias", z: 700 },
-  { id: "gob-laserna", name: "Canal Gob. La Serna", z: 1800 },
-  { id: "canal-honda", name: "Canal de la Honda", z: 2350 },
+  { id: "gob-arias", name: "Canal Gob. Arias", z: 42.5 },
+  { id: "gob-laserna", name: "Canal Gob. La Serna", z: 133 },
+  { id: "canal-honda", name: "Canal de la Honda", z: 172 },
 ].map((c) => {
   const f = frameAtZ(c.z);
-  return { ...c, x0: f.x, z0: f.z, ax: -f.wx, az: -f.wz }; // axis toward the east bank
+  return { ...c, x0: f.x, z0: f.z, ax: -f.wx, az: -f.wz, length: CANAL_LENGTH, halfWidth: CANAL_HALF_WIDTH };
 });
 
 // Delta islands starboard (east) of the berth: side channels behind a strip.
-const DELTA_NEAR: Rect = { minX: 13, maxX: 75, minZ: -90, maxZ: 45 };
+const DELTA_NEAR: Rect = { minX: 18, maxX: 75, minZ: -65, maxZ: 25 };
 const DELTA_LAND_STRIP = 4;
 
 function segDist(px: number, pz: number, ax: number, az: number, bx: number, bz: number) {
@@ -198,32 +201,27 @@ export function centerlineDistance(x: number, z: number) {
 }
 
 function navigableWith(x: number, z: number, cd: number) {
-  const water = Math.min(
-    cd - HALF_WIDTH,
-    rectSd(x, z, DARSENA),
-    circleSd(x, z, GNL_BASIN),
-    circleSd(x, z, ANCHORAGE),
-  );
-  return Math.max(water, -rectSd(x, z, JETTY));
+  const water = Math.min(cd - VISUAL_HALF, rectSd(x, z, DARSENA), circleSd(x, z, ANCHORAGE));
+  return Math.max(water, -rectSd(x, z, JETTY), -rectSd(x, z, CAUSEWAY));
 }
 
 function shallowWith(x: number, z: number, cd: number) {
   const t = Math.max(0, Math.min(1, (z - ESTUARY_START_Z) / (ESTUARY_FULL_Z - ESTUARY_START_Z)));
-  const estuary = t === 0 ? Infinity : cd - ESTUARY_HALF_WIDTH * t;
+  const estuary = t === 0 ? Infinity : cd - (VISUAL_HALF + (ESTUARY_HALF_WIDTH - VISUAL_HALF) * t);
   let canals = Infinity;
   for (const c of CANALS) {
     canals = Math.min(
       canals,
-      segDist(x, z, c.x0, c.z0, c.x0 + c.ax * CANAL_LENGTH, c.z0 + c.az * CANAL_LENGTH) - CANAL_HALF_WIDTH,
+      segDist(x, z, c.x0, c.z0, c.x0 + c.ax * c.length, c.z0 + c.az * c.length) - c.halfWidth,
     );
   }
-  const delta = Math.max(rectSd(x, z, DELTA_NEAR), HALF_WIDTH + DELTA_LAND_STRIP - cd);
+  const delta = Math.max(rectSd(x, z, DELTA_NEAR), VISUAL_HALF + DELTA_LAND_STRIP - cd);
   return Math.min(estuary, canals, delta);
 }
 
 /**
- * Signed distance to navigable water: negative = water you can sail
- * (channel ∪ dársena ∪ GNL basin ∪ anchorage, minus the jetty), positive = not.
+ * Signed distance to navigable water: negative = water you can sail (visible
+ * river ∪ dársena ∪ anchorage, minus the berth jetty/causeway), positive = not.
  */
 export function navigableSd(x: number, z: number) {
   return navigableWith(x, z, centerlineDistance(x, z));
@@ -235,13 +233,19 @@ export function waterSd(x: number, z: number) {
   return Math.min(navigableWith(x, z, cd), shallowWith(x, z, cd));
 }
 
-/**
- * waterSd with the centerline distance already known — the terrain ribbon
- * builds each vertex at a known offset from the centerline, so it skips the
- * search (~110k vertices).
- */
+/** waterSd with the centerline distance already known (terrain ribbon). */
 export function waterSdKnown(x: number, z: number, cd: number) {
   return Math.min(navigableWith(x, z, cd), shallowWith(x, z, cd));
+}
+
+/**
+ * True when (x,z) is outside the dredged fairway in the open river — not in
+ * the Campana port area (berth/turning, z < 15) nor the Zona Común anchorage,
+ * where there's no fairway to keep to.
+ */
+export function outsideFairway(x: number, z: number) {
+  if (z < 15 || circleSd(x, z, ANCHORAGE) < 0) return false;
+  return centerlineDistance(x, z) > HALF_WIDTH;
 }
 
 const LAND_CLEARANCE = 1;

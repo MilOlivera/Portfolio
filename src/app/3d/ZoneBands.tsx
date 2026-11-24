@@ -6,19 +6,22 @@ import { BufferAttribute, BufferGeometry, DoubleSide } from "three";
 import { RIVER_WIDTH, frameAtZ } from "./river-geometry";
 import { ZONE_BANDS } from "./route-info";
 
-// Translucent bands painted on the channel for regulated stretches:
-// km 96–97.5 no-turning zone (red) and the GNL Escobar area (yellow).
-// Ribbons follow the centerline, a hair above the wave crests (≈0.075).
+// Translucent ribbons painted on the river, following the centerline a hair
+// above the wave crests (≈0.075):
+//  · the dredged FAIRWAY (7.5 u), darker = deeper, inside the 20 u visible river
+//  · regulated stretches: km 96–97.5 no-turning zone (red), GNL area (yellow)
 const BAND_Y = 0.09;
+const FAIRWAY_Y = 0.085;
 const STEP = 2;
+const FAIRWAY = { fromZ: 15, toZ: 372, color: "#0f2422" }; // from the basin exit to the Mitre's end
 
-function buildBand(fromZ: number, toZ: number) {
+function buildBand(fromZ: number, toZ: number, y = BAND_Y) {
   const rows = Math.max(2, Math.ceil((toZ - fromZ) / STEP) + 1);
   const half = RIVER_WIDTH / 2;
   const pos = new Float32Array(rows * 2 * 3);
   for (let r = 0; r < rows; r++) {
     const f = frameAtZ(fromZ + ((toZ - fromZ) * r) / (rows - 1));
-    pos.set([f.x + f.wx * half, BAND_Y, f.z + f.wz * half, f.x - f.wx * half, BAND_Y, f.z - f.wz * half], r * 6);
+    pos.set([f.x + f.wx * half, y, f.z + f.wz * half, f.x - f.wx * half, y, f.z - f.wz * half], r * 6);
   }
   const index: number[] = [];
   for (let r = 0; r < rows - 1; r++) {
@@ -37,8 +40,13 @@ export default function ZoneBands() {
     [],
   );
 
+  const fairway = useMemo(() => buildBand(FAIRWAY.fromZ, FAIRWAY.toZ, FAIRWAY_Y), []);
+
   return (
     <>
+      <mesh geometry={fairway} renderOrder={0}>
+        <meshBasicMaterial color={FAIRWAY.color} transparent opacity={0.3} depthWrite={false} side={DoubleSide} />
+      </mesh>
       {bands.map((b) => (
         <group key={b.id}>
           <mesh geometry={b.geo} renderOrder={1}>

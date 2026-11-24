@@ -3,23 +3,20 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { Color, Object3D, type InstancedMesh } from "three";
 import { DeltaHouse } from "./DeltaHouses";
+import { CANALS as RIVER_CANALS } from "./river-geometry";
 
 // Delta side canals branching east off the river. The canal WATER is carved
 // by the terrain elsewhere; this only dresses their banks with stilt houses
 // and reed clumps at the mouth. Three.js materials can't read CSS theme
 // tokens → hex colors are intentional.
 const REED = "#8a9a55";
-const HALF_WIDTH = 4;
-const HOUSE_OFFSET = 5.2; // lateral, from the canal axis
-const HOUSE_DIST = [22, 40, 62]; // along the axis, from the river centerline
+const HOUSE_OFFSET = 4.2; // lateral, from the canal axis
+const HOUSE_DIST = [16, 30, 46]; // along the axis, from the river centerline
 const LIT_INDEX = 1; // one lit house per canal
 
-type Canal = { start: [number, number]; axis: [number, number] };
-const CANALS: Canal[] = [
-  { start: [39.0, 700.0], axis: [0.998, -0.059] }, // Gobernador Arias
-  { start: [174.0, 1800.0], axis: [0.991, -0.133] }, // Gobernador La Serna
-  { start: [239.1, 2350.0], axis: [0.995, -0.102] }, // Canal de la Honda
-];
+// Canal mouths/axes come from the river geometry (same data that carves them)
+type Canal = { start: [number, number]; axis: [number, number]; halfWidth: number };
+const CANALS: Canal[] = RIVER_CANALS.map((c) => ({ start: [c.x0, c.z0], axis: [c.ax, c.az], halfWidth: c.halfWidth }));
 
 const REEDS_PER_MOUTH = 28;
 const dummy = new Object3D();
@@ -74,7 +71,7 @@ export default function DeltaCanals() {
       for (let k = 0; k < REEDS_PER_MOUTH; k++) {
         const side = k % 2 === 0 ? 1 : -1;
         const d = 10 + rnd() * 8;
-        const lat = side * (HALF_WIDTH + 0.2 + rnd() * 1.6);
+        const lat = side * (CANALS[0].halfWidth + 0.2 + rnd() * 1.6);
         const h = 0.5 + rnd() * 0.6;
         dummy.position.set(
           sx + ax * d + nx * lat,
