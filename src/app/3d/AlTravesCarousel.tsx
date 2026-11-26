@@ -134,7 +134,15 @@ export default function AlTravesCarousel({
                 className={`absolute inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0"}`}
                 style={s.imagePath ? undefined : { backgroundImage: PLACEHOLDER_BG[s.placeholder ?? "green"] }}
               >
-                {s.imagePath && <Image src={s.imagePath} alt={s.title} fill sizes="780px" className="object-cover" />}
+                {s.imagePath && (
+                  <>
+                    <Image src={s.imagePath} alt={s.title} fill sizes="780px" className="object-cover object-top" />
+                    {/* Amber tint on a white backing, dark text: the screenshots are light */}
+                    <span className="pointer-events-none absolute top-2.5 right-2.5 rounded-[2px] border border-[#ffb545] bg-white bg-[linear-gradient(rgba(255,181,69,0.15),rgba(255,181,69,0.15))] px-[7px] py-[3px] font-mono text-[9px] font-bold tracking-[1.5px] text-[#7a4a00]">
+                      DATA MOCK
+                    </span>
+                  </>
+                )}
                 <span className="absolute bottom-2 left-3 bg-black/55 px-2 py-0.5 font-mono text-[11px] tracking-widest text-text">
                   {s.title}
                 </span>

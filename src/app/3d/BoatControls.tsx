@@ -12,7 +12,9 @@ import { TIME_SCALE } from "./scale";
 import {
   AUTO_SLOW_CANCEL_EVENT,
   AUTO_SLOW_EVENT,
+  BERTH,
   BOAT_RADIUS,
+  CAST_OFF_X,
   EXTRA_OBSTACLES,
   WAYPOINTS,
 } from "./waypoints-data";
@@ -40,6 +42,7 @@ const NOTICE_MS = 2000;
 const OFF_FAIRWAY_HINT_S = 5; // after this long outside the fairway, suggest going back
 const AUTO_SLOW_EASE = 4; // 1/s (real time): ease-out to the al-través speed in ~1 s
 const MAX_SUBSTEP = 1 / 30; // s of sim time per physics substep
+const CAST_OFF_S = 3; // real seconds sliding sideways off the quay after DESAMARRAR
 
 // Blocking obstacles resolved once (no per-frame allocation)
 const OBSTACLES: { x: number; z: number; r: number }[] = [
@@ -177,6 +180,7 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
   const keys = useRef<Keys>({ fwd: false, back: false, left: false, right: false, boost: false, brake: false });
   // Moored at AXION until the tutorial's DESAMARRAR fires `unmoor`
   const moored = useRef(true);
+  const castOff = useRef(0); // 0..1 progress of the sideways departure
 
   useEffect(() => {
     const onUnmoor = () => {
@@ -239,6 +243,18 @@ export default function BoatControls({ boatRef }: { boatRef: RefObject<Group | n
     // Moored: lines fast — every movement key is ignored, boat stays put
     if (moored.current) {
       t.velocity = 0;
+      syncBoat(boatRef.current, t.x, t.z, t.heading);
+      return;
+    }
+
+    // Casting off: the ships lie close ahead and astern, so the NANY first
+    // opens sideways from the quay (lines and spring work), then answers keys.
+    if (castOff.current < 1) {
+      castOff.current = Math.min(1, castOff.current + Math.min(rawDelta, 0.1) / CAST_OFF_S);
+      const p = castOff.current;
+      t.x = BERTH[0] + (CAST_OFF_X - BERTH[0]) * p * p * (3 - 2 * p);
+      t.velocity = 0;
+      notify(t, "DESAMARRANDO · ABRIENDO DEL MUELLE");
       syncBoat(boatRef.current, t.x, t.z, t.heading);
       return;
     }

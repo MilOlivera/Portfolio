@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { BufferAttribute, BufferGeometry } from "three";
-import { BANK_Y } from "./environment";
+import { BANK_Y, JETTY_TOP } from "./environment";
 import { CAUSEWAY, JETTY, RIVER_CURVE, waterSdKnown } from "./river-geometry";
 
 // River banks along the whole route. A world-sized grid would need far more
@@ -74,7 +74,7 @@ function buildRibbon() {
   return geo;
 }
 
-const JETTY_TOP = BANK_Y + 0.25;
+const BOLLARDS_Z = Array.from({ length: 8 }, (_, i) => JETTY.minZ + 1 + i * 4);
 
 export default function Shoreline() {
   // ~45k vertices, built once per visit
@@ -90,7 +90,7 @@ export default function Shoreline() {
         <meshStandardMaterial color={LAND_COLOR} roughness={0.9} />
       </mesh>
 
-      {/* Terminal AXION jetty: the B/T NANY lies alongside, port side */}
+      {/* Terminal AXION quay: the ships lie alongside in line, port side to */}
       <mesh position={[jettyX, (JETTY_TOP - 0.6) / 2, jettyZ]} castShadow receiveShadow>
         <boxGeometry args={[jettyW, JETTY_TOP + 0.6, jettyL]} />
         <meshStandardMaterial color="#9a9a94" roughness={0.85} />
@@ -104,11 +104,18 @@ export default function Shoreline() {
         <boxGeometry args={[CAUSEWAY.maxX - CAUSEWAY.minX, JETTY_TOP + 0.6, CAUSEWAY.maxZ - CAUSEWAY.minZ]} />
         <meshStandardMaterial color="#9a9a94" roughness={0.85} />
       </mesh>
-      {[-6, -2, 2, 6].map((dz) => (
-        <mesh key={dz} position={[JETTY.maxX - 0.15, JETTY_TOP + 0.08, dz]}>
-          <cylinderGeometry args={[0.07, 0.09, 0.16, 8]} />
-          <meshStandardMaterial color="#2b2b2b" />
-        </mesh>
+      {/* Bollards + rubber fenders along the berthing face */}
+      {BOLLARDS_Z.map((z) => (
+        <group key={z}>
+          <mesh position={[JETTY.maxX - 0.15, JETTY_TOP + 0.08, z]}>
+            <cylinderGeometry args={[0.07, 0.09, 0.16, 8]} />
+            <meshStandardMaterial color="#2b2b2b" />
+          </mesh>
+          <mesh position={[JETTY.maxX + 0.04, JETTY_TOP - 0.18, z + 1.5]}>
+            <boxGeometry args={[0.08, 0.3, 0.5]} />
+            <meshStandardMaterial color="#1b1b1b" />
+          </mesh>
+        </group>
       ))}
     </>
   );

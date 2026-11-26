@@ -30,7 +30,7 @@ export const TIME_SCALE = 2;
 const KM_Z: [km: number, z: number][] = [
   [107, -60], // Zárate–Brazo Largo bridge
   [101, -40], // Vuelta del Este
-  [98, -15], // green turning buoy
+  [98, -22], // green turning buoy
   [97, 0], // B/T NANY berth (Terminal AXION, Campana)
   [95, 35], // Vuelta de Campana (apex)
   [90, 72], // Vuelta del Hinojo (apex)

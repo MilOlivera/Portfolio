@@ -8,7 +8,9 @@ import { zToKm } from "./scale";
 import {
   AUTO_SLOW_CANCEL_EVENT,
   AUTO_SLOW_EVENT,
+  BOAT_RADIUS,
   OPEN_WAYPOINT_EVENT,
+  PROXIMITY_DISTANCE,
   WAYPOINTS,
   type Waypoint,
 } from "./waypoints-data";
@@ -16,13 +18,23 @@ import {
 const POLL_MS = 100;
 const ABEAM_MIN = 1.3; // rad (~75°) off the bow…
 const ABEAM_MAX = 1.84; // …to ~105°: the waypoint is "al través"
-const TRIGGER_DISTANCE = 8; // abeam buoys and Zona Común ships (PROXIMITY_DISTANCE)
+const TRIGGER_DISTANCE = 8; // abeam buoys
 // Once a waypoint has fired (or been dismissed) it can't fire again until the
-// boat opens the distance past this.
-const RELEASE_DISTANCE = 12;
+// boat opens the distance this much past its trigger range.
+const RELEASE_MARGIN = 4;
 const AUTO_SLOW_KN = 2;
 
 const TARGETS = WAYPOINTS.filter((w) => w.alTravesDetection || w.proximityDetection);
+
+/**
+ * Zona Común ships fire at PROXIMITY_DISTANCE, widened for big hulls: the mega
+ * ship blocks the boat farther out than that, so it could never trigger.
+ */
+function triggerDistance(w: Waypoint) {
+  return w.proximityDetection
+    ? Math.max(PROXIMITY_DISTANCE, w.collisionRadius + BOAT_RADIUS + 3)
+    : TRIGGER_DISTANCE;
+}
 
 /** Angle of the waypoint relative to the bow, normalized to [-π, π]. */
 function bearingOffBow(w: Waypoint, x: number, z: number, heading: number) {
@@ -78,7 +90,8 @@ export default function AlTravesDetector() {
 
       for (const w of TARGETS) {
         const dist = Math.hypot(w.pos[0] - x, w.pos[2] - z);
-        if (dist > RELEASE_DISTANCE) {
+        const range = triggerDistance(w);
+        if (dist > range + RELEASE_MARGIN) {
           fired.current.delete(w.id);
           if (ctaRef.current === w) {
             ctaRef.current = null;
@@ -86,7 +99,7 @@ export default function AlTravesDetector() {
           }
           continue;
         }
-        if (fired.current.has(w.id) || dist >= TRIGGER_DISTANCE) continue;
+        if (fired.current.has(w.id) || dist >= range) continue;
 
         const off = Math.abs(bearingOffBow(w, x, z, heading));
         const triggered = w.proximityDetection || (off > ABEAM_MIN && off < ABEAM_MAX);

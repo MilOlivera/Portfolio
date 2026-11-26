@@ -7,7 +7,7 @@ import CornerBrackets from "@/components/CornerBrackets";
 import { headingToDegrees, useBoatTelemetry } from "./BoatTelemetry";
 import { speedLimitAt, zoneAt } from "./route-info";
 import { METERS_PER_UNIT, upsToKnots } from "./scale";
-import { NEAR_DISTANCE, nearestWaypoint } from "./waypoints-data";
+import { NEAR_DISTANCE, nearGasoducto, nearestWaypoint } from "./waypoints-data";
 
 const MOBILE_MAX_WIDTH = 1024;
 const REDIRECT_DELAY_MS = 2000;
@@ -32,6 +32,7 @@ type Readout = {
   near: boolean;
   notice: string;
   autoSlow: boolean;
+  pipeline: boolean;
 };
 
 const EMPTY: Readout = {
@@ -45,6 +46,7 @@ const EMPTY: Readout = {
   near: false,
   notice: "",
   autoSlow: false,
+  pipeline: false,
 };
 
 /** Polls the telemetry ref and re-renders only when the formatted values change. */
@@ -68,6 +70,7 @@ function useReadout() {
         near: distance < NEAR_DISTANCE,
         notice: performance.now() < t.noticeUntil ? t.notice : "",
         autoSlow: performance.now() < t.autoSlowUntil,
+        pipeline: nearGasoducto(t.x, t.z),
       };
       setReadout((r) =>
         (Object.keys(next) as (keyof Readout)[]).every((k) => r[k] === next[k]) ? r : next,
@@ -83,7 +86,7 @@ export default function Hud() {
   const router = useRouter();
   // Read once on the client; server snapshot is "desktop" (no redirect).
   const mobile = useSyncExternalStore(noopSubscribe, isTouchMobile, () => false);
-  const { km, zone, vel, limit, rumbo, next, dist, near, notice, autoSlow } = useReadout();
+  const { km, zone, vel, limit, rumbo, next, dist, near, notice, autoSlow, pipeline } = useReadout();
   const [helpVisible, setHelpVisible] = useState(true);
 
   useEffect(() => {
@@ -157,6 +160,19 @@ export default function Hud() {
       >
         <p className="rounded border-2 border-warn/70 bg-bg/90 px-4 py-2 font-mono text-sm font-bold tracking-wider text-warn backdrop-blur">
           ⚠ {notice || "\u00a0"}
+        </p>
+      </div>
+
+      {/* Gas pipeline proximity: sits below the physics notice and welcome card */}
+      <div
+        role="status"
+        aria-hidden={!pipeline}
+        className={`pointer-events-none fixed inset-x-0 top-44 z-20 flex justify-center px-4 transition-opacity duration-300 ${
+          pipeline ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <p className="rounded border-2 border-warn/70 bg-bg/90 px-4 py-2 font-mono text-sm font-bold tracking-wider text-warn backdrop-blur">
+          {pipeline ? "⚠ GASODUCTO · PRECAUCIÓN · NO FONDEAR" : "\u00a0"}
         </p>
       </div>
 

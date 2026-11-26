@@ -21,14 +21,15 @@ export const PROJECT_MEDIA: Record<string, ProjectMedia> = {
   "mi-plata": {
     id: "mi-plata",
     name: "Mi Plata",
-    subtitle: "dashboard multi-moneda · ARS + USD oficial/blue/MEP · tracker de gastos y proyecciones",
+    subtitle: "dashboard multi-moneda · ARS + USD blue/oficial/MEP/cripto/tarjeta · gastos, metas, ahorro dolarizado",
     isPublic: true,
-    url: "https://miplata.vercel.app", // TODO: confirm the real URL
+    url: "https://mi-plata-navy.vercel.app",
+    // Real screenshots of the app, loaded with mock data (badge on each slide)
     slides: [
-      { title: "DASHBOARD PRINCIPAL", placeholder: "green" },
-      { title: "GASTOS POR CATEGORÍA", placeholder: "purple" },
-      { title: "PROYECCIÓN A 12 MESES", placeholder: "amber" },
-      { title: "CONVERSOR DE DIVISAS", placeholder: "blue" },
+      { title: "RESUMEN", imagePath: "/3d/projects/mi-plata/mi-plata-01-resumen.png" },
+      { title: "MOVIMIENTOS", imagePath: "/3d/projects/mi-plata/mi-plata-02-movimientos.png" },
+      { title: "AHORRO DOLARIZADO", imagePath: "/3d/projects/mi-plata/mi-plata-03-ahorro.png" },
+      { title: "METAS & BIENES", imagePath: "/3d/projects/mi-plata/mi-plata-04-metas.png" },
     ],
   },
   relojes: {

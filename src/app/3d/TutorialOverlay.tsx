@@ -103,7 +103,7 @@ export default function TutorialOverlay() {
             <div>
               <p className="text-sm font-bold tracking-wider text-green">◉ BUSCANDO LA VERDE</p>
               <p role="status" className="mt-1 font-sans text-sm text-text-mid">
-                Avante despacio [W] hasta la boya verde sobre tu babor, a ~300m. Entre km 96 y 97.5 está prohibido
+                Avante despacio [W] hasta la boya verde sobre tu babor, a ~350m. Entre km 96 y 97.5 está prohibido
                 girar.
               </p>
             </div>

@@ -63,18 +63,65 @@ export const TUGS = [
 export const PROXIMITY_DISTANCE = 8;
 
 /** Entering the Zona Común shows the welcome card (once per visit). */
-export const ZONA_COMUN_ENTRY_Z = 478;
+export const ZONA_COMUN_ENTRY_Z = 460;
+
+// ------------------------------------------------------ Terminal AXION ----
+/** B/T NANY berth (km 97): alongside the Campana quay, bow north. */
+export const BERTH: [number, number, number] = [-6, 0, -4];
+/** DESAMARRAR slides the NANY sideways off the quay to this x, clear of the line. */
+export const CAST_OFF_X = -1.2;
+
+// ---------------------------------------------------------- Zona Común ----
+/** North–south axis of the anchorage: the gas pipeline, between west and east zones. */
+export const ZONA_AXIS_X = 122;
+
+const zonaRect = (id: string, side: -1 | 1, minZ: number, maxZ: number) => {
+  const [a, b] = [ZONA_AXIS_X + side * 5, ZONA_AXIS_X + side * 35];
+  return { id, minX: Math.min(a, b), maxX: Math.max(a, b), minZ, maxZ };
+};
+
+/** Anchoring areas as on the SHN chart: 1 = large ships, 2 = small Argentine craft. */
+export const ZONA_POLYGONS = [
+  zonaRect("ZW1", -1, 460, 480),
+  zonaRect("ZE1", 1, 460, 480),
+  zonaRect("ZW2", -1, 490, 510),
+  zonaRect("ZE2", 1, 490, 510),
+];
+
+/** Decorative ships waiting at anchor (not interactive; they do block). Bow = local +X. */
+export type AnchoredShip = { x: number; z: number; length: number; yaw: number; hull: string };
+export const ANCHORED_SHIPS: AnchoredShip[] = [
+  // large (ZW1 / ZE1)
+  { x: 96, z: 462.5, length: 14, yaw: 0.08, hull: "#16294a" },
+  { x: 95, z: 477.5, length: 12, yaw: -0.12, hull: "#e4e7ea" },
+  { x: 146, z: 462.5, length: 13, yaw: 3.05, hull: "#16294a" },
+  { x: 132, z: 478, length: 12, yaw: 0.15, hull: "#e4e7ea" },
+  // small (ZW2 / ZE2)
+  { x: 109, z: 494, length: 5, yaw: 0.5, hull: "#b3261e" },
+  { x: 91, z: 506, length: 4.5, yaw: -0.35, hull: "#e0b020" },
+  { x: 152, z: 508, length: 5, yaw: 0.2, hull: "#b3261e" },
+];
+
+/** Submarine gas pipeline across the anchorage, marked by yellow special buoys. */
+export const GASODUCTO = {
+  x: ZONA_AXIS_X,
+  buoyZs: Array.from({ length: 10 }, (_, i) => 440 + i * 10),
+  warnDistance: 10,
+};
+
+export const nearGasoducto = (x: number, z: number) =>
+  GASODUCTO.buoyZs.some((bz) => Math.hypot(x - GASODUCTO.x, z - bz) < GASODUCTO.warnDistance);
 
 export const WAYPOINTS: Waypoint[] = [
   // ------------------------------------------------ nautical landmarks ----
-  { id: "amarre", kind: "landmark", title: "TERMINAL AXION · KM 97", subtitle: "Campana · CARGA IFO 380 ✓", pos: [0, 0, 0], site: [-5, 0, -9], labelY: 2.2, collisionRadius: 0 },
+  { id: "amarre", kind: "landmark", title: "TERMINAL AXION · KM 97", subtitle: "Campana · CARGA IFO 380 ✓", pos: BERTH, site: [-12, 0, -4], labelY: 2.6, collisionRadius: 0 },
   { id: "puente-zarate", kind: "landmark", title: "PUENTE ZÁRATE–BRAZO LARGO", subtitle: "km 106", pos: [15, 0, -60], labelY: 14, collisionRadius: 0 },
   { id: "puerto-escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "km 77 · remolcadores Svitzer", pos: [12, 0, 174.3], labelY: 3.2, collisionRadius: 0 },
   { id: "transf-granos", kind: "landmark", title: "TRANSFERENCIA DE GRANOS", subtitle: "km 69", pos: [17.3, 0, 232.2], labelY: 6, collisionRadius: 0 },
   { id: "pna-lima", kind: "landmark", title: "PREFECTURA · PNA LIMA", subtitle: "km 50", pos: [26.8, 0, 254.8], labelY: 5, collisionRadius: 0 },
   { id: "mitre-start", kind: "landmark", title: "KM 48 · CANAL EMILIO MITRE", subtitle: "bifurcación · canal boyado", pos: [44.4, 0, 277.1], labelY: 3, collisionRadius: 0 },
   { id: "aeroparque", kind: "landmark", title: "AEROPARQUE J. NEWBERY", subtitle: "km 20", pos: [37.8, 0, 412.4], labelY: 8, collisionRadius: 0 },
-  { id: "zona-comun", kind: "landmark", title: "ZONA COMÚN", subtitle: "km 2 · fondeadero", pos: [120, 0, 485], labelY: 4, collisionRadius: 0 },
+  { id: "zona-comun", kind: "landmark", title: "ZONA COMÚN", subtitle: "km 2 · fondeadero", pos: [114, 0, 485], labelY: 4, collisionRadius: 0 },
 
   // FSRU — clickable technical modal (also opens when abeam)
   {
@@ -111,33 +158,50 @@ export const WAYPOINTS: Waypoint[] = [
   { id: "finanzas", kind: "buoy", buoyType: "special", title: "Finanzas Personales", subtitle: "Boya especial amarilla · km 38 Canal Mitre", pos: [75.7, 0, 333.1], color: "#F7D417", pulse: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "finanzas", media: "mi-plata" },
   { id: "relojes", kind: "buoy", buoyType: "cardinal-east", title: "E-commerce Relojes", subtitle: "Boya cardinal · km 12 · fin del Canal Mitre", pos: [115.7, 0, 453.1], color: "#000000", pulse: true, dim: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "relojes", media: "relojes" },
 
-  // --------------------------------------- moored at Campana (dársena) ----
-  // All to PORT of the NANY (west, beyond the berth jetty), bow north like her.
-  { id: "khan", kind: "moored-ship", title: "KHAN LW2501", subtitle: "tanker fluvial", pos: [-5, 0, 5], rotation: N, size: "medium", collisionRadius: 3 },
-  { id: "deltamar", kind: "moored-ship", title: "DELTAMAR IV", subtitle: "tanker fluvial", pos: [-9, 0, 5], rotation: N, size: "medium", collisionRadius: 3 },
-  { id: "caleta-rosario", kind: "moored-ship", title: "CALETA ROSARIO", subtitle: "tanker", pos: [-13, 0, 5], rotation: N, size: "medium", collisionRadius: 3 },
-  { id: "stena-image", kind: "moored-ship", title: "STENA IMAGE", subtitle: "Hellerup · bulk carrier", pos: [-17.5, 0, 5], rotation: N, size: "large", collisionRadius: 4.5 },
+  // ------------------------------------------- moored in line at Campana ----
+  // One file along the quay, north to south, all bow north and port side to,
+  // with the B/T NANY (BERTH) second. Hulls block via EXTRA_OBSTACLES.
+  { id: "stena-image", kind: "moored-ship", title: "STENA IMAGE", subtitle: "Hellerup · bulk carrier", pos: [-6, 0, -10], rotation: N, size: "large", collisionRadius: 0 },
+  { id: "khan", kind: "moored-ship", title: "KHAN LW2501", subtitle: "tanker fluvial", pos: [-6, 0, 2], rotation: N, size: "medium", collisionRadius: 0 },
+  { id: "deltamar", kind: "moored-ship", title: "DELTAMAR IV", subtitle: "tanker fluvial", pos: [-6, 0, 8], rotation: N, size: "medium", collisionRadius: 0 },
+  { id: "caleta-rosario", kind: "moored-ship", title: "CALETA ROSARIO", subtitle: "tanker", pos: [-6, 0, 14], rotation: N, size: "medium", collisionRadius: 0 },
 
   // ----------------------------------------------- Zona Común (km ~2) ----
-  // Spread 10–15 u apart so you sail among them. Each opens its project
-  // carousel when you come within 8 u (or click it). Hull colors per ship.
-  { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [128, 0, 510], rotation: -0.15, color: "#25DB79", collisionRadius: 7, clickable: true, proximityDetection: true, media: "evolvere" },
-  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [115, 0, 495], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
-  { id: "marpla", kind: "ship", title: "MARPLA", pos: [138, 0, 495], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
-  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [122, 0, 525], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
+  // Large ships in ZW1/ZE1, small ones in ZW2/ZE2. Each client opens its
+  // project carousel when you come close (or click it). Hull colors per ship.
+  { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [137, 0, 470], rotation: -0.15, color: "#25DB79", collisionRadius: 7, clickable: true, proximityDetection: true, media: "evolvere" },
+  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [97, 0, 470], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
+  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [147, 0, 475], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
+  { id: "marpla", kind: "ship", title: "MARPLA", pos: [97, 0, 500], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
   // Easter eggs: decoration only
-  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [145, 0, 515], rotation: -0.1, color: "#888888", collisionRadius: 3 },
-  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [108, 0, 515], rotation: 0.3, color: "#888888", collisionRadius: 3 },
+  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [137, 0, 505], rotation: -0.1, color: "#888888", collisionRadius: 3 },
+  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [150, 0, 497], rotation: 0.3, color: "#888888", collisionRadius: 3 },
 ];
 
 /**
  * Green lateral buoy at km 98 where the NANY turns around (the "caída"),
  * upstream of the no-turning zone (km 96–97.5), on the port margin (Campana,
- * west), ~300 m from the berth.
+ * west), ~350 m from the berth and clear of the moored line.
  */
-export const TURN_BUOY: [number, number, number] = [-5, 0, -15];
+export const TURN_BUOY: [number, number, number] = [-5, 0, -22];
 
-/** Hull obstacles with no waypoint of their own: FSRU hull, its dolphins, the tugs. */
+/**
+ * Long hull as a row of small circles along its axis, so ships can lie close
+ * together without one big radius swallowing its neighbours.
+ */
+function hullCircles(x: number, z: number, length: number, yaw: number, r: number) {
+  const half = length / 2 - r;
+  const n = Math.max(2, Math.ceil((half * 2) / r) + 1);
+  return Array.from({ length: n }, (_, i) => {
+    const s = -half + (i / (n - 1)) * half * 2;
+    return { pos: [x + Math.cos(yaw) * s, z - Math.sin(yaw) * s] as [number, number], r };
+  });
+}
+
+/** Hull length (u) of the ships moored at Campana (the NANY is 4). */
+export const MOORED_LENGTH = { medium: 5.1, large: 6 } as const;
+
+/** Hull obstacles not covered by a waypoint circle: FSRU, dolphins, tugs, long ships. */
 export const EXTRA_OBSTACLES: { pos: [number, number]; r: number }[] = [
   { pos: [21.5, 206.5], r: 1.3 },
   { pos: [21.2, 202.5], r: 1.3 },
@@ -148,6 +212,10 @@ export const EXTRA_OBSTACLES: { pos: [number, number]; r: number }[] = [
   { pos: [19.7, 208.2], r: 0.45 },
   { pos: [23.5, 207.9], r: 0.45 },
   ...TUGS.map((t) => ({ pos: t.world, r: 0.8 })),
+  ...WAYPOINTS.filter((w) => w.kind === "moored-ship").flatMap((w) =>
+    hullCircles(w.pos[0], w.pos[2], MOORED_LENGTH[w.size ?? "medium"], w.rotation ?? 0, 0.7),
+  ),
+  ...ANCHORED_SHIPS.flatMap((s) => hullCircles(s.x, s.z, s.length, s.yaw, s.length > 8 ? 1.2 : 0.7)),
 ];
 
 /** Collision radius of the B/T NANY (80 m hull = 4 u). */

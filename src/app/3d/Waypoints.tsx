@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { MeshStandardMaterial } from "three";
 import { BANK_Y } from "./environment";
 import { VISUAL_HALF, bankPoint } from "./river-geometry";
-import { OPEN_WAYPOINT_EVENT, WAYPOINTS, type Waypoint } from "./waypoints-data";
+import { MOORED_LENGTH, OPEN_WAYPOINT_EVENT, WAYPOINTS, type Waypoint } from "./waypoints-data";
 
 // Labels are DOM, so they use the theme tokens. They never take pointer
 // events (OrbitControls in V view) and stay below the HUD (z-10) instead of
@@ -237,15 +237,19 @@ function ClientShip({ w }: { w: Waypoint }) {
   );
 }
 
-// Ship moored at Campana: plain tanker, bow north, discreet label.
+// Ship moored at Campana: plain tanker, bow north, discreet label. Low
+// freeboard (loading) so the refinery shows over the line.
+const MOORED_BEAM = { medium: 0.85, large: 1.15 } as const;
+
 function MooredShip({ w }: { w: Waypoint }) {
-  const scale = w.size === "large" ? 1.5 : 1;
+  const size = w.size ?? "medium";
   return (
     <Rotated w={w}>
-      <group scale={scale}>
+      {/* modelled 6 × 1 × 1.2 u */}
+      <group scale={[MOORED_LENGTH[size] / 6, 0.6, MOORED_BEAM[size]]}>
         <mesh position={[0, 0.5, 0]} castShadow>
           <boxGeometry args={[6, 1, 1.2]} />
-          <meshStandardMaterial color={w.size === "large" ? "#6a2a2a" : "#2f3f4c"} />
+          <meshStandardMaterial color={size === "large" ? "#6a2a2a" : "#2f3f4c"} />
         </mesh>
         <mesh position={[-2.2, 1.5, 0]} castShadow>
           <boxGeometry args={[1.3, 1, 1]} />
@@ -256,7 +260,7 @@ function MooredShip({ w }: { w: Waypoint }) {
           <meshStandardMaterial color="#AA2222" />
         </mesh>
       </group>
-      <Label y={2.6 * scale + 0.6} w={w} className="bg-black/50 px-1.5 py-0.5 text-[11px] text-text-mid" />
+      <Label y={2.2} w={w} className="bg-black/50 px-1.5 py-0.5 text-[11px] text-text-mid" />
     </Rotated>
   );
 }

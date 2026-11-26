@@ -27,5 +27,8 @@ export const WORLD_BOUNDS = { minX: -30, maxX: 180, minZ: -30, maxZ: 550 };
 /** Land surface: low Delta banks, just above the wave crests. */
 export const BANK_Y = 0.12;
 
+/** Deck height of the concrete quay at Campana. */
+export const JETTY_TOP = BANK_Y + 0.25;
+
 /** Boat center stops this far inside the waterline (hull half-beam 0.35). */
 export const SHORE_MARGIN = 0.6;

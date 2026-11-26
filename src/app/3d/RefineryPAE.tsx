@@ -2,13 +2,15 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useRef, type RefObject } from "react";
-import { Object3D, type Group, type InstancedMesh, type PointLight } from "three";
+import { Object3D, type Group, type InstancedMesh, type MeshStandardMaterial, type PointLight } from "three";
 import { BANK_Y } from "./environment";
 
-// Refinería Pan American Energy (Campana), on the west (mainland) bank behind
-// the port basin. Low-poly silhouettes only: distillation towers, two burning
-// flares, LPG spheres, horizontal tanks, a control building and pipe racks.
-// Everything stays inside x ∈ [-75, -24], z ∈ [-15, 105] (x ≥ -24 is water).
+// Refinería Pan American Energy (Campana), on the west (mainland) bank. The
+// skyline you see from the berth is the NORTH-WEST cluster (tall distillation
+// towers with red nav lights and flares, LPG spheres, lit chimneys), ahead and
+// to port of the moored NANY; tanks, a control building and two flare stacks
+// continue south. Everything is on land: north cluster x ∈ [-45, -14],
+// z ∈ [-52, -16]; south plot x ∈ [-75, -24], z ∈ [-11, 101].
 // Three.js materials can't read the site's CSS theme tokens, so the hex
 // colors below are intentional.
 const STEEL = "#9aa3a8";
@@ -18,13 +20,23 @@ const RED = "#b3261e";
 const CONCRETE = "#8c8a84";
 const FLAME_OUTER = "#ff7a1a";
 const FLAME_INNER = "#ffd34d";
+const NAV_RED = "#ff2a1a";
+const SODIUM = "#ffc46b";
 
-// [x, z, radius, height]
+// North-west distillation towers: [x, z, radius, height]
 const TOWERS: [number, number, number, number][] = [
-  [-40, 28, 0.9, 12],
-  [-40, 34, 0.7, 11],
-  [-40, 40, 1.1, 12.5],
-  [-46, 34, 0.8, 10.5],
+  [-21, -40, 1.0, 15],
+  [-26, -36, 0.8, 14],
+  [-23, -47, 1.2, 15.5],
+  [-31, -43, 0.9, 13],
+];
+/** Towers (by index) carrying a burning flare. */
+const TOWER_FLARES = [0, 2];
+
+// [x, z, height]
+const CHIMNEYS: [number, number, number][] = [
+  [-36, -36, 11],
+  [-16, -49, 13],
 ];
 
 const FLARE_H = 22;
@@ -33,13 +45,26 @@ const FLARES: [number, number][] = [
   [-68, 72],
 ];
 
-const SPHERE_R = 3;
+const SPHERE_R = 2;
 const SPHERE_LEG_H = 1.4;
 // Legs run from the ground up into the shell (top end hidden inside it)
 const LEG_LEN = SPHERE_LEG_H + SPHERE_R * 0.6;
 const SPHERES: [number, number][] = [
-  [-53, 60],
-  [-53, 70],
+  [-29, -25],
+  [-35, -27],
+  [-34, -20],
+];
+
+// Warm work lights on the tower platforms and along the foot of the cluster
+const WORK_LIGHTS: [number, number, number][] = [
+  ...TOWERS.flatMap(([x, z, r, h]) =>
+    [h * 0.35, h * 0.7].map((y): [number, number, number] => [x + r + 0.45, y + 0.2, z + 0.4]),
+  ),
+  ...[-20, -26, -32, -38, -44].map((z): [number, number, number] => [-15.5, 1.3, z]),
+];
+const NAV_LIGHTS: [number, number, number][] = [
+  ...TOWERS.map(([x, z, r, h]): [number, number, number] => [x - r * 0.5, h + r + 0.25, z]),
+  ...CHIMNEYS.map(([x, z, h]): [number, number, number] => [x, h + 0.25, z]),
 ];
 
 // Horizontal bullet tanks, axis along Z: [x, z]
@@ -53,7 +78,9 @@ const TANKS: [number, number][] = [
 const RACK_Y = BANK_Y + 2.6;
 // Pipe racks as [x0, z0, x1, z1] runs (axis-aligned)
 const RACKS: [number, number, number, number][] = [
-  [-47, 28, -47, 66], // towers → LPG spheres (N–S trunk)
+  [-21, -45, -21, -31], // towers trunk (north cluster)
+  [-36, -31, -21, -31], // LPG spheres / chimney → trunk
+  [-47, 22, -47, 66], // south trunk
   [-47, 45, -30, 45], // trunk → horizontal tanks
   [-66, 22, -47, 22], // flare 1 header
   [-68, 70, -56, 70], // flare 2 header
@@ -93,7 +120,8 @@ function usePlaced(ref: RefObject<InstancedMesh | null>, pts: [number, number][]
   }, [ref, pts, y]);
 }
 
-function Flare({ x, z, phase }: { x: number; z: number; phase: number }) {
+/** Flickering flame + warm point light, burning upward from `y`. */
+function Flame({ y, phase, scale = 1 }: { y: number; phase: number; scale?: number }) {
   const flame = useRef<Group>(null);
   const light = useRef<PointLight>(null);
 
@@ -106,25 +134,66 @@ function Flare({ x, z, phase }: { x: number; z: number; phase: number }) {
   });
 
   return (
+    <group position={[0, y, 0]} scale={scale}>
+      {/* Pivot group at the cone's base so the flicker scale grows upward */}
+      <group ref={flame}>
+        <mesh position={[0, 1.2, 0]}>
+          <coneGeometry args={[0.65, 2.4, 8]} />
+          <meshStandardMaterial color={FLAME_OUTER} emissive={FLAME_OUTER} emissiveIntensity={2.5} transparent opacity={0.85} />
+        </mesh>
+      </group>
+      <mesh position={[0, 0.5, 0]}>
+        <sphereGeometry args={[0.45, 8, 6]} />
+        <meshStandardMaterial color={FLAME_INNER} emissive={FLAME_INNER} emissiveIntensity={3} />
+      </mesh>
+      <pointLight ref={light} position={[0, 1.5, 0]} color={FLAME_INNER} intensity={70} distance={20} decay={2} />
+    </group>
+  );
+}
+
+function Flare({ x, z, phase }: { x: number; z: number; phase: number }) {
+  return (
     <group position={[x, BANK_Y, z]}>
       <mesh position={[0, FLARE_H / 2, 0]} castShadow>
         <cylinderGeometry args={[0.3, 0.55, FLARE_H, 8]} />
         <meshStandardMaterial color={STEEL} roughness={0.6} metalness={0.3} />
       </mesh>
-      <group position={[0, FLARE_H + 0.1, 0]}>
-        {/* Pivot group at the cone's base so the flicker scale grows upward */}
-        <group ref={flame}>
-          <mesh position={[0, 1.2, 0]}>
-            <coneGeometry args={[0.65, 2.4, 8]} />
-            <meshStandardMaterial color={FLAME_OUTER} emissive={FLAME_OUTER} emissiveIntensity={2.5} transparent opacity={0.85} />
-          </mesh>
-        </group>
-        <mesh position={[0, 0.5, 0]}>
-          <sphereGeometry args={[0.45, 8, 6]} />
-          <meshStandardMaterial color={FLAME_INNER} emissive={FLAME_INNER} emissiveIntensity={3} />
+      <Flame y={FLARE_H + 0.1} phase={phase} />
+    </group>
+  );
+}
+
+/** Red obstruction lights (slow blink) + steady sodium work lights. */
+function NightLights() {
+  const red = useRef<MeshStandardMaterial[]>([]);
+
+  useFrame(({ clock }) => {
+    red.current.forEach((m, i) => {
+      m.emissiveIntensity = (clock.elapsedTime + i * 0.35) % 2 < 0.9 ? 3.5 : 0.15;
+    });
+  });
+
+  return (
+    <group>
+      {NAV_LIGHTS.map((p, i) => (
+        <mesh key={p.join()} position={p}>
+          <sphereGeometry args={[0.28, 8, 6]} />
+          <meshStandardMaterial
+            ref={(m) => {
+              if (m) red.current[i] = m;
+            }}
+            color={NAV_RED}
+            emissive={NAV_RED}
+            toneMapped={false}
+          />
         </mesh>
-        <pointLight ref={light} position={[0, 1.5, 0]} color={FLAME_OUTER} intensity={70} distance={20} decay={2} />
-      </group>
+      ))}
+      {WORK_LIGHTS.map((p) => (
+        <mesh key={p.join()} position={p}>
+          <sphereGeometry args={[0.16, 6, 4]} />
+          <meshStandardMaterial color={SODIUM} emissive={SODIUM} emissiveIntensity={2.5} toneMapped={false} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -138,14 +207,18 @@ export default function RefineryPAE() {
 
   return (
     <group>
-      {/* Concrete plot pad */}
+      {/* Concrete plot pads: north cluster + south plot */}
+      <mesh position={[-26.5, BANK_Y + 0.03, -34]} receiveShadow>
+        <boxGeometry args={[25, 0.06, 36]} />
+        <meshStandardMaterial color={CONCRETE} roughness={0.95} />
+      </mesh>
       <mesh position={[-49, BANK_Y + 0.03, 45]} receiveShadow>
         <boxGeometry args={[48, 0.06, 112]} />
         <meshStandardMaterial color={CONCRETE} roughness={0.95} />
       </mesh>
 
       {/* Distillation towers: column + 2 ring platforms + dome cap */}
-      {TOWERS.map(([x, z, r, h]) => (
+      {TOWERS.map(([x, z, r, h], i) => (
         <group key={`${x},${z}`} position={[x, BANK_Y, z]}>
           <mesh position={[0, h / 2, 0]} castShadow>
             <cylinderGeometry args={[r, r, h, 10]} />
@@ -161,8 +234,33 @@ export default function RefineryPAE() {
             <sphereGeometry args={[r, 10, 5, 0, Math.PI * 2, 0, Math.PI / 2]} />
             <meshStandardMaterial color={STEEL} roughness={0.5} metalness={0.35} />
           </mesh>
+          {TOWER_FLARES.includes(i) && (
+            // Side stub so the flame clears the tower's nav light
+            <group position={[r, 0, 0]}>
+              <mesh position={[0, h + 0.6, 0]}>
+                <cylinderGeometry args={[0.14, 0.14, 1.6, 6]} />
+                <meshStandardMaterial color={STEEL_DARK} />
+              </mesh>
+              <Flame y={h + 1.4} phase={i * 2.3} scale={0.85} />
+            </group>
+          )}
         </group>
       ))}
+
+      {CHIMNEYS.map(([x, z, h]) => (
+        <group key={z} position={[x, BANK_Y, z]}>
+          <mesh position={[0, h / 2, 0]} castShadow>
+            <cylinderGeometry args={[0.45, 0.7, h, 10]} />
+            <meshStandardMaterial color={WHITE} roughness={0.8} />
+          </mesh>
+          <mesh position={[0, h - 0.8, 0]}>
+            <cylinderGeometry args={[0.5, 0.52, 0.9, 10]} />
+            <meshStandardMaterial color={RED} roughness={0.8} />
+          </mesh>
+        </group>
+      ))}
+
+      <NightLights />
 
       {/* Flares */}
       {FLARES.map(([x, z], i) => (
@@ -171,7 +269,7 @@ export default function RefineryPAE() {
 
       {/* LPG spheres: white shell + red top cap, on legs */}
       {SPHERES.map(([x, z]) => (
-        <group key={z} position={[x, sphereY, z]}>
+        <group key={`${x},${z}`} position={[x, sphereY, z]}>
           <mesh castShadow>
             <sphereGeometry args={[SPHERE_R, 16, 12]} />
             <meshStandardMaterial color={WHITE} roughness={0.5} />

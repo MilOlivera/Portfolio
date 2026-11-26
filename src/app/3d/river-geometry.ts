@@ -134,16 +134,15 @@ export function riverYaw(z: number) {
 
 // --------------------------------------------------------------- zones ----
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
-type Circle = { x: number; z: number; r: number };
 
-// Campana port basin (dársena) west of the berth: the other tankers lie here.
-const DARSENA: Rect = { minX: -19, maxX: -2, minZ: -8, maxZ: 15 };
-/** Terminal AXION berth: the B/T NANY lies alongside (port side). */
-export const JETTY: Rect = { minX: -2, maxX: -1, minZ: -8, maxZ: 10 };
-/** Causeway joining the berth to the west bank (north end of the dársena). */
-export const CAUSEWAY: Rect = { minX: -11, maxX: -2, minZ: -10, maxZ: -8 };
-// Zona Común anchorage.
-export const ANCHORAGE: Circle = { x: 127, z: 510, r: 28 };
+// Campana port basin (dársena): the moored line and the water behind the quay.
+const DARSENA: Rect = { minX: -19, maxX: -2, minZ: -14, maxZ: 19 };
+/** Terminal AXION quay (30 u): every ship lies port side to its east face. */
+export const JETTY: Rect = { minX: -9.3, maxX: -6.7, minZ: -12, maxZ: 18 };
+/** Causeway joining the quay's north end to the west bank. */
+export const CAUSEWAY: Rect = { minX: -19.5, maxX: -9.3, minZ: -12, maxZ: -10 };
+// Zona Común anchorage: open water around the four anchoring areas.
+const ANCHORAGE: Rect = { minX: 80, maxX: 166, minZ: 458, maxZ: 540 };
 
 // Río de la Plata around the Canal Mitre: wide open shallows (visible, not
 // navigable). Widens from the Mitre start.
@@ -188,8 +187,6 @@ function rectSd(px: number, pz: number, r: Rect) {
   return Math.sqrt(ox * ox + oz * oz) + Math.min(Math.max(qx, qz), 0);
 }
 
-const circleSd = (px: number, pz: number, c: Circle) => Math.hypot(px - c.x, pz - c.z) - c.r;
-
 /** Distance from (x,z) to the river centerline. */
 export function centerlineDistance(x: number, z: number) {
   let best = Infinity;
@@ -208,7 +205,7 @@ export function centerlineDistance(x: number, z: number) {
 }
 
 function navigableWith(x: number, z: number, cd: number) {
-  const water = Math.min(cd - VISUAL_HALF, rectSd(x, z, DARSENA), circleSd(x, z, ANCHORAGE));
+  const water = Math.min(cd - VISUAL_HALF, rectSd(x, z, DARSENA), rectSd(x, z, ANCHORAGE));
   return Math.max(water, -rectSd(x, z, JETTY), -rectSd(x, z, CAUSEWAY));
 }
 
@@ -247,11 +244,11 @@ export function waterSdKnown(x: number, z: number, cd: number) {
 
 /**
  * True when (x,z) is outside the dredged fairway in the open river — not in
- * the Campana port area (berth/turning, z < 15) nor the Zona Común anchorage,
+ * the Campana port area (berth/turning, z < 19) nor the Zona Común anchorage,
  * where there's no fairway to keep to.
  */
 export function outsideFairway(x: number, z: number) {
-  if (z < 15 || circleSd(x, z, ANCHORAGE) < 0) return false;
+  if (z < 19 || rectSd(x, z, ANCHORAGE) < 0) return false;
   return centerlineDistance(x, z) > HALF_WIDTH;
 }
 

@@ -53,7 +53,7 @@ export default function ZonaComunWelcome() {
         <p className="text-[11px] tracking-[0.3em] text-green">ZONA COMÚN</p>
         <p className="mt-1.5 text-sm font-bold text-text">Acercate a cada barco para ver el proyecto</p>
         <p className="mt-1 text-[11px] text-text-mute">
-          {SHIPS} barcos fondeados · click sobre cualquiera o pasá a &lt;8u
+          {SHIPS} barcos fondeados · click sobre cualquiera o pasale cerca
         </p>
       </div>
     </div>

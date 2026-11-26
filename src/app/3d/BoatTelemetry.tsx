@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, type ReactNode, type RefObject } from "react";
+import { BERTH } from "./waypoints-data";
 
 // Mutable boat state shared between the R3F tree (writes every frame) and the
 // DOM HUD (polls it). A ref, not state, so the 3D loop never triggers renders.
@@ -22,15 +23,15 @@ export type Telemetry = {
 };
 
 /**
- * Moored at Terminal AXION, km 97 (world origin), alongside the jetty on the
- * port side, bow to the north (-Z), upstream. Bow is local +X → world forward
+ * Moored at Terminal AXION, km 97, alongside the quay on the port side, in
+ * line with the other ships, bow to the north (-Z), upstream. Bow is local +X → world forward
  * = (cos h, 0, -sin h), so north is h = +π/2.
  */
 export const START: Telemetry = {
   velocity: 0,
   heading: Math.PI / 2,
-  x: 0,
-  z: 0,
+  x: BERTH[0],
+  z: BERTH[2],
   notice: "",
   noticeUntil: 0,
   offFairway: 0,

@@ -18,7 +18,7 @@ const COLOR = { red: RED, green: GREEN, yellow: YELLOW } as const;
 // the 80 m tanker (1 u = 20 m).
 const BUOY_SCALE = 0.6;
 
-function Buoy({ b }: { b: NavBuoy }) {
+export function Buoy({ b }: { b: NavBuoy }) {
   const light = useRef<MeshStandardMaterial>(null);
   const color = COLOR[b.kind];
 
@@ -26,8 +26,14 @@ function Buoy({ b }: { b: NavBuoy }) {
   useFrame(({ clock }) => {
     if (!light.current) return;
     const t = clock.elapsedTime + b.pos[0] * 0.37 + b.pos[2] * 0.011;
-    light.current.emissiveIntensity =
-      b.kind === "yellow" ? 0.4 + 1.8 * ((Math.sin(t * 2.2) + 1) / 2) : t % 3 < 0.6 ? 2.2 : 0.15;
+    const pulse = (rad: number) => 0.4 + 1.8 * ((Math.sin(rad) + 1) / 2);
+    light.current.emissiveIntensity = b.pulseHz
+      ? pulse(t * b.pulseHz * Math.PI * 2)
+      : b.kind === "yellow"
+        ? pulse(t * 2.2)
+        : t % 3 < 0.6
+          ? 2.2
+          : 0.15;
   });
 
   return (

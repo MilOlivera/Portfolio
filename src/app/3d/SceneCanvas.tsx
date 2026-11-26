@@ -13,7 +13,9 @@ import DeltaIslands from "./DeltaIslands";
 import NavBuoys from "./NavBuoys";
 import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
 import FSRUExpedient from "./FSRUExpedient";
+import Gasoducto from "./Gasoducto";
 import GNLEscobar from "./GNLEscobar";
+import LoadingArms from "./LoadingArms";
 import PuertoEscobar from "./PuertoEscobar";
 import RefineryPAE from "./RefineryPAE";
 import RelocatedLandmarks from "./Relocated";
@@ -22,6 +24,7 @@ import SunLight from "./SunLight";
 import Water from "./Water";
 import Waypoints from "./Waypoints";
 import ZarateBridge from "./ZarateBridge";
+import ZonaComunPolygons from "./ZonaComunPolygons";
 import ZoneBands from "./ZoneBands";
 
 // Three.js materials can't read Tailwind tokens, so scene colors are hex.
@@ -56,6 +59,7 @@ export default function SceneCanvas() {
       {/* Route, upstream → downstream (scenery far from the boat is fogged out) */}
       <ZarateBridge />
       <RefineryPAE />
+      <LoadingArms />
       <DeltaIslands />
       <DeltaHouses />
       <DeltaCanals />
@@ -66,6 +70,8 @@ export default function SceneCanvas() {
 
       <Waypoints />
       <NavBuoys />
+      <ZonaComunPolygons />
+      <Gasoducto />
       <Boat ref={boatRef} />
 
       {/* Order matters: controls move the boat before the camera reads it each frame */}
