@@ -5,7 +5,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import type { Group } from "three";
 import { START, UNMOOR_EVENT, useBoatTelemetry, type Telemetry } from "./BoatTelemetry";
 import { SHORE_MARGIN, WORLD_BOUNDS } from "./environment";
-import { navigableSd, outsideFairway, waterSd } from "./river-geometry";
+import { frameAtZ, inBaBranch, navigableSd, outsideFairway, waterSd } from "./river-geometry";
 import { OFF_FAIRWAY_KN, speedLimitAt } from "./route-info";
 import { knotsToUps } from "./scale";
 import { TIME_SCALE } from "./scale";
@@ -43,6 +43,7 @@ const OFF_FAIRWAY_HINT_S = 5; // after this long outside the fairway, suggest go
 const AUTO_SLOW_EASE = 4; // 1/s (real time): ease-out to the al-través speed in ~1 s
 const MAX_SUBSTEP = 1 / 30; // s of sim time per physics substep
 const CAST_OFF_S = 3; // real seconds sliding sideways off the quay after DESAMARRAR
+const BA_NUDGE = 0.8; // u/s back toward the fairway when heading up a Puerto BA channel
 
 // Blocking obstacles resolved once (no per-frame allocation)
 const OBSTACLES: { x: number; z: number; r: number }[] = [
@@ -152,7 +153,9 @@ function simulate(t: Telemetry, k: Keys, dt: number) {
   }
 
   // Bow is local +X → world forward = (cos h, 0, -sin h), matching rotation.y = h
-  const vx = Math.cos(t.heading) * v;
+  // Heading up a Puerto BA channel: a gentle push back toward Canal Brown
+  const nudge = inBaBranch(t.x, t.z) ? Math.sign(frameAtZ(t.z).x - t.x) * BA_NUDGE : 0;
+  const vx = Math.cos(t.heading) * v + nudge;
   const vz = -Math.sin(t.heading) * v + RIVER_DRIFT;
 
   // Soft world limit: damp speed when moving toward a nearby edge

@@ -12,35 +12,43 @@ import { CatmullRomCurve3, Vector3 } from "three";
 // (BoatControls.tsx) both read the signed-distance functions below.
 
 export const RIVER_CENTERLINE = [
-  new Vector3(20, 0, -140), // upstream, past the fog (river doesn't end in view)
-  // Upstream reach (not sailed: scenery)
-  new Vector3(15, 0, -60), // Zárate–Brazo Largo bridge (far silhouette)
-  new Vector3(10, 0, -40), // km 101 · Vuelta del Este
-  new Vector3(0, 0, -15), // green turning buoy
+  new Vector3(-60, 0, -175), // upstream, past the fog (river doesn't end in view)
+  // Upstream reach (not sailed: scenery). The Vuelta del Este is an S: past
+  // the green buoy the river turns east, then back north-west to the bridge,
+  // so holding the northbound course runs you into the bank.
+  new Vector3(-25, 0, -104), // Zárate–Brazo Largo bridge
+  new Vector3(-10, 0, -90),
+  new Vector3(6, 0, -80),
+  new Vector3(20, 0, -68), // reversal
+  new Vector3(24, 0, -52), // km 101 · Vuelta del Este, apex (east)
+  new Vector3(13, 0, -37),
+  new Vector3(1, 0, -24), // green turning buoy
+  new Vector3(0, 0, -12),
   new Vector3(0, 0, 0), // B/T NANY berth
 
-  // Downstream (sailed). The vueltas swing hard across: you FEEL them.
-  new Vector3(5, 0, 15), // falling off, straight south
-  // Vuelta de Campana: sharp bend to starboard (east)
-  new Vector3(20, 0, 22),
-  new Vector3(32, 0, 35), // apex
-  new Vector3(28, 0, 48),
-  // Vuelta del Hinojo: counter-bend to port (west)
-  new Vector3(12, 0, 60),
-  new Vector3(2, 0, 72), // apex
-  new Vector3(8, 0, 85),
-  // Vuelta del Tordillo: third bend to starboard
-  new Vector3(22, 0, 95),
-  new Vector3(32, 0, 108), // apex
-  new Vector3(30, 0, 125), // into the cancha larga
+  // Downstream (sailed). West = negative x (starboard sailing down).
+  new Vector3(2, 0, 12), // clear of the quay
+  // Vuelta Campana: bend to the WEST
+  new Vector3(-5, 0, 23),
+  new Vector3(-12, 0, 35), // apex
+  new Vector3(-8, 0, 48),
+  // Vuelta Hinojo: right after it, to the EAST
+  new Vector3(3, 0, 57),
+  new Vector3(15, 0, 69), // apex
+  new Vector3(11, 0, 81),
+  // Vuelta Tordillo: very gentle, to the WEST
+  new Vector3(3, 0, 91),
+  new Vector3(-2, 0, 101), // apex
+  new Vector3(2, 0, 114),
 
-  // Cancha larga (straight)
-  new Vector3(30, 0, 150),
-  new Vector3(28, 0, 175), // Puerto Escobar (port side)
-  new Vector3(28, 0, 200), // FSRU EXPEDIENT (port side)
+  // Cancha larga
+  new Vector3(9, 0, 130),
+  new Vector3(15, 0, 150), // FSRU EXPEDIENT · GNL Escobar
+  new Vector3(20, 0, 175), // Puerto Escobar
+  new Vector3(25, 0, 200),
   new Vector3(32, 0, 225),
 
-  // Into the Ingeniero Mitre (gentle bend to starboard)
+  // Into the Ingeniero Mitre (gentle bend)
   new Vector3(40, 0, 250), // PNA LIMA + Canal de la Honda
   new Vector3(50, 0, 275), // start of the Canal Mitre
 
@@ -50,10 +58,14 @@ export const RIVER_CENTERLINE = [
   new Vector3(80, 0, 365),
   new Vector3(90, 0, 395), // off Aeroparque
   new Vector3(100, 0, 425),
-  new Vector3(110, 0, 455), // km 12 (Relojes, cardinal)
+  new Vector3(110, 0, 455), // km 12: fork — Puerto BA to the west (not sailed)
+
+  // Canal Brown (sailed), through the Zona Común
   new Vector3(120, 0, 485),
-  new Vector3(130, 0, 510), // Zona Común · mega Evolvere
-  new Vector3(140, 0, 560), // continues past the fog
+  new Vector3(130, 0, 510), // Zona Común
+  new Vector3(140, 0, 550), // off Puerto La Plata
+  new Vector3(150, 0, 600),
+  new Vector3(162, 0, 660), // continues past the fog
 ];
 
 export const RIVER_CURVE = new CatmullRomCurve3(RIVER_CENTERLINE, false, "catmullrom", 0.5);
@@ -66,7 +78,7 @@ export const RIVER_WIDTH_VISUAL = 20;
 export const VISUAL_HALF = RIVER_WIDTH_VISUAL / 2;
 
 // ------------------------------------------------------------- samples ----
-const SAMPLES = 600;
+const SAMPLES = 900;
 const pts = RIVER_CURVE.getSpacedPoints(SAMPLES);
 const XS = Float64Array.from(pts, (p) => p.x);
 const ZS = Float64Array.from(pts, (p) => p.z);
@@ -167,6 +179,14 @@ export const CANALS = [
 const DELTA_NEAR: Rect = { minX: 18, maxX: 75, minZ: -65, maxZ: 25 };
 const DELTA_LAND_STRIP = 4;
 
+// Puerto Buenos Aires access channels: they leave the Canal Mitre to the west
+// at km 12. Scenery (PuertoBA.tsx): the dredged fairway follows Canal Brown.
+export const BA_CHANNELS: { name: string; path: [number, number][] }[] = [
+  { name: "CANAL NORTE", path: [[102, 444.8], [88, 447], [66, 450]] },
+  { name: "CANAL SUR", path: [[104.5, 452.5], [82, 455], [68, 464]] },
+];
+const BA_HALF_WIDTH = 3;
+
 function segDist(px: number, pz: number, ax: number, az: number, bx: number, bz: number) {
   const dx = bx - ax;
   const dz = bz - az;
@@ -237,11 +257,6 @@ export function waterSd(x: number, z: number) {
   return Math.min(navigableWith(x, z, cd), shallowWith(x, z, cd));
 }
 
-/** waterSd with the centerline distance already known (terrain ribbon). */
-export function waterSdKnown(x: number, z: number, cd: number) {
-  return Math.min(navigableWith(x, z, cd), shallowWith(x, z, cd));
-}
-
 /**
  * True when (x,z) is outside the dredged fairway in the open river — not in
  * the Campana port area (berth/turning, z < 19) nor the Zona Común anchorage,
@@ -250,6 +265,14 @@ export function waterSdKnown(x: number, z: number, cd: number) {
 export function outsideFairway(x: number, z: number) {
   if (z < 19 || rectSd(x, z, ANCHORAGE) < 0) return false;
   return centerlineDistance(x, z) > HALF_WIDTH;
+}
+
+/** True in the mouth of a Puerto BA channel: off the fairway, headed the wrong way. */
+export function inBaBranch(x: number, z: number) {
+  const near = BA_CHANNELS.some(({ path }) =>
+    path.slice(1).some(([bx, bz], i) => segDist(x, z, path[i][0], path[i][1], bx, bz) < BA_HALF_WIDTH),
+  );
+  return near && centerlineDistance(x, z) > HALF_WIDTH;
 }
 
 const LAND_CLEARANCE = 1;

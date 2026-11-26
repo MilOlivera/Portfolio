@@ -11,11 +11,12 @@ import { ZONE_BANDS } from "./route-info";
 //  · the dredged FAIRWAY (7.5 u), darker = deeper, inside the 20 u visible river
 //  · regulated stretches: km 96–97.5 no-turning zone (red), GNL area (yellow)
 const BAND_Y = 0.09;
-const FAIRWAY_Y = 0.085;
+export const FAIRWAY_Y = 0.085;
 const STEP = 2;
-const FAIRWAY = { fromZ: 15, toZ: 372, color: "#0f2422" }; // from the basin exit to the Mitre's end
+export const FAIRWAY_COLOR = "#0f2422";
+const FAIRWAY = { fromZ: 15, toZ: 455 }; // basin exit → km 12 (CanalBrown.tsx goes on)
 
-function buildBand(fromZ: number, toZ: number, y = BAND_Y) {
+export function buildBand(fromZ: number, toZ: number, y = BAND_Y) {
   const rows = Math.max(2, Math.ceil((toZ - fromZ) / STEP) + 1);
   const half = RIVER_WIDTH / 2;
   const pos = new Float32Array(rows * 2 * 3);
@@ -45,7 +46,7 @@ export default function ZoneBands() {
   return (
     <>
       <mesh geometry={fairway} renderOrder={0}>
-        <meshBasicMaterial color={FAIRWAY.color} transparent opacity={0.3} depthWrite={false} side={DoubleSide} />
+        <meshBasicMaterial color={FAIRWAY_COLOR} transparent opacity={0.3} depthWrite={false} side={DoubleSide} />
       </mesh>
       {bands.map((b) => (
         <group key={b.id}>

@@ -2,8 +2,8 @@
 // HUD zone name. Pure data (no three.js) — read by the physics and the HUD.
 import { kmToZ, knotsToUps, zToKm } from "./scale";
 
-// GNL Escobar safety area around the FSRU (the 4 yellow buoys, z 184–214).
-export const GNL_ZONE = { fromZ: 184, toZ: 214 };
+// GNL Escobar safety area around the FSRU (the 4 yellow buoys, z 135–165).
+export const GNL_ZONE = { fromZ: 135, toZ: 165 };
 
 /** Speed limits by world Z (the route runs monotonically +Z downstream). */
 const SPEED_ZONES: { fromZ: number; toZ: number; kn: number; label: string }[] = [
@@ -28,29 +28,34 @@ export const ZONE_BANDS = [
   { id: "gnl", fromZ: GNL_ZONE.fromZ, toZ: GNL_ZONE.toZ, color: "#F7D417", text: "ZONA GNL · PRECAUCIÓN" },
 ] as const;
 
-/** Stretch names by km (descending), for the HUD "ZONA" line. */
-const ZONES: { minKm: number; name: string }[] = [
-  { minKm: 99, name: "VUELTA DEL ESTE" },
-  { minKm: 97.5, name: "KM 98 · BOYA VERDE DE GIRO" },
-  { minKm: 96, name: "CAMPANA · PROHIBIDO GIRAR" },
-  { minKm: 92, name: "VUELTA DE CAMPANA" },
-  { minKm: 86.5, name: "VUELTA DEL HINOJO" },
-  { minKm: 83.5, name: "CANAL GOB. ARIAS" },
-  { minKm: 78, name: "VUELTA DEL TORDILLO" },
-  { minKm: 76.5, name: "CANCHA LARGA · PUERTO ESCOBAR" },
-  { minKm: 73.5, name: "GNL ESCOBAR · FSRU EXPEDIENT" },
-  { minKm: 71, name: "PARANÁ DE LAS PALMAS" },
-  { minKm: 67.5, name: "TRANSFERENCIA DE GRANOS" },
-  { minKm: 63.5, name: "CANAL GOB. LA SERNA" },
-  { minKm: 51, name: "PARANÁ DE LAS PALMAS" },
-  { minKm: 48.5, name: "PNA LIMA · CANAL DE LA HONDA" },
-  { minKm: 22, name: "CANAL EMILIO MITRE" },
-  { minKm: 17, name: "CANAL MITRE · AEROPARQUE" },
-  { minKm: 12, name: "CANAL MITRE · LA PLATA" },
-  { minKm: -Infinity, name: "ZONA COMÚN" },
+/** Stretch names downstream, for the HUD "ZONA" line: [up to this z, name]. */
+const ZONES: [toZ: number, name: string][] = [
+  [kmToZ(99), "VUELTA DEL ESTE"],
+  [kmToZ(97.5), "KM 98 · BOYA VERDE DE GIRO"],
+  [kmToZ(96), "CAMPANA · PROHIBIDO GIRAR"],
+  [52, "VUELTA CAMPANA"],
+  [85, "VUELTA HINOJO"],
+  [116, "VUELTA TORDILLO"],
+  [GNL_ZONE.fromZ, "CANCHA LARGA"],
+  [GNL_ZONE.toZ, "GNL EXPEDIENT"],
+  [188, "PUERTO ESCOBAR"],
+  [212, "PARANÁ DE LAS PALMAS"],
+  [224, "CANAL GOB. LA SERNA"],
+  [240, "TRANSFERENCIA DE GRANOS"],
+  [265, "PNA LIMA · CANAL DE LA HONDA"],
+  [383, "CANAL MITRE"],
+  [410, "CANAL MITRE · AEROPARQUE"],
+  [455, "CANAL MITRE"],
+  [470, "CANAL BROWN"],
+  [528, "ZONA COMÚN"],
+  [540, "CANAL BROWN"],
+  [556, "MALECONES LA PLATA"],
+  [Infinity, "TEC PLATA"],
 ];
+/** Puerto La Plata keeps its own kilometre posts: the malecones read km 8.7. */
+const LA_PLATA = { fromZ: 540, km: 8.7 };
 
 export function zoneAt(z: number) {
-  const km = zToKm(z);
-  return { km, name: ZONES.find((zn) => km >= zn.minKm)?.name ?? "ZONA COMÚN" };
+  const km = z >= LA_PLATA.fromZ ? LA_PLATA.km : Math.max(0, zToKm(z));
+  return { km, name: ZONES.find(([toZ]) => z < toZ)![1] };
 }

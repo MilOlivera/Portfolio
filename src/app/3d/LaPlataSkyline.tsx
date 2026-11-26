@@ -12,8 +12,8 @@ import {
 } from "three";
 import { BANK_Y } from "./environment";
 
-// Berisso / Ensenada / Puerto La Plata: a low urban-industrial coast on the
-// west side near the end of the Canal Mitre — rows of low buildings, refinery
+// Berisso / Ensenada / Puerto La Plata: a low urban-industrial coast past the
+// end of Canal Brown, behind the malecones and TEC PLATA — rows of low buildings, refinery
 // tanks and chimneys, and STS container cranes on the quay. Three.js
 // materials can't read the site's CSS theme tokens → hex colors intentional.
 //
@@ -27,6 +27,7 @@ const COAST_Z = -20;
 
 const BUILDING_PALETTE = ["#9b8b7a", "#b5a58f", "#8c8f93", "#a06a55", "#c2bcb0", "#7c7f84", "#ad9a80"];
 const QUAY = "#7a7a76";
+const GROUND = "#4a4d45";
 const CRANE_RED = "#c8402f";
 const CRANE_WHITE = "#e6e6e2";
 const TANK = "#d9d9d4";
@@ -218,6 +219,12 @@ export default function LaPlataSkyline() {
 
   return (
     <group position={[CENTER[0], 0, CENTER[1]]} rotation={[0, FRAME_YAW, 0]}>
+      {/* Ground slab: it stands past the end of the terrain, over open water */}
+      <mesh position={[0, BANK_Y - 0.17, COAST_Z + 31]} receiveShadow>
+        <boxGeometry args={[310, 0.3, 62]} />
+        <meshStandardMaterial color={GROUND} roughness={1} />
+      </mesh>
+
       {/* Concrete quay along the crane berth */}
       <mesh position={[-6, BANK_Y + 0.05, COAST_Z + 3.5]} receiveShadow>
         <boxGeometry args={[56, 0.1, 7]} />

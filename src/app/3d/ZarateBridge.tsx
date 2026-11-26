@@ -3,13 +3,12 @@
 import { useMemo } from "react";
 import { BufferGeometry, Float32BufferAttribute } from "three";
 
-// Puente Zárate–Brazo Largo, km 106: upstream (north) of the Campana berth,
-// ~60 u ahead of the bow on the compressed river — a silhouette at the edge
-// of the haze. Spans E–W across the upstream reach (river-geometry.ts →
-// centerline x≈15 at z=-60, visible river ±10), towers on land. Scaled to
-// stay a backdrop at that distance (deck clears any mast).
-const Z = -60;
-const TOWER_X = [2, 28];
+// Puente Zárate–Brazo Largo, km 106: upstream of the Campana berth, past the
+// Vuelta del Este S — a silhouette in the haze. Spans E–W across the upstream
+// reach (river-geometry.ts → centerline x≈-25 at z=-104), towers on land.
+// Scaled to stay a backdrop at that distance (deck clears any mast).
+const Z = -104;
+const TOWER_X = [-42, -8];
 const TOWER_H = 12;
 const DECK_Y = 4;
 const DECK_W = 2.4;

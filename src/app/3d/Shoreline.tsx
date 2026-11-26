@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { BufferAttribute, BufferGeometry } from "three";
+import { BufferAttribute, BufferGeometry, Color } from "three";
 import { BANK_Y, JETTY_TOP } from "./environment";
-import { CAUSEWAY, JETTY, RIVER_CURVE, waterSdKnown } from "./river-geometry";
+import { CAUSEWAY, JETTY, RIVER_CURVE, frameAtZ, waterSd } from "./river-geometry";
 
 // River banks along the whole route. A world-sized grid would need far more
 // vertices than needed, so the land is a RIBBON that follows the centerline: rows every
@@ -13,7 +13,8 @@ import { CAUSEWAY, JETTY, RIVER_CURVE, waterSdKnown } from "./river-geometry";
 // sloped bank, and a bed below the water wherever there's river, basin,
 // estuary, canal or Delta channel. Past the ribbon the open water plane shows
 // (beyond the fog, or the open estuary past the Zona Común).
-const LAND_COLOR = "#3d5a3d";
+const LAND_COLOR = new Color("#3d5a3d"); // west: mainland
+const DELTA_COLOR = new Color("#33621f"); // east: Paraná delta
 const BED_Y = -0.6;
 const SLOPE_IN = -1; // sd where the bed starts rising
 const SLOPE_OUT = 0.6; // sd where flat land begins
@@ -37,6 +38,7 @@ function buildRibbon() {
   const pts = RIVER_CURVE.getSpacedPoints(rows - 1);
   const cols = OFFSETS.length;
   const pos = new Float32Array(rows * cols * 3);
+  const col = new Float32Array(rows * cols * 3);
 
   for (let r = 0; r < rows; r++) {
     const a = pts[Math.max(0, r - 1)];
@@ -50,8 +52,12 @@ function buildRibbon() {
       const z = pts[r].z + wz * off;
       const i = (r * cols + c) * 3;
       pos[i] = x;
-      pos[i + 1] = bankHeight(waterSdKnown(x, z, Math.abs(off)));
+      // True distance, not the column offset: inside tight bends the ribbon
+      // folds over the river and would otherwise lay land across it
+      pos[i + 1] = bankHeight(waterSd(x, z));
       pos[i + 2] = z;
+      // Side by position (z grows monotonically), so folds never swap colors
+      (x > frameAtZ(z).x ? DELTA_COLOR : LAND_COLOR).toArray(col, i);
     }
   }
 
@@ -68,6 +74,7 @@ function buildRibbon() {
 
   const geo = new BufferGeometry();
   geo.setAttribute("position", new BufferAttribute(pos, 3));
+  geo.setAttribute("color", new BufferAttribute(col, 3));
   geo.setIndex(new BufferAttribute(index, 1));
   geo.computeVertexNormals();
   geo.computeBoundingSphere();
@@ -87,7 +94,7 @@ export default function Shoreline() {
   return (
     <>
       <mesh geometry={ribbon} receiveShadow>
-        <meshStandardMaterial color={LAND_COLOR} roughness={0.9} />
+        <meshStandardMaterial vertexColors roughness={0.9} />
       </mesh>
 
       {/* Terminal AXION quay: the ships lie alongside in line, port side to */}

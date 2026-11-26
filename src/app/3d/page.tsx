@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import AlTravesDetector from "./AlTravesDetector";
 import { BoatTelemetryProvider } from "./BoatTelemetry";
 import Hud from "./Hud";
+import PlaceBanner from "./PlaceBanner";
 import Scene from "./Scene";
 import TutorialOverlay from "./TutorialOverlay";
-import VueltaAlert from "./VueltaAlert";
 import ZonaComunWelcome from "./ZonaComunWelcome";
 
 export const metadata: Metadata = {
@@ -20,7 +20,7 @@ export default function Page3D() {
         <Scene />
         <Hud />
         <TutorialOverlay />
-        <VueltaAlert />
+        <PlaceBanner />
         <AlTravesDetector />
         <ZonaComunWelcome />
       </BoatTelemetryProvider>

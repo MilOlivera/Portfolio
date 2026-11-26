@@ -28,20 +28,19 @@ export const TIME_SCALE = 2;
 // landmark keeps its real km label, the stretches between them are shortened.
 // Piecewise-linear through the route's anchor points (km descending, z rising).
 const KM_Z: [km: number, z: number][] = [
-  [107, -60], // Zárate–Brazo Largo bridge
-  [101, -40], // Vuelta del Este
+  [107, -104], // Zárate–Brazo Largo bridge
+  [101, -52], // Vuelta del Este
   [98, -22], // green turning buoy
   [97, 0], // B/T NANY berth (Terminal AXION, Campana)
-  [95, 35], // Vuelta de Campana (apex)
-  [90, 72], // Vuelta del Hinojo (apex)
-  [80, 108], // Vuelta del Tordillo (apex)
-  [77, 175], // Puerto Escobar
-  [74.5, 200], // FSRU EXPEDIENT · GNL Escobar
+  [95, 35], // Vuelta Campana (apex)
+  [90, 69], // Vuelta Hinojo (apex)
+  [80, 101], // Vuelta Tordillo (apex)
+  [74.5, 150], // FSRU EXPEDIENT · GNL Escobar
   [50, 250], // PNA LIMA · Canal de la Honda
   [48, 275], // start of the Canal Mitre
   [38, 335],
   [20, 395], // Aeroparque
-  [12, 455], // end of the Canal Mitre
+  [12, 455], // fork: end of the Canal Mitre, start of Canal Brown
   [2, 510], // Zona Común
 ];
 

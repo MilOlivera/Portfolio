@@ -25,8 +25,8 @@ export type Waypoint = {
   dim?: boolean; // WIP (relojes)
   struck?: boolean; // label crossed out
   collisionRadius: number; // 0 = doesn't block
-  alertRadius?: number; // vueltas: HUD warning range
   buoyType?: BuoyType;
+  outsideChannel?: boolean; // moored off the dredged fairway
   size?: "medium" | "large"; // moored ships (large = 1.5×)
   clickable?: boolean;
   alTravesDetection?: boolean; // CTA when abeam (AlTravesDetector)
@@ -47,23 +47,23 @@ export const AUTO_SLOW_EVENT = "autoslow";
 export const AUTO_SLOW_CANCEL_EVENT = "autoslow-cancel";
 
 /** FSRU EXCELERATE EXPEDIENT: west half of the river at km 74.5, bow upstream. */
-export const FSRU = { id: "fsru-expedient", pos: [21, 0, 200.5] as [number, number, number], yaw: 1.648 };
+export const FSRU = { id: "fsru-expedient", pos: [8.2, 0, 151.65] as [number, number, number], yaw: 1.81 };
 
 /** Puerto Escobar (river-frame z of the tug quay). */
 export const ESCOBAR_Z = 175;
 
 /** Svitzer tugs alongside the Escobar quay (river frame: along +downstream, west from centerline). */
 export const TUGS = [
-  { name: "SVITZER MORA", along: -2, west: 7.9, bowUpstream: true, world: [20.2, 172.6] as [number, number] },
-  { name: "SVITZER DAMKA", along: 0, west: 7.9, bowUpstream: false, world: [20.1, 174.6] as [number, number] },
-  { name: "SVITZER AWE", along: 2, west: 7.9, bowUpstream: true, world: [20, 176.6] as [number, number] },
+  { name: "SVITZER MORA", along: -2, west: 7.9, bowUpstream: true, world: [11.9, 174.6] as [number, number] },
+  { name: "SVITZER DAMKA", along: 0, west: 7.9, bowUpstream: false, world: [12.3, 176.5] as [number, number] },
+  { name: "SVITZER AWE", along: 2, west: 7.9, bowUpstream: true, world: [12.6, 178.5] as [number, number] },
 ];
 
 /** Carousel trigger range for the Zona Común ships (proximity, any angle). */
 export const PROXIMITY_DISTANCE = 8;
 
 /** Entering the Zona Común shows the welcome card (once per visit). */
-export const ZONA_COMUN_ENTRY_Z = 460;
+export const ZONA_COMUN_ENTRY_Z = 471; // after the Canal Brown banner
 
 // ------------------------------------------------------ Terminal AXION ----
 /** B/T NANY berth (km 97): alongside the Campana quay, bow north. */
@@ -115,8 +115,8 @@ export const nearGasoducto = (x: number, z: number) =>
 export const WAYPOINTS: Waypoint[] = [
   // ------------------------------------------------ nautical landmarks ----
   { id: "amarre", kind: "landmark", title: "TERMINAL AXION · KM 97", subtitle: "Campana · CARGA IFO 380 ✓", pos: BERTH, site: [-12, 0, -4], labelY: 2.6, collisionRadius: 0 },
-  { id: "puente-zarate", kind: "landmark", title: "PUENTE ZÁRATE–BRAZO LARGO", subtitle: "km 106", pos: [15, 0, -60], labelY: 14, collisionRadius: 0 },
-  { id: "puerto-escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "km 77 · remolcadores Svitzer", pos: [12, 0, 174.3], labelY: 3.2, collisionRadius: 0 },
+  { id: "puente-zarate", kind: "landmark", title: "PUENTE ZÁRATE–BRAZO LARGO", subtitle: "km 106", pos: [-25, 0, -104], labelY: 14, collisionRadius: 0 },
+  { id: "puerto-escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "remolcadores Svitzer", pos: [4.3, 0, 178.1], labelY: 3.2, collisionRadius: 0 },
   { id: "transf-granos", kind: "landmark", title: "TRANSFERENCIA DE GRANOS", subtitle: "km 69", pos: [17.3, 0, 232.2], labelY: 6, collisionRadius: 0 },
   { id: "pna-lima", kind: "landmark", title: "PREFECTURA · PNA LIMA", subtitle: "km 50", pos: [26.8, 0, 254.8], labelY: 5, collisionRadius: 0 },
   { id: "mitre-start", kind: "landmark", title: "KM 48 · CANAL EMILIO MITRE", subtitle: "bifurcación · canal boyado", pos: [44.4, 0, 277.1], labelY: 3, collisionRadius: 0 },
@@ -146,16 +146,16 @@ export const WAYPOINTS: Waypoint[] = [
   },
 
   // ------------------------------------------------------------ vueltas ----
-  // Apexes of the amplified bends (≥35 u apart): 12 u alert radius each.
-  { id: "vuelta-este", kind: "vuelta", title: "VUELTA DEL ESTE", subtitle: "km 101 · aguas arriba", pos: [10, 0, -40], collisionRadius: 0, alertRadius: 8 },
-  { id: "vuelta-campana", kind: "vuelta", title: "VUELTA DE CAMPANA", subtitle: "km 95", pos: [32, 0, 35], collisionRadius: 0, alertRadius: 12 },
-  { id: "vuelta-hinojo", kind: "vuelta", title: "VUELTA DEL HINOJO", subtitle: "km 90 · velocidad mínima · no adelantar", pos: [2, 0, 72], collisionRadius: 0, alertRadius: 12 },
+  // Apexes of the bends (the banner ranges are in PLACES).
+  { id: "vuelta-este", kind: "vuelta", title: "VUELTA DEL ESTE", subtitle: "km 101 · aguas arriba", pos: [24, 0, -52], collisionRadius: 0 },
+  { id: "vuelta-campana", kind: "vuelta", title: "VUELTA CAMPANA", subtitle: "km 95", pos: [-12, 0, 35], collisionRadius: 0 },
+  { id: "vuelta-hinojo", kind: "vuelta", title: "VUELTA HINOJO", subtitle: "km 90 · velocidad mínima · no adelantar", pos: [15, 0, 69], collisionRadius: 0 },
   // Provisional: informal pilots' name, not in the ordinance — confirm with Milton.
-  { id: "vuelta-tordillo", kind: "vuelta", title: "VUELTA DEL TORDILLO", subtitle: "km 80 · provisorio", pos: [32, 0, 108], collisionRadius: 0, alertRadius: 12 },
+  { id: "vuelta-tordillo", kind: "vuelta", title: "VUELTA TORDILLO", subtitle: "km 80 · provisorio", pos: [-2, 0, 101], collisionRadius: 0 },
 
   // ----------------------------------------------------- project buoys ----
-  // East of the buoyed lane (outside the fairway, inside the open shallows).
-  { id: "finanzas", kind: "buoy", buoyType: "special", title: "Finanzas Personales", subtitle: "Boya especial amarilla · km 38 Canal Mitre", pos: [75.7, 0, 333.1], color: "#F7D417", pulse: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "finanzas", media: "mi-plata" },
+  // Outside the buoyed lane: Finanzas on the green (west) side, Relojes east.
+  { id: "finanzas", kind: "buoy", buoyType: "special", title: "Finanzas Personales", subtitle: "Boya especial amarilla · km 38 Canal Mitre", pos: [64, 0, 335], outsideChannel: true, color: "#F7D417", pulse: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "finanzas", media: "mi-plata" },
   { id: "relojes", kind: "buoy", buoyType: "cardinal-east", title: "E-commerce Relojes", subtitle: "Boya cardinal · km 12 · fin del Canal Mitre", pos: [115.7, 0, 453.1], color: "#000000", pulse: true, dim: true, collisionRadius: 0, clickable: true, alTravesDetection: true, projectId: "relojes", media: "relojes" },
 
   // ------------------------------------------- moored in line at Campana ----
@@ -201,16 +201,17 @@ function hullCircles(x: number, z: number, length: number, yaw: number, r: numbe
 /** Hull length (u) of the ships moored at Campana (the NANY is 4). */
 export const MOORED_LENGTH = { medium: 5.1, large: 6 } as const;
 
+/** A point in the FSRU's own frame (local +X = bow, −Z = jetty side) → world. */
+function fsruPoint(x: number, z: number): [number, number] {
+  const c = Math.cos(FSRU.yaw);
+  const s = Math.sin(FSRU.yaw);
+  return [FSRU.pos[0] + c * x + s * z, FSRU.pos[2] - s * x + c * z];
+}
+
 /** Hull obstacles not covered by a waypoint circle: FSRU, dolphins, tugs, long ships. */
 export const EXTRA_OBSTACLES: { pos: [number, number]; r: number }[] = [
-  { pos: [21.5, 206.5], r: 1.3 },
-  { pos: [21.2, 202.5], r: 1.3 },
-  { pos: [20.9, 198.5], r: 1.3 },
-  { pos: [20.6, 194.6], r: 1.3 },
-  { pos: [18.5, 193.2], r: 0.45 },
-  { pos: [22.3, 192.9], r: 0.45 },
-  { pos: [19.7, 208.2], r: 0.45 },
-  { pos: [23.5, 207.9], r: 0.45 },
+  ...[-6, -2, 2, 6].map((x) => ({ pos: fsruPoint(x, 0), r: 1.3 })),
+  ...[-7.5, 7.5].flatMap((x) => [-1.9, 1.9].map((z) => ({ pos: fsruPoint(x, z), r: 0.45 }))),
   ...TUGS.map((t) => ({ pos: t.world, r: 0.8 })),
   ...WAYPOINTS.filter((w) => w.kind === "moored-ship").flatMap((w) =>
     hullCircles(w.pos[0], w.pos[2], MOORED_LENGTH[w.size ?? "medium"], w.rotation ?? 0, 0.7),
@@ -224,21 +225,39 @@ export const BOAT_RADIUS = 2;
 /** Range (to the waypoint's edge) at which the HUD highlights it. */
 export const NEAR_DISTANCE = 10;
 
-export const VUELTAS = WAYPOINTS.filter((w) => w.kind === "vuelta");
+// ------------------------------------------------------ place banners ----
+/** Places the top banner names when the boat comes within `r`. */
+export const PLACES: { name: string; x: number; z: number; r: number }[] = [
+  { name: "VUELTA DEL ESTE", x: 24, z: -52, r: 12 },
+  { name: "VUELTA CAMPANA", x: -12, z: 35, r: 12 },
+  { name: "VUELTA HINOJO", x: 15, z: 69, r: 12 },
+  { name: "VUELTA TORDILLO", x: -2, z: 101, r: 12 },
+  { name: "GNL EXPEDIENT", x: FSRU.pos[0] + 7, z: 150, r: 12 },
+  { name: "PUERTO ESCOBAR", x: 20, z: 176, r: 10 },
+  { name: "PNA LIMA", x: 40, z: 250, r: 10 },
+  { name: "CANAL MITRE", x: 50, z: 277, r: 10 },
+  { name: "CANAL BROWN", x: 116, z: 473, r: 8 },
+  { name: "ZONA COMÚN", x: 122, z: 490, r: 10 },
+  { name: "MALECONES LA PLATA", x: 141, z: 548, r: 12 },
+  { name: "TEC PLATA", x: 145, z: 560, r: 7 },
+];
 
-/** Closest vuelta whose alert range contains (x,z), or null. */
-export function activeVuelta(x: number, z: number) {
-  let best: Waypoint | null = null;
+/** Closest place whose range contains (x,z), or null. */
+export function activePlace(x: number, z: number) {
+  let best: string | null = null;
   let bestDist = Infinity;
-  for (const w of VUELTAS) {
-    const d = Math.hypot(w.pos[0] - x, w.pos[2] - z);
-    if (d < (w.alertRadius ?? 0) && d < bestDist) {
-      best = w;
+  for (const p of PLACES) {
+    const d = Math.hypot(p.x - x, p.z - z);
+    if (d < p.r && d < bestDist) {
+      best = p.name;
       bestDist = d;
     }
   }
   return best;
 }
+
+/** km 12: the fork where the player leaves the Canal Mitre for Canal Brown. */
+export const BROWN_FORK = { x: 110, z: 455, range: 15 };
 
 /**
  * Nearest waypoint measured to its EDGE (center distance − collisionRadius),

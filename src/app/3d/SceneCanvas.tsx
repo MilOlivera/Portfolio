@@ -7,6 +7,7 @@ import type { Group } from "three";
 import Boat from "./Boat";
 import BoatControls from "./BoatControls";
 import CameraRig from "./CameraRig";
+import CanalBrown from "./CanalBrown";
 import DeltaCanals from "./DeltaCanals";
 import DeltaHouses from "./DeltaHouses";
 import DeltaIslands from "./DeltaIslands";
@@ -16,7 +17,9 @@ import FSRUExpedient from "./FSRUExpedient";
 import Gasoducto from "./Gasoducto";
 import GNLEscobar from "./GNLEscobar";
 import LoadingArms from "./LoadingArms";
+import PuertoBA from "./PuertoBA";
 import PuertoEscobar from "./PuertoEscobar";
+import PuertoLaPlata from "./PuertoLaPlata";
 import RefineryPAE from "./RefineryPAE";
 import RelocatedLandmarks from "./Relocated";
 import Shoreline from "./Shoreline";
@@ -67,6 +70,9 @@ export default function SceneCanvas() {
       <GNLEscobar />
       <FSRUExpedient />
       <RelocatedLandmarks />
+      <PuertoBA />
+      <CanalBrown />
+      <PuertoLaPlata />
 
       <Waypoints />
       <NavBuoys />
