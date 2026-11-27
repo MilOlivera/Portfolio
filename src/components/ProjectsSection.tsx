@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import FilterTabs from "./FilterTabs";
 import SectionHeader from "./SectionHeader";
@@ -59,9 +60,32 @@ function Action({ project }: { project: Project }) {
   );
 }
 
+function ProjectThumbnail({ project }: { project: Project }) {
+  if (!project.heroImage) return null;
+  const isMock = project.visibility === "confidential" || project.id === "finanzas";
+  return (
+    <div className="relative mb-4 aspect-[16/9] overflow-hidden rounded-sm border border-border bg-surface">
+      <Image
+        src={project.heroImage}
+        alt={`Preview de ${project.title}`}
+        fill
+        sizes="(min-width: 1024px) 384px, (min-width: 768px) 50vw, 100vw"
+        className="object-cover object-top"
+      />
+      {isMock && (
+        <span className="pointer-events-none absolute top-2 right-2 rounded-[2px] border border-[#ffb545] bg-white bg-[linear-gradient(rgba(255,181,69,0.15),rgba(255,181,69,0.15))] px-[6px] py-[2px] font-mono text-[9px] font-bold tracking-[1.5px] text-[#7a4a00]">
+          DATA MOCK
+        </span>
+      )}
+    </div>
+  );
+}
+
 function ProjectCard({ project }: { project: Project }) {
   return (
     <article className="flex flex-col rounded-md border border-border bg-bg-elev p-5 transition-colors hover:border-green">
+      <ProjectThumbnail project={project} />
+
       <header className="flex items-start justify-between gap-3">
         <h3 className="font-mono text-sm leading-snug font-semibold text-text">{project.title}</h3>
         <Badge project={project} />

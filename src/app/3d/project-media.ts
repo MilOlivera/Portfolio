@@ -15,8 +15,6 @@ export type ProjectMedia = {
   slides: { title: string; imagePath?: string; placeholder?: SlidePlaceholder }[];
 };
 
-const four = (placeholder: SlidePlaceholder, titles: string[]) => titles.map((title) => ({ title, placeholder }));
-
 export const PROJECT_MEDIA: Record<string, ProjectMedia> = {
   "mi-plata": {
     id: "mi-plata",
@@ -38,39 +36,78 @@ export const PROJECT_MEDIA: Record<string, ProjectMedia> = {
     subtitle: "primer proyecto full-stack · en reconstrucción con Mercado Pago sandbox",
     isPublic: false,
     demoEmail: EMAIL,
-    slides: [{ title: "EN RECONSTRUCCIÓN", placeholder: "amber" }],
+    slides: [
+      { title: "HERO", imagePath: "/3d/projects/relojes/01-hero.png" },
+      { title: "ILUMINACIÓN TRITIO", imagePath: "/3d/projects/relojes/02-tritio.png" },
+      { title: "LATEST COLLECTION", imagePath: "/3d/projects/relojes/04-collection.png" },
+      { title: "FEATURES", imagePath: "/3d/projects/relojes/05-features.png" },
+    ],
   },
   evolvere: {
     id: "evolvere",
     name: "Evolvere Training Lab",
-    subtitle: "plataforma + app mobile del gimnasio de biomecánica",
+    subtitle: "landing + plataforma + dashboard + app mobile · gimnasio de biomecánica",
     isPublic: true,
     url: "https://evolverelab.com",
-    slides: four("green", ["PLATAFORMA", "APP MOBILE", "BIOMECÁNICA", "SEGUIMIENTO"]),
+    slides: [
+      { title: "LANDING", imagePath: "/3d/projects/evolvere/landing/01-hero.png" },
+      { title: "TESTIMONIOS", imagePath: "/3d/projects/evolvere/landing/02-testimonios.png" },
+      { title: "PLATAFORMA · INICIO", imagePath: "/3d/projects/evolvere/plataforma/01-inicio.png" },
+      { title: "PLATAFORMA · CALENDARIO", imagePath: "/3d/projects/evolvere/plataforma/02-calendario.png" },
+      { title: "DASHBOARD · VENTAS", imagePath: "/3d/projects/evolvere/dashboard/02-ventas.png" },
+      { title: "DASHBOARD · CLOSING", imagePath: "/3d/projects/evolvere/dashboard/04-closing.png" },
+      { title: "APP DESKTOP · INICIO", imagePath: "/3d/projects/evolvere/app-desktop/01-inicio.png" },
+      { title: "APP DESKTOP · PROGRESO", imagePath: "/3d/projects/evolvere/app-desktop/07-progreso.png" },
+      { title: "APP MOBILE · HOME", imagePath: "/3d/projects/evolvere/app-mobile/01-home.png" },
+      { title: "APP MOBILE · COMPARATIVA", imagePath: "/3d/projects/evolvere/app-mobile/05-comparativa.png" },
+    ],
   },
   ospatrones: {
     id: "ospatrones",
-    name: "OSPatrones · Dashboard BI",
-    subtitle: "reemplazo de Power BI sobre SiSalud · gerencial",
+    name: "OSPatrones · Landing + BI",
+    subtitle: "landing institucional + reemplazo de Power BI sobre SiSalud (gerencial)",
     isPublic: false,
     demoEmail: EMAIL,
-    slides: four("blue", ["TABLERO GERENCIAL", "PRESTACIONES", "AFILIADOS", "INDICADORES"]),
+    slides: [
+      { title: "LANDING · HERO", imagePath: "/3d/projects/ospatrones/landing/01-hero.png" },
+      { title: "LANDING · APP MOBILE", imagePath: "/3d/projects/ospatrones/landing/02-app-mobile.png" },
+      { title: "LANDING · BENEFICIOS", imagePath: "/3d/projects/ospatrones/landing/03-beneficios.png" },
+      { title: "LANDING · ATENCIÓN ONLINE", imagePath: "/3d/projects/ospatrones/landing/04-atencion.png" },
+      { title: "LANDING · FOOTER", imagePath: "/3d/projects/ospatrones/landing/05-footer.png" },
+      { title: "BI GERENCIAL", placeholder: "blue" },
+    ],
   },
   marpla: {
     id: "marpla",
     name: "Marpla · Dashboards operativos",
-    subtitle: "predicción de stock · 3 locales · pastry business",
+    subtitle: "dashboard de ingresos/gastos/operación + control de stock · PyME pastry",
     isPublic: false,
     demoEmail: EMAIL,
-    slides: four("amber", ["VENTAS POR LOCAL", "PREDICCIÓN DE STOCK", "PRODUCCIÓN", "REPORTES"]),
+    slides: [
+      { title: "DASHBOARD · INICIO", imagePath: "/3d/projects/marpla/dashboard/01-inicio.png" },
+      { title: "DASHBOARD · INGRESOS", imagePath: "/3d/projects/marpla/dashboard/02-ingresos.png" },
+      { title: "DASHBOARD · GASTOS", imagePath: "/3d/projects/marpla/dashboard/03-gastos.png" },
+      { title: "DASHBOARD · OPERACIÓN", imagePath: "/3d/projects/marpla/dashboard/04-operacion.png" },
+      { title: "STOCK · LISTA", imagePath: "/3d/projects/marpla/stock/01-stock.png" },
+      { title: "STOCK · COMPRAS", imagePath: "/3d/projects/marpla/stock/02-compras.png" },
+      { title: "STOCK · MÉTRICAS", imagePath: "/3d/projects/marpla/stock/05-metricas.png" },
+    ],
   },
   musacchio: {
     id: "musacchio",
-    name: "Estudio Musacchio · Radar penal",
-    subtitle: "monitoreo de noticias judiciales · bot + dashboard",
-    isPublic: false,
-    demoEmail: EMAIL,
-    slides: four("purple", ["RADAR DE NOTICIAS", "ALERTAS DEL BOT", "CAUSAS SEGUIDAS", "DASHBOARD"]),
+    name: "Estudio Musacchio · Web + Radar",
+    subtitle: "landing institucional + radar penal económico (bot + dashboard)",
+    isPublic: true,
+    url: "https://estudiomusacchio.com",
+    slides: [
+      { title: "LANDING · HERO", imagePath: "/3d/projects/musacchio/landing/01-hero.png" },
+      { title: "LANDING · PERFIL", imagePath: "/3d/projects/musacchio/landing/02-perfil.png" },
+      { title: "LANDING · ÁREAS", imagePath: "/3d/projects/musacchio/landing/03-areas.png" },
+      { title: "LANDING · ACADEMIA", imagePath: "/3d/projects/musacchio/landing/05-academia.png" },
+      { title: "LANDING · AULA ABIERTA", imagePath: "/3d/projects/musacchio/landing/06-aula.png" },
+      { title: "RADAR · HECHOS", imagePath: "/3d/projects/musacchio/portal/01-sin-revisar.png" },
+      { title: "RADAR · DESCARTADOS", imagePath: "/3d/projects/musacchio/portal/03-descartados.png" },
+    ],
   },
 };
 

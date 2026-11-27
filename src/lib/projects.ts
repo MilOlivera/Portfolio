@@ -15,6 +15,7 @@ export type Project = {
   visibility: Visibility;
   status: Status;
   url?: string; // ONLY when visibility=public && status=live
+  heroImage?: string; // preview thumbnail for the CV card (from /public/3d/projects/...)
 };
 
 export const PROJECTS: Project[] = [
@@ -30,6 +31,7 @@ export const PROJECTS: Project[] = [
     visibility: "public",
     status: "live",
     url: "https://evolverelab.com",
+    heroImage: "/3d/projects/evolvere/landing/01-hero.png",
   },
   {
     id: "ospatrones-landing",
@@ -42,6 +44,7 @@ export const PROJECTS: Project[] = [
     visibility: "public",
     status: "live",
     url: "https://www.ospatrones.com.ar",
+    heroImage: "/3d/projects/ospatrones/landing/01-hero.png",
   },
   {
     id: "musacchio-web",
@@ -54,6 +57,7 @@ export const PROJECTS: Project[] = [
     visibility: "public",
     status: "live",
     url: "https://estudiomusacchio.com",
+    heroImage: "/3d/projects/musacchio/landing/01-hero.png",
   },
   {
     id: "finanzas",
@@ -66,6 +70,7 @@ export const PROJECTS: Project[] = [
     visibility: "public",
     status: "live",
     url: "https://github.com/MilOlivera", // o reemplazar por demo cuando exista
+    heroImage: "/3d/projects/mi-plata/mi-plata-01-resumen.png",
   },
   {
     id: "relojes",
@@ -78,6 +83,7 @@ export const PROJECTS: Project[] = [
     visibility: "public",
     status: "rebuilding",
     // sin url — status rebuilding deshabilita el botón
+    heroImage: "/3d/projects/relojes/01-hero.png",
   },
 
   // CONFIDENCIALES (7) — SIN url, botón "SOLICITAR DEMO" vía mailto
@@ -91,6 +97,7 @@ export const PROJECTS: Project[] = [
     tags: ["Next.js", "Prisma", "Neon", "Supabase"],
     visibility: "confidential",
     status: "live",
+    heroImage: "/3d/projects/evolvere/plataforma/01-inicio.png",
   },
   {
     id: "evolvere-app",
@@ -102,6 +109,7 @@ export const PROJECTS: Project[] = [
     tags: ["Expo", "React Native", "EAS"],
     visibility: "confidential",
     status: "live",
+    heroImage: "/3d/projects/evolvere/app-mobile/01-home.png",
   },
   {
     id: "evolvere-campus",
@@ -113,6 +121,7 @@ export const PROJECTS: Project[] = [
     tags: ["Next.js", "Daily.co", "Cloudflare Stream"],
     visibility: "confidential",
     status: "live",
+    // sin heroImage por ahora — pendiente capturas del campus
   },
   {
     id: "evolvere-dashboard",
@@ -124,6 +133,7 @@ export const PROJECTS: Project[] = [
     tags: ["Next.js", "Google Sheets API"],
     visibility: "confidential",
     status: "live",
+    heroImage: "/3d/projects/evolvere/dashboard/01-inicio.png",
   },
   {
     id: "ospatrones-bi",
@@ -135,6 +145,7 @@ export const PROJECTS: Project[] = [
     tags: ["Next.js", "SQL Server", "Python", "ReportLab"],
     visibility: "confidential",
     status: "live",
+    // sin heroImage por ahora — dashboard pendiente de arreglo
   },
   {
     id: "marpla-dashboards",
@@ -146,6 +157,7 @@ export const PROJECTS: Project[] = [
     tags: ["Next.js", "Firebase", "Prediction"],
     visibility: "confidential",
     status: "live",
+    heroImage: "/3d/projects/marpla/dashboard/01-inicio.png",
   },
   {
     id: "musacchio-radar",
@@ -157,6 +169,7 @@ export const PROJECTS: Project[] = [
     tags: ["Next.js", "Anthropic", "Neon"],
     visibility: "confidential",
     status: "live",
+    heroImage: "/3d/projects/musacchio/portal/01-sin-revisar.png",
   },
 ];
 
