@@ -38,7 +38,7 @@ const NEW = {
   lima: anchorAt(250, 13.5), // patrol boat ends ~0.8 u inside the waterline
   aero: anchorAt(395, 55), // runway 15 u inland of the estuary coast (40 u)
   // Puerto La Plata backdrop past the malecones, quay facing the approach
-  laPlata: { x: 185, z: 610, yaw: Math.atan2(0.6, 0.8) },
+  laPlata: { x: 225, z: 827, yaw: Math.atan2(0.6, 0.8) },
 };
 
 export default function RelocatedLandmarks() {

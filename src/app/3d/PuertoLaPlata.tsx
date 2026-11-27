@@ -9,8 +9,8 @@ import type { NavBuoy } from "./nav-buoys";
 // straight line marking the entrance, and TEC PLATA at the head of it. The
 // port cranes and city behind are LaPlataSkyline (see Relocated.tsx).
 // Scenery only. Three.js can't read the CSS theme tokens → hex colors.
-const START: [number, number] = [144, 552];
-const TEC: [number, number] = [160, 573];
+const START: [number, number] = [193.6, 760]; // just inside the green side of the lane
+const TEC: [number, number] = [200, 790];
 const SPACING = 1.5;
 const LEN = Math.hypot(TEC[0] - START[0], TEC[1] - START[1]);
 const DIR: [number, number] = [(TEC[0] - START[0]) / LEN, (TEC[1] - START[1]) / LEN];

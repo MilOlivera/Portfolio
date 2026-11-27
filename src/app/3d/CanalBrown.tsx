@@ -11,9 +11,12 @@ import { FAIRWAY_COLOR, FAIRWAY_Y, buildBand } from "./ZoneBands";
 // (river-geometry.ts); here go the dredged-lane strip and its IALA pairs
 // (same side convention as the Canal Mitre).
 const FROM_Z = 455;
-const TO_Z = 640; // on past the end of the sailing area, into the haze
-// Two pairs between the anchoring areas, three below them
-const PAIRS_Z = [464, 485, 515, 527, 539];
+const TO_Z = 786; // up to the TEC PLATA quay
+// Five pairs evenly spaced from the Brown entrance to the Zona Común
+const PAIRS = 5;
+const PAIRS_FROM_Z = 490;
+const PAIRS_TO_Z = 650;
+const PAIRS_Z = Array.from({ length: PAIRS }, (_, i) => PAIRS_FROM_Z + (i * (PAIRS_TO_Z - PAIRS_FROM_Z)) / (PAIRS - 1));
 const BUOYS = PAIRS_Z.flatMap((z) => lateralPair(z, `brown-${z}`));
 
 export default function CanalBrown() {

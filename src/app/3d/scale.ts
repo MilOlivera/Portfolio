@@ -17,9 +17,8 @@ export const KT_TO_UPS = (0.5144 / METERS_PER_UNIT) * HANDLING_COMPRESSION;
 
 /**
  * Clock multiplier for the whole ship simulation (movement, acceleration,
- * rudder, current). On the compressed route (~530 u) at ×2: ~1 min flat out
- * with an autopilot (simulated), ~2–2.5 min playing normally. Turning radii
- * don't change with it, and the HUD keeps reading the true knots.
+ * rudder, current). Turning radii don't change with it, and the HUD keeps
+ * reading the true knots.
  */
 export const TIME_SCALE = 2;
 
@@ -27,7 +26,10 @@ export const TIME_SCALE = 2;
 // Distances are COMPRESSED (~12×) so the voyage fits in a few minutes: each
 // landmark keeps its real km label, the stretches between them are shortened.
 // Piecewise-linear through the route's anchor points (km descending, z rising).
-const KM_Z: [km: number, z: number][] = [
+// Each z is where the landmark is abeam, so the HUD reads what its sign says.
+// Past the Zona Común the HUD switches to Puerto La Plata's own posts
+// (route-info.ts).
+const KM_ANCHORS: [km: number, z: number][] = [
   [107, -104], // Zárate–Brazo Largo bridge
   [101, -52], // Vuelta del Este
   [98, -22], // green turning buoy
@@ -36,16 +38,19 @@ const KM_Z: [km: number, z: number][] = [
   [90, 69], // Vuelta Hinojo (apex)
   [80, 101], // Vuelta Tordillo (apex)
   [74.5, 150], // FSRU EXPEDIENT · GNL Escobar
+  [73, 175], // Puerto Escobar
   [50, 250], // PNA LIMA · Canal de la Honda
   [48, 275], // start of the Canal Mitre
   [38, 335],
   [20, 395], // Aeroparque
   [12, 455], // fork: end of the Canal Mitre, start of Canal Brown
-  [2, 510], // Zona Común
+  [4, 650], // arriving at the Zona Común
+  [2, 680], // Zona Común
+  [0, 750], // port entrance
 ];
 
 function lerpTable(v: number, from: 0 | 1, to: 0 | 1, descending: boolean) {
-  const t = KM_Z;
+  const t = KM_ANCHORS;
   const first = t[0][from];
   const last = t[t.length - 1][from];
   const before = descending ? v > first : v < first;

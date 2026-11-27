@@ -60,12 +60,17 @@ export const RIVER_CENTERLINE = [
   new Vector3(100, 0, 425),
   new Vector3(110, 0, 455), // km 12: fork — Puerto BA to the west (not sailed)
 
-  // Canal Brown (sailed), through the Zona Común
-  new Vector3(120, 0, 485),
-  new Vector3(130, 0, 510), // Zona Común
-  new Vector3(140, 0, 550), // off Puerto La Plata
-  new Vector3(150, 0, 600),
-  new Vector3(162, 0, 660), // continues past the fog
+  // Canal Brown (sailed), from the fork down to the Zona Común
+  new Vector3(118, 0, 490), // Brown entrance
+  new Vector3(128, 0, 530),
+  new Vector3(138, 0, 570),
+  new Vector3(148, 0, 610),
+  new Vector3(158, 0, 650), // arriving at the Zona Común
+  new Vector3(170, 0, 680), // middle of the Zona Común
+  new Vector3(180, 0, 720), // leaving for the malecones
+  new Vector3(190, 0, 760), // malecones, km 8.7
+  new Vector3(200, 0, 790), // TEC PLATA
+  new Vector3(212, 0, 850), // continues past the fog
 ];
 
 export const RIVER_CURVE = new CatmullRomCurve3(RIVER_CENTERLINE, false, "catmullrom", 0.5);
@@ -178,7 +183,7 @@ export const JETTY: Rect = { minX: -9.3, maxX: -6.7, minZ: -12, maxZ: 18 };
 /** Causeway joining the quay's north end to the west bank. */
 export const CAUSEWAY: Rect = { minX: -19.5, maxX: -9.3, minZ: -12, maxZ: -10 };
 // Zona Común anchorage: open water around the four anchoring areas.
-const ANCHORAGE: Rect = { minX: 72, maxX: 174, minZ: 458, maxZ: 540 };
+const ANCHORAGE: Rect = { minX: 116, maxX: 224, minZ: 632, maxZ: 728 };
 
 // Río de la Plata around the Canal Mitre: wide open shallows (visible, not
 // navigable). Widens from the Mitre start.

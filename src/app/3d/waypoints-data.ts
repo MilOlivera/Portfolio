@@ -63,7 +63,7 @@ export const TUGS = [
 export const PROXIMITY_DISTANCE = 8;
 
 /** Entering the Zona Común shows the welcome card (once per visit). */
-export const ZONA_COMUN_ENTRY_Z = 471; // after the Canal Brown banner
+export const ZONA_COMUN_ENTRY_Z = 632; // at the end of Canal Brown
 
 // ------------------------------------------------------ Terminal AXION ----
 /** B/T NANY berth (km 97): alongside the Campana quay, bow north. */
@@ -73,7 +73,7 @@ export const CAST_OFF_X = -1.2;
 
 // ---------------------------------------------------------- Zona Común ----
 /** North–south axis of the anchorage: the gas pipeline, between west and east zones. */
-export const ZONA_AXIS_X = 122;
+export const ZONA_AXIS_X = 168;
 
 /**
  * Anchoring areas as on the SHN chart: 1 = large ships, 2 = small Argentine
@@ -81,30 +81,30 @@ export const ZONA_AXIS_X = 122;
  * one stays clear of the lane and its buoys.
  */
 export const ZONA_POLYGONS = [
-  { id: "ZW1", minX: 75, maxX: 105, minZ: 460, maxZ: 480 },
-  { id: "ZE1", minX: 125, maxX: 155, minZ: 460, maxZ: 480 },
-  { id: "ZW2", minX: 85, maxX: 115, minZ: 490, maxZ: 510 },
-  { id: "ZE2", minX: 137, maxX: 167, minZ: 490, maxZ: 510 },
+  { id: "ZW1", minX: 124, maxX: 149, minZ: 640, maxZ: 680 },
+  { id: "ZE1", minX: 180, maxX: 210, minZ: 640, maxZ: 680 },
+  { id: "ZW2", minX: 130, maxX: 155, minZ: 690, maxZ: 720 },
+  { id: "ZE2", minX: 187, maxX: 217, minZ: 690, maxZ: 720 },
 ];
 
 /** Decorative ships waiting at anchor (not interactive; they do block). Bow = local +X. */
 export type AnchoredShip = { x: number; z: number; length: number; yaw: number; hull: string };
 export const ANCHORED_SHIPS: AnchoredShip[] = [
   // large (ZW1 / ZE1)
-  { x: 85, z: 462.5, length: 14, yaw: 0.08, hull: "#16294a" },
-  { x: 84, z: 477.5, length: 12, yaw: -0.12, hull: "#e4e7ea" },
-  { x: 146, z: 462.5, length: 13, yaw: 3.05, hull: "#16294a" },
-  { x: 132, z: 478, length: 12, yaw: 0.15, hull: "#e4e7ea" },
+  { x: 133, z: 645, length: 14, yaw: 0.08, hull: "#16294a" },
+  { x: 133, z: 673, length: 12, yaw: -0.12, hull: "#e4e7ea" },
+  { x: 192, z: 646, length: 13, yaw: 3.05, hull: "#16294a" },
+  { x: 188, z: 677, length: 12, yaw: 0.15, hull: "#e4e7ea" },
   // small (ZW2 / ZE2)
-  { x: 107, z: 494, length: 5, yaw: 0.5, hull: "#b3261e" },
-  { x: 89, z: 506, length: 4.5, yaw: -0.35, hull: "#e0b020" },
-  { x: 162, z: 508, length: 5, yaw: 0.2, hull: "#b3261e" },
+  { x: 137, z: 694, length: 5, yaw: 0.5, hull: "#b3261e" },
+  { x: 136, z: 714, length: 4.5, yaw: -0.35, hull: "#e0b020" },
+  { x: 209, z: 713, length: 5, yaw: 0.2, hull: "#b3261e" },
 ];
 
 /** Submarine gas pipeline across the anchorage, marked by yellow special buoys. */
 export const GASODUCTO = {
   x: ZONA_AXIS_X,
-  buoyZs: Array.from({ length: 10 }, (_, i) => 440 + i * 10),
+  buoyZs: Array.from({ length: 10 }, (_, i) => 620 + i * 10),
   warnDistance: 10,
 };
 
@@ -119,7 +119,7 @@ export const WAYPOINTS: Waypoint[] = [
   { id: "pna-lima", kind: "landmark", title: "PREFECTURA · PNA LIMA", subtitle: "km 50", pos: [26.8, 0, 254.8], labelY: 5, collisionRadius: 0 },
   { id: "mitre-start", kind: "landmark", title: "KM 48 · CANAL EMILIO MITRE", subtitle: "bifurcación · canal boyado", pos: [44.4, 0, 277.1], labelY: 3, collisionRadius: 0 },
   { id: "aeroparque", kind: "landmark", title: "AEROPARQUE J. NEWBERY", subtitle: "km 20", pos: [37.8, 0, 412.4], labelY: 8, collisionRadius: 0 },
-  { id: "zona-comun", kind: "landmark", title: "ZONA COMÚN", subtitle: "km 2 · fondeadero", pos: [114, 0, 485], labelY: 4, collisionRadius: 0 },
+  { id: "zona-comun", kind: "landmark", title: "ZONA COMÚN", subtitle: "km 2 · fondeadero", pos: [163, 0, 680], labelY: 4, collisionRadius: 0 },
 
   // FSRU — clickable technical modal (also opens when abeam)
   {
@@ -167,13 +167,13 @@ export const WAYPOINTS: Waypoint[] = [
   // ----------------------------------------------- Zona Común (km ~2) ----
   // Large ships in ZW1/ZE1, small ones in ZW2/ZE2. Each client opens its
   // project carousel when you come close (or click it). Hull colors per ship.
-  { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [137, 0, 470], rotation: -0.15, color: "#25DB79", collisionRadius: 7, clickable: true, proximityDetection: true, media: "evolvere" },
-  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [95, 0, 470], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
-  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [147, 0, 475], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
-  { id: "marpla", kind: "ship", title: "MARPLA", pos: [96, 0, 500], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
+  { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [195, 0, 660], rotation: -0.15, color: "#25DB79", collisionRadius: 7, clickable: true, proximityDetection: true, media: "evolvere" },
+  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [140, 0, 655], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
+  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [200, 0, 670], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
+  { id: "marpla", kind: "ship", title: "MARPLA", pos: [145, 0, 700], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
   // Easter eggs: decoration only
-  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [147, 0, 505], rotation: -0.1, color: "#888888", collisionRadius: 3 },
-  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [159, 0, 497], rotation: 0.3, color: "#888888", collisionRadius: 3 },
+  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [197, 0, 701], rotation: -0.1, color: "#888888", collisionRadius: 3 },
+  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [208, 0, 695], rotation: 0.3, color: "#888888", collisionRadius: 3 },
 ];
 
 /**
@@ -234,10 +234,10 @@ export const PLACES: { name: string; x: number; z: number; r: number }[] = [
   { name: "PUERTO ESCOBAR", x: 20, z: 176, r: 10 },
   { name: "PNA LIMA", x: 40, z: 250, r: 10 },
   { name: "CANAL MITRE", x: 50, z: 277, r: 10 },
-  { name: "CANAL BROWN", x: 116, z: 473, r: 8 },
-  { name: "ZONA COMÚN", x: 122, z: 490, r: 10 },
-  { name: "MALECONES LA PLATA", x: 141, z: 548, r: 12 },
-  { name: "TEC PLATA", x: 145, z: 560, r: 7 },
+  { name: "CANAL BROWN", x: 114, z: 473, r: 8 },
+  { name: "ZONA COMÚN", x: 170, z: 680, r: 12 },
+  { name: "MALECONES LA PLATA", x: 191, z: 757, r: 12 },
+  { name: "TEC PLATA", x: 197, z: 775, r: 7 },
 ];
 
 /** Closest place whose range contains (x,z), or null. */

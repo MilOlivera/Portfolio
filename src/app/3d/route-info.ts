@@ -46,14 +46,14 @@ const ZONES: [toZ: number, name: string][] = [
   [383, "CANAL MITRE"],
   [410, "CANAL MITRE · AEROPARQUE"],
   [455, "CANAL MITRE"],
-  [470, "CANAL BROWN"],
-  [528, "ZONA COMÚN"],
-  [540, "CANAL BROWN"],
-  [556, "MALECONES LA PLATA"],
+  [632, "CANAL BROWN"],
+  [728, "ZONA COMÚN"],
+  [748, "CANAL BROWN"],
+  [768, "MALECONES LA PLATA"],
   [Infinity, "TEC PLATA"],
 ];
 /** Puerto La Plata keeps its own kilometre posts: the malecones read km 8.7. */
-const LA_PLATA = { fromZ: 540, km: 8.7 };
+const LA_PLATA = { fromZ: 748, km: 8.7 };
 
 export function zoneAt(z: number) {
   const inPort = z >= LA_PLATA.fromZ;
