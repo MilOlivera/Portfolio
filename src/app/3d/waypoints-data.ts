@@ -82,23 +82,9 @@ export const ZONA_AXIS_X = 168;
  */
 export const ZONA_POLYGONS = [
   { id: "ZW1", minX: 124, maxX: 149, minZ: 640, maxZ: 680 },
-  { id: "ZE1", minX: 180, maxX: 210, minZ: 640, maxZ: 680 },
+  { id: "ZE1", minX: 180, maxX: 210, minZ: 640, maxZ: 688 },
   { id: "ZW2", minX: 130, maxX: 155, minZ: 690, maxZ: 720 },
   { id: "ZE2", minX: 187, maxX: 217, minZ: 690, maxZ: 720 },
-];
-
-/** Decorative ships waiting at anchor (not interactive; they do block). Bow = local +X. */
-export type AnchoredShip = { x: number; z: number; length: number; yaw: number; hull: string };
-export const ANCHORED_SHIPS: AnchoredShip[] = [
-  // large (ZW1 / ZE1)
-  { x: 133, z: 645, length: 14, yaw: 0.08, hull: "#16294a" },
-  { x: 133, z: 673, length: 12, yaw: -0.12, hull: "#e4e7ea" },
-  { x: 192, z: 646, length: 13, yaw: 3.05, hull: "#16294a" },
-  { x: 188, z: 677, length: 12, yaw: 0.15, hull: "#e4e7ea" },
-  // small (ZW2 / ZE2)
-  { x: 137, z: 694, length: 5, yaw: 0.5, hull: "#b3261e" },
-  { x: 136, z: 714, length: 4.5, yaw: -0.35, hull: "#e0b020" },
-  { x: 209, z: 713, length: 5, yaw: 0.2, hull: "#b3261e" },
 ];
 
 /** Submarine gas pipeline across the anchorage, marked by yellow special buoys. */
@@ -169,11 +155,11 @@ export const WAYPOINTS: Waypoint[] = [
   // project carousel when you come close (or click it). Hull colors per ship.
   { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [195, 0, 660], rotation: -0.15, color: "#25DB79", collisionRadius: 7, clickable: true, proximityDetection: true, media: "evolvere" },
   { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [140, 0, 655], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
-  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [200, 0, 670], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
-  { id: "marpla", kind: "ship", title: "MARPLA", pos: [145, 0, 700], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
-  // Easter eggs: decoration only
-  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [197, 0, 701], rotation: -0.1, color: "#888888", collisionRadius: 3 },
-  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [208, 0, 695], rotation: 0.3, color: "#888888", collisionRadius: 3 },
+  { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [205, 0, 685], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
+  { id: "marpla", kind: "ship", title: "MARPLA", pos: [140, 0, 700], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
+  // Easter eggs: decoration only, at the south end, well clear of the clients
+  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [192, 0, 715], rotation: -0.1, color: "#888888", collisionRadius: 3 },
+  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [210, 0, 716], rotation: 0.3, color: "#888888", collisionRadius: 3 },
 ];
 
 /**
@@ -214,7 +200,6 @@ export const EXTRA_OBSTACLES: { pos: [number, number]; r: number }[] = [
   ...WAYPOINTS.filter((w) => w.kind === "moored-ship").flatMap((w) =>
     hullCircles(w.pos[0], w.pos[2], MOORED_LENGTH[w.size ?? "medium"], w.rotation ?? 0, 0.7),
   ),
-  ...ANCHORED_SHIPS.flatMap((s) => hullCircles(s.x, s.z, s.length, s.yaw, s.length > 8 ? 1.2 : 0.7)),
 ];
 
 /** Collision radius of the B/T NANY (80 m hull = 4 u). */
