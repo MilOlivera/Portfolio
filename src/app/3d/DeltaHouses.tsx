@@ -231,8 +231,8 @@ export function DeltaHouse({ position, rotationY = 0, lit = false }: Props) {
 const HOUSE_Z = [12, 40, 70, 120, 140, 160, 185, 235];
 const FACE_WEST = Math.PI; // atan2(-0, -1): front (+X local) → world -X
 // A few more on the west bank between Puerto Escobar and PNA LIMA, where there
-// is only Delta (and the grain terminal), fronts facing east to the river.
-const WEST_HOUSE_Z = [191, 207];
+// is only Delta, fronts facing east to the river.
+const WEST_HOUSE_Z = [191, 207, 223, 235];
 
 type House = { x: number; z: number; yaw: number; lit: boolean };
 export const HOUSES: House[] = [

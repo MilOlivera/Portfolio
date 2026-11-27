@@ -53,7 +53,6 @@ const HOUSE_CLEAR = 1.8;
 const WEST = { fromZ: 182, toZ: 262, step: 3.5, trees: 5, reeds: 6, depth: 22 };
 /** Landmarks to keep in view there: [from z, to z, clear up to this far west]. */
 const WEST_CLEAR: [fromZ: number, toZ: number, offset: number][] = [
-  [216, 240, 24], // Transferencia de Granos: yard, silos and pier
   [243, 259, 20], // PNA LIMA station and patrol boat
 ];
 

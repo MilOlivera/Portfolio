@@ -116,7 +116,6 @@ export const WAYPOINTS: Waypoint[] = [
   { id: "amarre", kind: "landmark", title: "TERMINAL AXION · KM 97", subtitle: "Campana · CARGA IFO 380 ✓", pos: BERTH, site: [-12, 0, -4], labelY: 2.6, collisionRadius: 0 },
   { id: "puente-zarate", kind: "landmark", title: "PUENTE ZÁRATE–BRAZO LARGO", subtitle: "km 106", pos: [-25, 0, -104], labelY: 14, collisionRadius: 0 },
   { id: "puerto-escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "km 73", pos: [4.3, 0, 178.1], labelY: 3.2, collisionRadius: 0 },
-  { id: "transf-granos", kind: "landmark", title: "TRANSFERENCIA DE GRANOS", subtitle: "km 69", pos: [17.3, 0, 232.2], labelY: 6, collisionRadius: 0 },
   { id: "pna-lima", kind: "landmark", title: "PREFECTURA · PNA LIMA", subtitle: "km 50", pos: [26.8, 0, 254.8], labelY: 5, collisionRadius: 0 },
   { id: "mitre-start", kind: "landmark", title: "KM 48 · CANAL EMILIO MITRE", subtitle: "bifurcación · canal boyado", pos: [44.4, 0, 277.1], labelY: 3, collisionRadius: 0 },
   { id: "aeroparque", kind: "landmark", title: "AEROPARQUE J. NEWBERY", subtitle: "km 20", pos: [37.8, 0, 412.4], labelY: 8, collisionRadius: 0 },

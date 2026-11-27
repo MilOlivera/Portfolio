@@ -37,7 +37,7 @@ function Label({
 // ------------------------------------------------------------- landmark ----
 // Low block inside its collision circle (side = r, so neighbours don't merge).
 // Landmarks are labels only: their structures are dedicated components
-// (RefineryPAE, GNLEscobar, PNALima, GrainTerminal, Aeroparque, ZarateBridge…).
+// (RefineryPAE, GNLEscobar, PNALima, Aeroparque, ZarateBridge…).
 function Landmark({ w }: { w: Waypoint }) {
   return (
     <group position={w.site ?? w.pos}>

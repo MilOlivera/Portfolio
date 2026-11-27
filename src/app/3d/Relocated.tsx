@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import Aeroparque from "./Aeroparque";
-import GrainTerminal from "./GrainTerminal";
 import HorizonRise from "./HorizonRise";
 import LaPlataSkyline from "./LaPlataSkyline";
 import PNALima from "./PNALima";
@@ -31,14 +30,12 @@ function anchorAt(z: number, westOffset: number): Anchor {
 // old anchor (x, z) + river yaw there (atan2(-tz, tx) of the old tangent)
 const OLD = {
   lima: { x: 211.0, z: 2151.0, yaw: Math.atan2(-0.993, 0.12) },
-  grain: { x: 115.4, z: 1501.6, yaw: Math.atan2(-0.986, 0.164) },
   aero: { x: 439.3, z: 4133.4, yaw: Math.atan2(-0.987, 0.158) },
   laPlata: { x: 547.8, z: 4798.0, yaw: Math.atan2(-0.98, 0.2) },
 };
 
 const NEW = {
   lima: anchorAt(250, 13.5), // patrol boat ends ~0.8 u inside the waterline
-  grain: anchorAt(228, 15.5), // pier reaches the visible river's edge
   aero: anchorAt(395, 55), // runway 15 u inland of the estuary coast (40 u)
   // Puerto La Plata backdrop past the malecones, quay facing the approach
   laPlata: { x: 185, z: 610, yaw: Math.atan2(0.6, 0.8) },
@@ -49,9 +46,6 @@ export default function RelocatedLandmarks() {
     <>
       <Relocate from={OLD.lima} to={NEW.lima}>
         <PNALima />
-      </Relocate>
-      <Relocate from={OLD.grain} to={NEW.grain}>
-        <GrainTerminal />
       </Relocate>
       <HorizonRise>
         <Relocate from={OLD.aero} to={NEW.aero}>

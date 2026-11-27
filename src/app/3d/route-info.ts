@@ -41,7 +41,7 @@ const ZONES: [toZ: number, name: string][] = [
   [188, "PUERTO ESCOBAR"],
   [212, "PARANÁ DE LAS PALMAS"],
   [224, "CANAL GOB. LA SERNA"],
-  [240, "TRANSFERENCIA DE GRANOS"],
+  [240, "PARANÁ DE LAS PALMAS"],
   [265, "PNA LIMA · CANAL DE LA HONDA"],
   [383, "CANAL MITRE"],
   [410, "CANAL MITRE · AEROPARQUE"],
