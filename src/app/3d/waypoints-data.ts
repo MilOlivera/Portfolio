@@ -75,31 +75,30 @@ export const CAST_OFF_X = -1.2;
 /** North–south axis of the anchorage: the gas pipeline, between west and east zones. */
 export const ZONA_AXIS_X = 122;
 
-const zonaRect = (id: string, side: -1 | 1, minZ: number, maxZ: number) => {
-  const [a, b] = [ZONA_AXIS_X + side * 5, ZONA_AXIS_X + side * 35];
-  return { id, minX: Math.min(a, b), maxX: Math.max(a, b), minZ, maxZ };
-};
-
-/** Anchoring areas as on the SHN chart: 1 = large ships, 2 = small Argentine craft. */
+/**
+ * Anchoring areas as on the SHN chart: 1 = large ships, 2 = small Argentine
+ * craft. West and east of Canal Brown, which runs diagonally between them: each
+ * one stays clear of the lane and its buoys.
+ */
 export const ZONA_POLYGONS = [
-  zonaRect("ZW1", -1, 460, 480),
-  zonaRect("ZE1", 1, 460, 480),
-  zonaRect("ZW2", -1, 490, 510),
-  zonaRect("ZE2", 1, 490, 510),
+  { id: "ZW1", minX: 75, maxX: 105, minZ: 460, maxZ: 480 },
+  { id: "ZE1", minX: 125, maxX: 155, minZ: 460, maxZ: 480 },
+  { id: "ZW2", minX: 85, maxX: 115, minZ: 490, maxZ: 510 },
+  { id: "ZE2", minX: 137, maxX: 167, minZ: 490, maxZ: 510 },
 ];
 
 /** Decorative ships waiting at anchor (not interactive; they do block). Bow = local +X. */
 export type AnchoredShip = { x: number; z: number; length: number; yaw: number; hull: string };
 export const ANCHORED_SHIPS: AnchoredShip[] = [
   // large (ZW1 / ZE1)
-  { x: 96, z: 462.5, length: 14, yaw: 0.08, hull: "#16294a" },
-  { x: 95, z: 477.5, length: 12, yaw: -0.12, hull: "#e4e7ea" },
+  { x: 85, z: 462.5, length: 14, yaw: 0.08, hull: "#16294a" },
+  { x: 84, z: 477.5, length: 12, yaw: -0.12, hull: "#e4e7ea" },
   { x: 146, z: 462.5, length: 13, yaw: 3.05, hull: "#16294a" },
   { x: 132, z: 478, length: 12, yaw: 0.15, hull: "#e4e7ea" },
   // small (ZW2 / ZE2)
-  { x: 109, z: 494, length: 5, yaw: 0.5, hull: "#b3261e" },
-  { x: 91, z: 506, length: 4.5, yaw: -0.35, hull: "#e0b020" },
-  { x: 152, z: 508, length: 5, yaw: 0.2, hull: "#b3261e" },
+  { x: 107, z: 494, length: 5, yaw: 0.5, hull: "#b3261e" },
+  { x: 89, z: 506, length: 4.5, yaw: -0.35, hull: "#e0b020" },
+  { x: 162, z: 508, length: 5, yaw: 0.2, hull: "#b3261e" },
 ];
 
 /** Submarine gas pipeline across the anchorage, marked by yellow special buoys. */
@@ -116,7 +115,7 @@ export const WAYPOINTS: Waypoint[] = [
   // ------------------------------------------------ nautical landmarks ----
   { id: "amarre", kind: "landmark", title: "TERMINAL AXION · KM 97", subtitle: "Campana · CARGA IFO 380 ✓", pos: BERTH, site: [-12, 0, -4], labelY: 2.6, collisionRadius: 0 },
   { id: "puente-zarate", kind: "landmark", title: "PUENTE ZÁRATE–BRAZO LARGO", subtitle: "km 106", pos: [-25, 0, -104], labelY: 14, collisionRadius: 0 },
-  { id: "puerto-escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "remolcadores Svitzer", pos: [4.3, 0, 178.1], labelY: 3.2, collisionRadius: 0 },
+  { id: "puerto-escobar", kind: "landmark", title: "PUERTO ESCOBAR", subtitle: "km 73", pos: [4.3, 0, 178.1], labelY: 3.2, collisionRadius: 0 },
   { id: "transf-granos", kind: "landmark", title: "TRANSFERENCIA DE GRANOS", subtitle: "km 69", pos: [17.3, 0, 232.2], labelY: 6, collisionRadius: 0 },
   { id: "pna-lima", kind: "landmark", title: "PREFECTURA · PNA LIMA", subtitle: "km 50", pos: [26.8, 0, 254.8], labelY: 5, collisionRadius: 0 },
   { id: "mitre-start", kind: "landmark", title: "KM 48 · CANAL EMILIO MITRE", subtitle: "bifurcación · canal boyado", pos: [44.4, 0, 277.1], labelY: 3, collisionRadius: 0 },
@@ -170,12 +169,12 @@ export const WAYPOINTS: Waypoint[] = [
   // Large ships in ZW1/ZE1, small ones in ZW2/ZE2. Each client opens its
   // project carousel when you come close (or click it). Hull colors per ship.
   { id: "evolvere", kind: "mega", title: "EVOLVERE", pos: [137, 0, 470], rotation: -0.15, color: "#25DB79", collisionRadius: 7, clickable: true, proximityDetection: true, media: "evolvere" },
-  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [97, 0, 470], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
+  { id: "ospatrones", kind: "ship", title: "OSPATRONES", pos: [95, 0, 470], rotation: -0.3, color: "#dfe9f2", collisionRadius: 3, clickable: true, proximityDetection: true, media: "ospatrones" },
   { id: "musacchio", kind: "ship", title: "MUSACCHIO", pos: [147, 0, 475], rotation: 0.1, color: "#1d2f4f", collisionRadius: 3, clickable: true, proximityDetection: true, media: "musacchio" },
-  { id: "marpla", kind: "ship", title: "MARPLA", pos: [97, 0, 500], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
+  { id: "marpla", kind: "ship", title: "MARPLA", pos: [96, 0, 500], rotation: 0.5, color: "#f2b8c6", collisionRadius: 3, clickable: true, proximityDetection: true, media: "marpla" },
   // Easter eggs: decoration only
-  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [137, 0, 505], rotation: -0.1, color: "#888888", collisionRadius: 3 },
-  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [150, 0, 497], rotation: 0.3, color: "#888888", collisionRadius: 3 },
+  { id: "straits-sky", kind: "egg", title: "STRAITS SKY", subtitle: "bunker supply · IMO 9426635", pos: [147, 0, 505], rotation: -0.1, color: "#888888", collisionRadius: 3 },
+  { id: "alfa-c", kind: "egg", title: "ALFA C", subtitle: "bunker tanker 🇵🇦 · IMO 9711652", pos: [159, 0, 497], rotation: 0.3, color: "#888888", collisionRadius: 3 },
 ];
 
 /**

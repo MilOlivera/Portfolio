@@ -144,6 +144,30 @@ export function riverYaw(z: number) {
   return Math.atan2(-f.tz, f.tx);
 }
 
+// ---------------------------------------------------------- east bank ----
+// Leaving Campana the Delta comes right down to the fairway: along this stretch
+// the east bank has no shallows (eased in off the berth, out before Hinojo).
+// The terrain meets the water ~0.2 u past `half`, so land starts at the edge of
+// the dredged lane.
+const EAST_NARROW = { easeIn: -10, fromZ: 0, toZ: 50, easeOut: 60, half: HALF_WIDTH - 0.2 };
+
+function smoothstep(a: number, b: number, v: number) {
+  const t = Math.max(0, Math.min(1, (v - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+}
+
+/** Half-width of the visible river east of the centerline at `z`. */
+export function eastHalfWidth(z: number) {
+  const { easeIn, fromZ, toZ, easeOut, half } = EAST_NARROW;
+  const k = smoothstep(easeIn, fromZ, z) - smoothstep(toZ, easeOut, z);
+  return VISUAL_HALF - (VISUAL_HALF - half) * k;
+}
+
+function visualHalf(x: number, z: number) {
+  const east = eastHalfWidth(z);
+  return east < VISUAL_HALF && x > frameAtZ(z).x ? east : VISUAL_HALF;
+}
+
 // --------------------------------------------------------------- zones ----
 type Rect = { minX: number; maxX: number; minZ: number; maxZ: number };
 
@@ -154,13 +178,32 @@ export const JETTY: Rect = { minX: -9.3, maxX: -6.7, minZ: -12, maxZ: 18 };
 /** Causeway joining the quay's north end to the west bank. */
 export const CAUSEWAY: Rect = { minX: -19.5, maxX: -9.3, minZ: -12, maxZ: -10 };
 // Zona Común anchorage: open water around the four anchoring areas.
-const ANCHORAGE: Rect = { minX: 80, maxX: 166, minZ: 458, maxZ: 540 };
+const ANCHORAGE: Rect = { minX: 72, maxX: 174, minZ: 458, maxZ: 540 };
 
 // Río de la Plata around the Canal Mitre: wide open shallows (visible, not
 // navigable). Widens from the Mitre start.
 const ESTUARY_START_Z = 263;
 const ESTUARY_FULL_Z = 285;
 const ESTUARY_HALF_WIDTH = 40;
+
+// East of the Canal Mitre there is no coast at all: it's the open river. The
+// Delta shore falls away between these two z, and from FULL on (Mitre, Canal
+// Brown, Zona Común) it's water to the horizon.
+const OPEN_EAST_START_Z = 270;
+export const OPEN_EAST_FULL_Z = 300;
+const OPEN_EAST_REACH = 200; // how far the shore has receded just before FULL
+
+/** True where (x,z) is in the open water east of the route (no terrain at all). */
+export function inOpenEast(x: number, z: number) {
+  return z >= OPEN_EAST_FULL_Z && x > frameAtZ(z).x;
+}
+
+function openEastSd(x: number, z: number, cd: number) {
+  if (z <= OPEN_EAST_START_Z || x <= frameAtZ(z).x) return Infinity;
+  if (z >= OPEN_EAST_FULL_Z) return -OPEN_EAST_REACH;
+  const t = (z - OPEN_EAST_START_Z) / (OPEN_EAST_FULL_Z - OPEN_EAST_START_Z);
+  return cd - (ESTUARY_HALF_WIDTH + OPEN_EAST_REACH * t * t);
+}
 
 // Delta side canals (visible water, not navigable): perpendicular to the river
 // toward the east, starting on the centerline.
@@ -175,8 +218,8 @@ export const CANALS = [
   return { ...c, x0: f.x, z0: f.z, ax: -f.wx, az: -f.wz, length: CANAL_LENGTH, halfWidth: CANAL_HALF_WIDTH };
 });
 
-// Delta islands starboard (east) of the berth: side channels behind a strip.
-const DELTA_NEAR: Rect = { minX: 18, maxX: 75, minZ: -65, maxZ: 25 };
+// Delta islands east of the upstream reach: side channels behind a land strip.
+const DELTA_NEAR: Rect = { minX: 18, maxX: 75, minZ: -65, maxZ: -14 };
 const DELTA_LAND_STRIP = 4;
 
 // Puerto Buenos Aires access channels: they leave the Canal Mitre to the west
@@ -225,7 +268,7 @@ export function centerlineDistance(x: number, z: number) {
 }
 
 function navigableWith(x: number, z: number, cd: number) {
-  const water = Math.min(cd - VISUAL_HALF, rectSd(x, z, DARSENA), rectSd(x, z, ANCHORAGE));
+  const water = Math.min(cd - visualHalf(x, z), rectSd(x, z, DARSENA), rectSd(x, z, ANCHORAGE));
   return Math.max(water, -rectSd(x, z, JETTY), -rectSd(x, z, CAUSEWAY));
 }
 
@@ -240,7 +283,7 @@ function shallowWith(x: number, z: number, cd: number) {
     );
   }
   const delta = Math.max(rectSd(x, z, DELTA_NEAR), VISUAL_HALF + DELTA_LAND_STRIP - cd);
-  return Math.min(estuary, canals, delta);
+  return Math.min(estuary, canals, delta, openEastSd(x, z, cd));
 }
 
 /**

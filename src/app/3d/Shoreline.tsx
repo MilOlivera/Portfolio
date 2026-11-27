@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { BufferAttribute, BufferGeometry, Color } from "three";
 import { BANK_Y, JETTY_TOP } from "./environment";
-import { CAUSEWAY, JETTY, RIVER_CURVE, frameAtZ, waterSd } from "./river-geometry";
+import { CAUSEWAY, JETTY, RIVER_CURVE, frameAtZ, inOpenEast, waterSd } from "./river-geometry";
 
 // River banks along the whole route. A world-sized grid would need far more
 // vertices than needed, so the land is a RIBBON that follows the centerline: rows every
@@ -12,7 +12,9 @@ import { CAUSEWAY, JETTY, RIVER_CURVE, frameAtZ, waterSd } from "./river-geometr
 // signed-distance functions as the collision: flat land at BANK_Y, a short
 // sloped bank, and a bed below the water wherever there's river, basin,
 // estuary, canal or Delta channel. Past the ribbon the open water plane shows
-// (beyond the fog, or the open estuary past the Zona Común).
+// (beyond the fog, or the open estuary past the Zona Común). East of the Canal
+// Mitre the ribbon is cut away altogether, so not even a submerged bed shows
+// past the edge of the water plane: open river to the horizon.
 const LAND_COLOR = new Color("#3d5a3d"); // west: mainland
 const DELTA_COLOR = new Color("#33621f"); // east: Paraná delta
 const BED_Y = -0.6;
@@ -21,7 +23,7 @@ const SLOPE_OUT = 0.6; // sd where flat land begins
 const ROW_SPACING = 1;
 // Dense across the 20 u river and its banks, sparse far out (past the fog).
 const HALF_OFFSETS = [
-  0, 2, 4, 6, 7, 8, 8.5, 9, 9.5, 10, 10.5, 11, 12, 13, 14, 15, 16, 17.5, 19, 21, 23, 25, 28, 31, 35, 39, 44, 50,
+  0, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 8.5, 9, 9.5, 10, 10.5, 11, 12, 13, 14, 15, 16, 17.5, 19, 21, 23, 25, 28, 31, 35, 39, 44, 50,
   57, 65, 75, 87, 100, 120, 145, 175, 210,
 ];
 const OFFSETS = [...HALF_OFFSETS.slice(1).reverse().map((o) => -o), ...HALF_OFFSETS]; // west (+) … east (−)
@@ -61,21 +63,22 @@ function buildRibbon() {
     }
   }
 
-  const index = new Uint32Array((rows - 1) * (cols - 1) * 6);
-  let k = 0;
+  const open = (v: number) => inOpenEast(pos[v * 3], pos[v * 3 + 2]);
+  const index: number[] = [];
   for (let r = 0; r < rows - 1; r++) {
     for (let c = 0; c < cols - 1; c++) {
       const a = r * cols + c;
       const b = a + cols;
-      index.set([a, a + 1, b, a + 1, b + 1, b], k); // CCW from above → normals up
-      k += 6;
+      for (const tri of [[a, a + 1, b], [a + 1, b + 1, b]]) {
+        if (!tri.every(open)) index.push(...tri); // CCW from above → normals up
+      }
     }
   }
 
   const geo = new BufferGeometry();
   geo.setAttribute("position", new BufferAttribute(pos, 3));
   geo.setAttribute("color", new BufferAttribute(col, 3));
-  geo.setIndex(new BufferAttribute(index, 1));
+  geo.setIndex(index);
   geo.computeVertexNormals();
   geo.computeBoundingSphere();
   return geo;

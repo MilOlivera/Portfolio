@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# iCloud sync duplicates
+public/3d/projects/*/*_1.png
+public/3d/projects/*/* 2.png

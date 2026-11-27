@@ -56,6 +56,12 @@ const ZONES: [toZ: number, name: string][] = [
 const LA_PLATA = { fromZ: 540, km: 8.7 };
 
 export function zoneAt(z: number) {
-  const km = z >= LA_PLATA.fromZ ? LA_PLATA.km : Math.max(0, zToKm(z));
-  return { km, name: ZONES.find(([toZ]) => z < toZ)![1] };
+  const inPort = z >= LA_PLATA.fromZ;
+  const km = inPort ? LA_PLATA.km : Math.max(0, zToKm(z));
+  return {
+    km,
+    /** Set where the km isn't the river's: whose posts it counts. */
+    kmRef: inPort ? "Puerto La Plata" : "",
+    name: ZONES.find(([toZ]) => z < toZ)![1],
+  };
 }

@@ -3,15 +3,25 @@
 import { useLayoutEffect, useRef } from "react";
 import { Color, Object3D, type InstancedMesh } from "three";
 import { BANK_Y } from "./environment";
-import { VISUAL_HALF, besideRiver, waterSd } from "./river-geometry";
+import { HOUSES } from "./DeltaHouses";
+import {
+  HALF_WIDTH,
+  OPEN_EAST_FULL_Z,
+  VISUAL_HALF,
+  besideRiver,
+  eastHalfWidth,
+  waterSd,
+} from "./river-geometry";
 
-// Delta del Paraná: the whole east bank (port side sailing down) is low green
-// delta, with willows and reeds along the waterline from the Campana berth to
-// the end of Canal Brown. The stilt houses are DeltaHouses / DeltaCanals.
+// Delta del Paraná: the east bank (port side sailing down) is low green delta,
+// with willows and reeds along the waterline from the Campana berth until the
+// shore falls away at the Canal Mitre (open river from there). Between Puerto
+// Escobar and PNA LIMA the west bank is Delta too. The stilt houses are
+// DeltaHouses / DeltaCanals.
 //
-// Islands east of the Campana berth, in the
-// non-navigable side channels behind a land strip (river-geometry.ts →
-// DELTA_NEAR). Scenery only. Positions verified to clear the zone edges.
+// Islands east of the upstream reach, in the non-navigable side channels
+// behind a land strip (river-geometry.ts → DELTA_NEAR). Scenery only.
+// Positions verified to clear the zone edges.
 const ISLAND_COLOR = "#2a4a2a";
 const LEAF = "#2f5a2f";
 const TRUNK = "#5a4030";
@@ -23,24 +33,29 @@ type Island = { pos: [number, number]; size: number; squash: number; rot: number
 const ISLANDS: Island[] = [
   { pos: [38, -48], size: 4, squash: 0.7, rot: 0.4, trees: [[-0.6, 0.2], [0.7, -0.3]] },
   { pos: [34, -30], size: 5, squash: 0.8, rot: 1.1, trees: [[0, 0], [1.1, 0.5], [-1, -0.4]] },
-  { pos: [30, -10], size: 3.5, squash: 0.6, rot: 0.2, trees: [[-0.5, 0], [0.6, 0.3]] },
   { pos: [44, -58], size: 5, squash: 0.75, rot: 2.0, trees: [[0, 0], [0.9, 0.3]] },
   { pos: [46, -36], size: 6, squash: 0.65, rot: 0.9, trees: [[-1.2, 0.2], [0.2, -0.4], [1.3, 0.3]] },
-  { pos: [40, 8], size: 4, squash: 0.85, rot: 2.6, trees: [[0, 0.5], [0.8, -0.4]] },
   { pos: [56, -48], size: 5, squash: 0.55, rot: 0.6, trees: [[-1.2, 0], [0.4, 0.4], [1.4, -0.2]] },
   { pos: [58, -24], size: 6, squash: 0.7, rot: 1.7, trees: [[-0.9, -0.3], [0.9, 0.4]] },
   { pos: [66, -56], size: 4, squash: 0.8, rot: 0.3, trees: [[0, 0], [-0.7, 0.3]] },
-  { pos: [52, 0], size: 4, squash: 0.6, rot: 1.3, trees: [[-0.8, 0], [0.7, 0.3]] },
-  { pos: [66, -8], size: 5, squash: 0.75, rot: 2.2, trees: [[0, 0], [1, 0.4], [-1, -0.4]] },
-  { pos: [56, 16], size: 3, squash: 0.8, rot: 0.8, trees: [[0, 0], [0.6, 0.3]] },
 ];
 
 // ------------------------------------------------------ bank vegetation ----
 const FROM_Z = 0;
-const TO_Z = 545;
+const TO_Z = OPEN_EAST_FULL_Z;
 const STEP = 5.5; // one clump about every 5–8 u of bank
 const TREES_PER_CLUMP = 3;
 const REEDS_PER_CLUMP = 5;
+const EDGE_STEP = 1.6; // narrowed stretch: an unbroken row of willows on the water
+const HOUSE_CLEAR = 1.8;
+
+// West bank between Puerto Escobar and PNA LIMA (km 73 → 50)
+const WEST = { fromZ: 182, toZ: 262, step: 3.5, trees: 5, reeds: 6, depth: 22 };
+/** Landmarks to keep in view there: [from z, to z, clear up to this far west]. */
+const WEST_CLEAR: [fromZ: number, toZ: number, offset: number][] = [
+  [216, 240, 24], // Transferencia de Granos: yard, silos and pier
+  [243, 259, 20], // PNA LIMA station and patrol boat
+];
 
 function mulberry32(seed: number) {
   let a = seed >>> 0;
@@ -61,15 +76,45 @@ function plantBank() {
   const trees: Plant[] = [];
   const reeds: Plant[] = [];
   const onLand = (x: number, z: number) => waterSd(x, z) > 0.8;
+  const clear = (x: number, z: number) => HOUSES.every((h) => Math.hypot(h.x - x, h.z - z) > HOUSE_CLEAR);
+  /** Distance from the centerline to the first solid land east of it. */
+  const bankEdge = (z: number) => {
+    let edge = HALF_WIDTH;
+    while (edge < 90 && !onLand(...besideRiver(z, -edge))) edge += 0.25;
+    return edge;
+  };
+  const plant = (out: Plant[], z: number, offset: number, h: number) => {
+    const [x, pz] = besideRiver(z, -offset);
+    if (onLand(x, pz) && clear(x, pz)) out.push({ x, z: pz, h, tint: (rnd() - 0.5) * 0.1 });
+  };
   for (let z = FROM_Z; z <= TO_Z; z += STEP) {
-    let edge = VISUAL_HALF + 1;
-    while (edge < 90 && !onLand(...besideRiver(z, -edge))) edge += 1;
-    const place = (out: Plant[], inland: number, along: number, h: number) => {
-      const [x, pz] = besideRiver(z + along, -(edge + inland));
-      if (onLand(x, pz)) out.push({ x, z: pz, h, tint: (rnd() - 0.5) * 0.1 });
-    };
+    const edge = bankEdge(z);
+    const place = (out: Plant[], inland: number, along: number, h: number) => plant(out, z + along, edge + inland, h);
     for (let i = 0; i < TREES_PER_CLUMP; i++) place(trees, 0.8 + rnd() * 8, (rnd() - 0.5) * STEP, 0.8 + rnd() * 0.9);
     for (let i = 0; i < REEDS_PER_CLUMP; i++) place(reeds, rnd() * 0.8, (rnd() - 0.5) * STEP, 0.35 + rnd() * 0.45);
+  }
+  for (let z = FROM_Z; z <= TO_Z; z += EDGE_STEP) {
+    if (eastHalfWidth(z) >= VISUAL_HALF - 1) continue;
+    plant(trees, z, bankEdge(z) + rnd() * 0.5, 0.8 + rnd() * 0.7);
+    for (const along of [EDGE_STEP / 3, (2 * EDGE_STEP) / 3]) {
+      // reeds stand right on the waterline, short of plant()'s solid-land test
+      const [x, rz] = besideRiver(z + along, -(eastHalfWidth(z + along) + 0.35 + rnd() * 0.3));
+      if (clear(x, rz)) reeds.push({ x, z: rz, h: 0.35 + rnd() * 0.35, tint: (rnd() - 0.5) * 0.1 });
+    }
+  }
+  // West bank: scattered willows inland, reeds on the waterline
+  const open = (z: number, offset: number) => WEST_CLEAR.every(([a, b, o]) => z < a || z > b || offset > o);
+  const west = (out: Plant[], z: number, offset: number, h: number) => {
+    const [x, pz] = besideRiver(z, offset);
+    if (open(z, offset) && clear(x, pz)) out.push({ x, z: pz, h, tint: (rnd() - 0.5) * 0.1 });
+  };
+  for (let z = WEST.fromZ; z <= WEST.toZ; z += WEST.step) {
+    for (let i = 0; i < WEST.trees; i++) {
+      west(trees, z + (rnd() - 0.5) * WEST.step, VISUAL_HALF + 1 + rnd() * WEST.depth, 0.8 + rnd() * 0.9);
+    }
+    for (let i = 0; i < WEST.reeds; i++) {
+      west(reeds, z + (rnd() - 0.5) * WEST.step, VISUAL_HALF + 0.3 + rnd() * 0.7, 0.35 + rnd() * 0.45);
+    }
   }
   return { trees, reeds };
 }

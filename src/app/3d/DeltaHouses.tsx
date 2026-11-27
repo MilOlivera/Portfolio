@@ -10,7 +10,7 @@ import {
   type MeshStandardMaterial,
 } from "three";
 import { BANK_Y } from "./environment";
-import { VISUAL_HALF, besideRiver } from "./river-geometry";
+import { HALF_WIDTH, VISUAL_HALF, besideRiver, eastHalfWidth, riverYaw } from "./river-geometry";
 
 // Paraná Delta stilt houses ("casas palafíticas"): small wooden bodies on piles
 // so the floor stays above the floods, a tiny deck with stairs to the water, a
@@ -225,24 +225,37 @@ export function DeltaHouse({ position, rotationY = 0, lit = false }: Props) {
   );
 }
 
-// East-bank houses at the visible river's edge (piles in the shallows), fronts
-// facing west toward the river. Placed against the river geometry, clear of
+// Houses at the visible river's edge (piles in the shallows). Most are on the
+// east bank, fronts facing west toward the river. Placed against the river geometry, clear of
 // the Delta canal mouths (z 90 / 219 / 254).
 const HOUSE_Z = [12, 40, 70, 120, 140, 160, 185, 235];
-const HOUSES: { x: number; z: number; lit: boolean }[] = HOUSE_Z.map((z, i) => {
-  const [x, hz] = besideRiver(z, -(VISUAL_HALF + 1.2));
-  return { x, z: hz, lit: i % 2 === 0 };
-});
 const FACE_WEST = Math.PI; // atan2(-0, -1): front (+X local) → world -X
+// A few more on the west bank between Puerto Escobar and PNA LIMA, where there
+// is only Delta (and the grain terminal), fronts facing east to the river.
+const WEST_HOUSE_Z = [191, 207];
+
+type House = { x: number; z: number; yaw: number; lit: boolean };
+export const HOUSES: House[] = [
+  ...HOUSE_Z.map((z, i) => {
+    // (never so close that the stairs reach into the dredged lane)
+    const [x, hz] = besideRiver(z, -Math.max(eastHalfWidth(z) + 1.2, HALF_WIDTH + 1.6));
+    return { x, z: hz, yaw: FACE_WEST, lit: i % 2 === 0 };
+  }),
+  ...WEST_HOUSE_Z.map((z, i) => {
+    const [x, hz] = besideRiver(z, VISUAL_HALF + 1.2);
+    // riverYaw points +X downstream; a quarter turn more faces it east
+    return { x, z: hz, yaw: riverYaw(z) + Math.PI / 2, lit: i % 2 === 0 };
+  }),
+];
 
 export default function DeltaHouses() {
   return (
     <group>
-      {HOUSES.map(({ x, z, lit }) => (
+      {HOUSES.map(({ x, z, yaw, lit }) => (
         <DeltaHouse
           key={`${x}-${z}`}
           position={[x, 0, z]}
-          rotationY={FACE_WEST}
+          rotationY={yaw}
           lit={lit}
         />
       ))}

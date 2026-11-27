@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import Aeroparque from "./Aeroparque";
 import GrainTerminal from "./GrainTerminal";
+import HorizonRise from "./HorizonRise";
 import LaPlataSkyline from "./LaPlataSkyline";
 import PNALima from "./PNALima";
 import { besideRiver, riverYaw } from "./river-geometry";
@@ -52,12 +53,14 @@ export default function RelocatedLandmarks() {
       <Relocate from={OLD.grain} to={NEW.grain}>
         <GrainTerminal />
       </Relocate>
-      <Relocate from={OLD.aero} to={NEW.aero}>
-        <Aeroparque />
-      </Relocate>
-      <Relocate from={OLD.laPlata} to={NEW.laPlata}>
-        <LaPlataSkyline />
-      </Relocate>
+      <HorizonRise>
+        <Relocate from={OLD.aero} to={NEW.aero}>
+          <Aeroparque />
+        </Relocate>
+        <Relocate from={OLD.laPlata} to={NEW.laPlata}>
+          <LaPlataSkyline />
+        </Relocate>
+      </HorizonRise>
     </>
   );
 }

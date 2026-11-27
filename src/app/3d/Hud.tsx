@@ -60,7 +60,7 @@ function useReadout() {
       const { waypoint, distance } = nearestWaypoint(t.x, t.z);
       const zone = zoneAt(t.z);
       const next: Readout = {
-        km: zone.km.toFixed(1),
+        km: zone.kmRef ? `${zone.km.toFixed(1)} · ${zone.kmRef}` : zone.km.toFixed(1),
         zone: zone.name,
         vel: upsToKnots(t.velocity).toFixed(1),
         limit: speedLimitAt(t.z).kn,

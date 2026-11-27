@@ -16,6 +16,7 @@ import { FOG_FAR, FOG_NEAR, HORIZON_HEX, SUN_POSITION } from "./environment";
 import FSRUExpedient from "./FSRUExpedient";
 import Gasoducto from "./Gasoducto";
 import GNLEscobar from "./GNLEscobar";
+import HorizonRise from "./HorizonRise";
 import LoadingArms from "./LoadingArms";
 import PuertoBA from "./PuertoBA";
 import PuertoEscobar from "./PuertoEscobar";
@@ -70,9 +71,11 @@ export default function SceneCanvas() {
       <GNLEscobar />
       <FSRUExpedient />
       <RelocatedLandmarks />
-      <PuertoBA />
+      <HorizonRise>
+        <PuertoBA />
+        <PuertoLaPlata />
+      </HorizonRise>
       <CanalBrown />
-      <PuertoLaPlata />
 
       <Waypoints />
       <NavBuoys />
